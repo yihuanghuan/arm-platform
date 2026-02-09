@@ -174,18 +174,14 @@ static void DecodeArray(const uint8_t* buf, std::vector<double>& out, int n) {
 
 void DummyLinkProtocol::DecodePosition() {
     DecodeArray<float>(recv_.dataBuf, last_state_.position, 7);
-    last_state_.position[1] *= -1;
-    has_new_frame_ = true;
 }
 
 void DummyLinkProtocol::DecodeVelocity() {
     DecodeArray<float>(recv_.dataBuf, last_state_.velocity, 7);
-    last_state_.velocity[1] *= -1;
 }
 
 void DummyLinkProtocol::DecodeCurrent() {
     DecodeArray<float>(recv_.dataBuf, last_state_.current, 7);
-    last_state_.current[1] *= -1;
 }
 
 void DummyLinkProtocol::DecodeVoltage() {

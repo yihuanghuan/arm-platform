@@ -1,11 +1,13 @@
-#include <arm_platform/bus/serial_bus.h>
+#include <manipulator/bus/serial_bus.h>
 #include <sstream>
 #include <iomanip>
 #include <cstring>
 
-namespace arm_platform::bus {
+namespace manipulator::bus {
 
-SerialBus::SerialBus(const std::string& port_name, uint32_t baudrate) {
+SerialBus::SerialBus(const std::string& port_name, uint32_t baudrate,
+                     protocol::ProtocolFactory::UniquePtr protocol_factory) 
+ : AbsBus(std::move(protocol_factory)) {
     serial::Timeout to = serial::Timeout::simpleTimeout(100);
     serial_.setPort(port_name);
     serial_.setBaudrate(baudrate);
@@ -23,18 +25,20 @@ SerialBus::~SerialBus() {
   if (serial_.isOpen()) serial_.close();
 }
 
-void SerialBus::Send(const std::vector<uint8_t>& data) {
+void SerialBus::SendCore(const std::vector<uint8_t>& data) {
   if (serial_.isOpen()) {
     serial_.write(data.data(), data.size());
   }
 }
 
-std::vector<uint8_t> SerialBus::Receive() {
+void SerialBus::ReadCore(std::vector<uint8_t>& data) {
     size_t avail = serial_.available();
-    std::vector<uint8_t> buf(avail);
-    serial_.read(buf.data(), avail);
+    // std::vector<uint8_t> buf(avail);
+    data.resize(avail);
+    // serial_.read(buf.data(), avail);
+    serial_.read(data.data(), avail);
 
-    return buf;
+    // return buf;
 }
 
 }  // namespace arm_platform

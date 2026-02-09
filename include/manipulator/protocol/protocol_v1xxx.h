@@ -1,18 +1,18 @@
 #pragma once
-#include <arm_platform/protocol/i_link_protocol.h>
+#include <manipulator/protocol/i_protocol.h>
 #include <array>
 #include <vector>
 #include <mutex>
 
-namespace arm_platform::protocol {
+namespace manipulator::protocol {
 
 /**
  * MotorA binary protocol implementation.
  * This is a full refactor of your original Link_* logic.
  */
-class DummyLinkProtocol : public ILinkProtocol {
+class ProtocolV1 : public IProtocol {
 public:
-    DummyLinkProtocol();
+    ProtocolV1();
 
      // ----------------------------
     // Public enum for write command IDs
