@@ -2,6 +2,7 @@
 #include <vector>
 #include <memory>
 #include <manipulator/protocol/abs_protocol.h>
+// #include "rclcpp/rclcpp.hpp"
 
 namespace manipulator::protocol {
 
@@ -21,11 +22,11 @@ class ProtocolV1 : public AbsProtocol {
   double GetTemperature(const uint8_t id) const {return temperatures_[id]; }
   double GetVoltage(const uint8_t id) const { return voltages_[id]; }
 
-  void SetPosition(const uint8_t id, const double position) { desired_positions_[id] = position; }
-  void SetVelocity(const uint8_t id, const double velocity) { desired_velocities_[id] = velocity; }
-  void SetCurrent(const uint8_t id, const double current) { desired_currents_[id] = current; }
-  void SetKp(const uint8_t id, const double kp) { desired_kps[id] = kp; }
-  void SetKd(const uint8_t id, const double kd) { desired_kds_[id] = kd; }
+  void SetPosition(const uint8_t id, const double position) { desired_positions_[id] = position; pos_cmd_updated_=true; }
+  void SetVelocity(const uint8_t id, const double velocity) { desired_velocities_[id] = velocity; vel_cmd_updated_=true; }
+  void SetCurrent(const uint8_t id, const double current) { desired_currents_[id] = current; cur_cmd_updated_=true; }
+  void SetKp(const uint8_t id, const double kp) { desired_kps_[id] = kp; kp_cmd_updated_=true; }
+  void SetKd(const uint8_t id, const double kd) { desired_kds_[id] = kd; kd_cmd_updated_=true; }
 
  private:
   struct LinkFrame {
@@ -62,12 +63,15 @@ class ProtocolV1 : public AbsProtocol {
   std::vector<float> desired_positions_;
   std::vector<float> desired_velocities_;
   std::vector<float> desired_currents_;
-  std::vector<float> desired_kps;
+  std::vector<float> desired_kps_;
   std::vector<float> desired_kds_;
 
   uint16_t recv_step_ = 0;
   bool pos_cmd_updated_ = false;
   bool vel_cmd_updated_ = false;
   bool cur_cmd_updated_ = false;
+  bool kp_cmd_updated_ = false;
+  bool kd_cmd_updated_ = false;
+
 };
 } // namespace manipulator::protocol

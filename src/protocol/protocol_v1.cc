@@ -2,27 +2,42 @@
 #include <cstring>
 
 namespace manipulator::protocol {
-ProtocolV1::ProtocolV1() : positions_(7), velocities_(7), currents_(7), temperatures_(7) {
+
+
+ProtocolV1::ProtocolV1() : positions_(7), velocities_(7), currents_(7), 
+  temperatures_(7), voltages_(7), desired_positions_(7), desired_velocities_(7),
+  desired_currents_(7), desired_kps_(7), desired_kds_(7) {
 
 }
 
 void ProtocolV1::Pop(std::vector<uint8_t>& out) {
+
   if (pos_cmd_updated_) {
     float buf[7];
     for (int i = 0; i < 7; i++) buf[i] = static_cast<float>(desired_positions_[i]);
     MakeFrame(0x10, buf, 28, out);
-  }
+    pos_cmd_updated_ = false;
 
-  if (vel_cmd_updated_) {
+  } else if (vel_cmd_updated_) {
     float buf[7];
     for (int i = 0; i < 7; i++) buf[i] = static_cast<float>(desired_velocities_[i]);
-    return MakeFrame(0x11, buf, 28, out);
-  }
-
-  if (cur_cmd_updated_) {
+    MakeFrame(0x11, buf, 28, out);
+    vel_cmd_updated_ = false;
+  } else if (cur_cmd_updated_) {
     float buf[7];
     for (int i = 0; i < 7; i++) buf[i] = static_cast<float>(desired_currents_[i]);
-    return MakeFrame(0x12, buf, 28, out);
+    MakeFrame(0x12, buf, 28, out);
+    cur_cmd_updated_ = false;
+  } else if (kp_cmd_updated_) {
+    float buf[7];
+    for (int i = 0; i < 7; i++) buf[i] = static_cast<float>(desired_kps_[i]);
+    MakeFrame(0x13, buf, 28, out);
+    kp_cmd_updated_ = false;
+  } else if (kd_cmd_updated_) {
+    float buf[7];
+    for (int i = 0; i < 7; i++) buf[i] = static_cast<float>(desired_kds_[i]);
+    MakeFrame(0x14, buf, 28, out);
+    kd_cmd_updated_ = false;
   }
 }
 
@@ -74,6 +89,7 @@ void ProtocolV1::Check(LinkFrame& f) {
 }
 
 void ProtocolV1::DecodeFrame() {
+
   uint8_t sum = recv_.sumCheck;
   uint8_t add = recv_.addCheck;
   Check(recv_);
@@ -88,6 +104,8 @@ void ProtocolV1::DecodeFrame() {
     case 0x23: DecodeVoltage(); break;
     case 0x24: DecodeTemperature(); break;
   }
+
+  Notify();
 }
 
 template<typename T>

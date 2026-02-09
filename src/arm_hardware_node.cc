@@ -5,7 +5,7 @@ using namespace std::chrono_literals;
 namespace manipulator {
 
 ArmHardwareNode::ArmHardwareNode() 
- : Node("robot_arm_node"), arm_(arm::AL1Beta::Instance()) {
+  : Node("robot_arm_node"), arm_(arm::AL1Beta::Instance()) {
   // ------------------- Hardware stack -------------------
   std::string port;
   this->declare_parameter<std::string>("port_name", "/dev/ttyUSB0");
@@ -15,10 +15,10 @@ ArmHardwareNode::ArmHardwareNode()
 
   // ------------------- ROS interfaces -------------------
   pub_joint_state_ = this->create_publisher<dummy_interface::msg::MotorState>(
-      "arm/joint_feedback", 10);
+    "arm/joint_feedback", 10);
 
   sub_joint_ctrl_ = this->create_subscription<sensor_msgs::msg::JointState>(
-    "arm/joint_control", 10, [this](const sensor_msgs::msg::JointState::SharedPtr msg) {
+    "joint_states", 10, [this](const sensor_msgs::msg::JointState::SharedPtr msg) {
       arm_.SetJointStates(*msg);
     });
 

@@ -27,7 +27,7 @@ class AbsArm : public IArm {
   // IArm interface implementation
   bool SetJointStates(const sensor_msgs::msg::JointState& state) override;
   // TODO：return joint states if necessary
-  virtual void GetJointStates() = 0;
+  virtual void GetJointStates();
 
   // Additional methods
   void AddMotor(const std::string& name, motor::IMotor::SharedPtr motor);
