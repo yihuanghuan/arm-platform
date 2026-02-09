@@ -20,7 +20,7 @@ class IArm {
 
   // Access joint states
   virtual bool SetJointStates(const sensor_msgs::msg::JointState& states) = 0;
-  virtual void GetJointStates();
+  virtual void GetJointStates() = 0;
 };
 
 } // namespace manipulator::arm

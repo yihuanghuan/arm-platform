@@ -1,11 +1,11 @@
 #pragma once
 #include <vector>
 #include <memory>
-#include <manipulator/protocol/i_protocol.h>
+#include <manipulator/protocol/abs_protocol.h>
 
 namespace manipulator::protocol {
 
-class ProtocolV1 : public IProtocol {
+class ProtocolV1 : public AbsProtocol {
  public:
   using SharedPtr = std::shared_ptr<ProtocolV1>;
   ProtocolV1();

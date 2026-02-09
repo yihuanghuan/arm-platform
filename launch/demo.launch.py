@@ -16,7 +16,7 @@ def generate_launch_description():
         #     output="screen"
         # ),
         Node(
-            package='arm_platform',
+            package='manipulator',
             executable='arm_hardware_node',
             name='arm_hardware_node',
             output='screen',
@@ -24,7 +24,7 @@ def generate_launch_description():
                 {'port_name': '/dev/ttyUSB0'},
             ]
         ),
-        Node(package='arm_platform', executable='moveit_bridge_node', name='moveit_bridge_node', output='screen'),
+        Node(package='manipulator', executable='moveit_bridge_node', name='moveit_bridge_node', output='screen'),
         # Node(
         #     package='v4l2_camera',
         #     executable='v4l2_camera_node',

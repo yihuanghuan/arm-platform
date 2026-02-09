@@ -15,8 +15,8 @@ class AbsBus : public IBus {
   void Read() override final;
 
  protected:
-  virtual void SendCore(const std::vector<uint8_t>& data);
-  virtual void ReadCore(std::vector<uint8_t>& data);
+  virtual void SendCore(const std::vector<uint8_t>& data) = 0;
+  virtual void ReadCore(std::vector<uint8_t>& data) = 0;
 
  private:
   protocol::ProtocolFactory::UniquePtr protocol_factory_;

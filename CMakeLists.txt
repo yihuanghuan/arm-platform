@@ -12,7 +12,7 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
-# find_package(dummy_interface REQUIRED)
+find_package(dummy_interface REQUIRED)
 find_package(serial REQUIRED)
 
 
@@ -21,6 +21,7 @@ find_package(serial REQUIRED)
 # ==============================
 add_library(manipulator_core
   src/arm/abs_arm.cc
+  src/arm/a_l1_beta.cc
   src/bus/abs_bus.cc
   src/bus/serial_bus.cc
   src/motor/dm_4310_p.cc
@@ -37,7 +38,7 @@ target_include_directories(manipulator_core PUBLIC
 ament_target_dependencies(manipulator_core
   rclcpp
   std_msgs
-  # dummy_interface
+  dummy_interface
   serial
   sensor_msgs
 )
@@ -45,13 +46,13 @@ ament_target_dependencies(manipulator_core
 # ==============================
 # Robot Arm Node (ROS2 Node)
 # ==============================
-# add_executable(arm_hardware_node
-#   src/arm_hardware_node.cc
-# )
+add_executable(arm_hardware_node
+  src/arm_hardware_node.cc
+)
 
-# target_link_libraries(arm_hardware_node
-#   manipulator_core
-# )
+target_link_libraries(arm_hardware_node
+  manipulator_core
+)
 
 # add_executable(moveit_bridge_node
 #   src/moveit_bridge_node.cc
@@ -75,7 +76,7 @@ ament_target_dependencies(manipulator_core
 # ==============================
 install(TARGETS
   manipulator_core
-  # arm_hardware_node
+  arm_hardware_node
   # moveit_bridge_node
   EXPORT export_${PROJECT_NAME}
   ARCHIVE DESTINATION lib

@@ -20,14 +20,14 @@ class AbsArm : public IArm {
   // 禁用拷贝（因为UniquePtr不可拷贝）
   AbsArm(const AbsArm&) = delete;
   AbsArm& operator=(const AbsArm&) = delete;   
-  virtual ~AbsArm() = default;
+  ~AbsArm() = default;
 
   void SetBus(bus::IBus::UniquePtr bus);
 
   // IArm interface implementation
   bool SetJointStates(const sensor_msgs::msg::JointState& state) override;
   // TODO：return joint states if necessary
-  virtual void GetJointStates();
+  virtual void GetJointStates() = 0;
 
   // Additional methods
   void AddMotor(const std::string& name, motor::IMotor::SharedPtr motor);

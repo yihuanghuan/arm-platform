@@ -1,17 +1,17 @@
 #pragma once
 
-#include <arm_platform/arm_model/abs_arm.h>
-
+#include <manipulator/arm/abs_arm.h>
+#include <manipulator/protocol/protocol_v1.h>
 namespace manipulator::arm {
 
 class AL1Beta final : public AbsArm {
  public:
   struct JointState {
-    std::vector<double> position(7);
-    std::vector<double> velocity(7);
-    std::vector<double> current(7);
-    std::vector<double> voltage(7);
-    std::vector<double> temperature(7);
+    std::vector<double> position{7};
+    std::vector<double> velocity{7};
+    std::vector<double> current{7};
+    std::vector<double> voltage{7};
+    std::vector<double> temperature{7};
   };
 
   AL1Beta(const AL1Beta&) = delete;
