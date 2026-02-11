@@ -2,7 +2,7 @@
 #include <vector>
 #include <memory>
 #include <manipulator/protocol/abs_protocol.h>
-// #include "rclcpp/rclcpp.hpp"
+#include "rclcpp/rclcpp.hpp"
 
 namespace manipulator::protocol {
 

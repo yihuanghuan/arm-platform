@@ -3,7 +3,6 @@
 
 namespace manipulator::protocol {
 
-
 ProtocolV1::ProtocolV1() : positions_(7), velocities_(7), currents_(7), 
   temperatures_(7), voltages_(7), desired_positions_(7), desired_velocities_(7),
   desired_currents_(7), desired_kps_(7), desired_kds_(7) {
@@ -13,30 +12,51 @@ ProtocolV1::ProtocolV1() : positions_(7), velocities_(7), currents_(7),
 void ProtocolV1::Pop(std::vector<uint8_t>& out) {
 
   if (pos_cmd_updated_) {
+    // std::vector<uint8_t> data;
     float buf[7];
     for (int i = 0; i < 7; i++) buf[i] = static_cast<float>(desired_positions_[i]);
     MakeFrame(0x10, buf, 28, out);
+    // out.insert(out.end(), data.begin(), data.end());
     pos_cmd_updated_ = false;
-
-  } else if (vel_cmd_updated_) {
+    auto logger = rclcpp::get_logger("xx");
+    RCLCPP_INFO(logger, "Send pos, %f %f %f %f %f %f %f",
+   desired_positions_[0], desired_positions_[1], desired_positions_[2], desired_positions_[3], 
+   desired_positions_[4], desired_positions_[5], desired_positions_[6]);
+  } 
+  
+  if (vel_cmd_updated_) {
     float buf[7];
+    std::vector<uint8_t> data;
     for (int i = 0; i < 7; i++) buf[i] = static_cast<float>(desired_velocities_[i]);
-    MakeFrame(0x11, buf, 28, out);
+    MakeFrame(0x11, buf, 28, data);
+    // out.insert(out.end(), data.begin(), data.end());
     vel_cmd_updated_ = false;
-  } else if (cur_cmd_updated_) {
+  } 
+  
+  if (cur_cmd_updated_) {
+    std::vector<uint8_t> data;
     float buf[7];
     for (int i = 0; i < 7; i++) buf[i] = static_cast<float>(desired_currents_[i]);
-    MakeFrame(0x12, buf, 28, out);
+    MakeFrame(0x12, buf, 28, data);
+    out.insert(out.end(), data.begin(), data.end());
     cur_cmd_updated_ = false;
-  } else if (kp_cmd_updated_) {
+  } 
+  
+  if (kp_cmd_updated_) {
+    std::vector<uint8_t> data;
     float buf[7];
     for (int i = 0; i < 7; i++) buf[i] = static_cast<float>(desired_kps_[i]);
-    MakeFrame(0x13, buf, 28, out);
+    MakeFrame(0x13, buf, 28, data);
+    out.insert(out.end(), data.begin(), data.end());
     kp_cmd_updated_ = false;
-  } else if (kd_cmd_updated_) {
+  }
+  
+  if (kd_cmd_updated_) {
+    std::vector<uint8_t> data;
     float buf[7];
     for (int i = 0; i < 7; i++) buf[i] = static_cast<float>(desired_kds_[i]);
-    MakeFrame(0x14, buf, 28, out);
+    MakeFrame(0x14, buf, 28, data);
+    out.insert(out.end(), data.begin(), data.end());
     kd_cmd_updated_ = false;
   }
 }

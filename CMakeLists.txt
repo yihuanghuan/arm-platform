@@ -24,7 +24,7 @@ add_library(manipulator_core
   src/arm/a_l1_beta.cc
   src/bus/abs_bus.cc
   src/bus/serial_bus.cc
-  src/motor/dm_4310_p.cc
+  src/motor/dm_motor.cc
   src/protocol/abs_protocol.cc
   src/protocol/protocol_factory.cc
   src/protocol/protocol_v1.cc

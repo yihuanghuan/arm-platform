@@ -5,10 +5,10 @@
 
 namespace manipulator::motor {
 
-class DM4310P final : public IMotor {
+class DMMotor final : public IMotor {
  public:
-  DM4310P(protocol::ProtocolV1::SharedPtr protocol, uint8_t id, double kp, double kd);
-  virtual ~DM4310P() = default;
+  DMMotor(protocol::ProtocolV1::SharedPtr protocol, uint8_t id, double kp, double kd);
+  virtual ~DMMotor() = default;
 
   void UpdateCommand(const sensor_msgs::msg::JointState& state) override;
   void UpdateState() override;
@@ -24,6 +24,11 @@ class DM4310P final : public IMotor {
   double kp_;
   double kd_;
   double pos_set_;
+  double vel_set_;
+  bool is_controlled_;
+  const double MAX_ACCELERATION_ = 100;
+  const double DT_ = 0.005;
+  const double MAX_VELOCITY_ = 20;
 };
 
 } // namespace manipulator::motor

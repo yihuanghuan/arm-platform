@@ -2,7 +2,7 @@
 #include <manipulator/protocol/protocol_factory.h>
 #include <manipulator/protocol/protocol_v1.h>
 #include <manipulator/bus/serial_bus.h>
-#include <manipulator/motor/dm_4310_p.h>
+#include <manipulator/motor/dm_motor.h>
 
 namespace manipulator::arm {
 
@@ -13,19 +13,19 @@ AL1Beta::AL1Beta() {
 void AL1Beta::Init(const std::string& port, uint32_t baud) {
   protocol_ = std::make_shared<protocol::ProtocolV1>();
 
-  auto joint1 = std::make_shared<motor::DM4310P>(protocol_, 0, 10, 0.2);
+  auto joint1 = std::make_shared<motor::DMMotor>(protocol_, 0, 30, 0.2);
   AddMotor("joint1", joint1);
-  auto joint2 = std::make_shared<motor::DM4310P>(protocol_, 1, 60, 0.2);
+  auto joint2 = std::make_shared<motor::DMMotor>(protocol_, 1, 50, 0.2);
   AddMotor("joint2", joint2);
-  auto joint3 = std::make_shared<motor::DM4310P>(protocol_, 2, 40, 0.2);
+  auto joint3 = std::make_shared<motor::DMMotor>(protocol_, 2, 50, 0.2);
   AddMotor("joint3", joint3);
-  auto joint4 = std::make_shared<motor::DM4310P>(protocol_, 3, 5, 0.2);
+  auto joint4 = std::make_shared<motor::DMMotor>(protocol_, 3, 10, 0.2);
   AddMotor("joint4", joint4);
-  auto joint5 = std::make_shared<motor::DM4310P>(protocol_, 4, 2, 0.5);
+  auto joint5 = std::make_shared<motor::DMMotor>(protocol_, 4, 2, 0.5);
   AddMotor("joint5", joint5);
-  auto joint6 = std::make_shared<motor::DM4310P>(protocol_, 5, 5, 0.2);
+  auto joint6 = std::make_shared<motor::DMMotor>(protocol_, 5, 5, 0.2);
   AddMotor("joint6", joint6);
-  auto joint7 = std::make_shared<motor::DM4310P>(protocol_, 6, 1, 0.2);
+  auto joint7 = std::make_shared<motor::DMMotor>(protocol_, 6, 1, 0.2);
   AddMotor("joint7", joint7);
 
   protocol_->Attach(joint1);
