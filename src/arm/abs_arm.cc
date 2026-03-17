@@ -1,4 +1,5 @@
 #include <manipulator/arm/abs_arm.h>
+#include <algorithm>
 
 namespace manipulator::arm {
 AbsArm::AbsArm() {
@@ -12,6 +13,14 @@ void AbsArm::SetBus(bus::IBus::UniquePtr bus) {
   bus_ = std::move(bus);
 }
 
+bool AbsArm::SetMotorCommand(const dummy_interface::msg::MotorControl& cmd) {
+  for (auto& [_, motor] : motor_map_ ) {
+      motor->UpdateCommand(cmd);
+  }
+  bus_->Send(); 
+  return true;
+}
+
 bool AbsArm::SetJointStates(const sensor_msgs::msg::JointState& states) {
   for (auto& [joint_name, motor] : motor_map_ ) {
     sensor_msgs::msg::JointState state;
@@ -22,8 +31,8 @@ bool AbsArm::SetJointStates(const sensor_msgs::msg::JointState& states) {
       size_t index = std::distance(states.name.begin(), name_ind);
       state.position.push_back(states.position[index]);
       state.velocity.push_back(states.velocity[index]);
-      // state.effort.push_back(states.effort[index]);
-      motor->UpdateCommand(state);
+      state.effort.push_back(states.effort[index]);
+      motor->SetState(state);
     }
   }
   bus_->Send(); 

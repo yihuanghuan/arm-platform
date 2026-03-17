@@ -115,8 +115,7 @@ arm_platform/
 │   ├── controller/
 │   ├── protocol/
 │   ├── bus/
-│   ├── arm_hardware_node.cpp
-│   └── moveit_bridge_node.cpp
+│   └── arm_hardware_node.cpp
 │
 ├── CMakeLists.txt
 └── README.md

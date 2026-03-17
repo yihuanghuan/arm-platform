@@ -7,10 +7,12 @@ namespace manipulator::motor {
 
 class DMMotor final : public IMotor {
  public:
-  DMMotor(protocol::ProtocolV1::SharedPtr protocol, uint8_t id, double kp, double kd);
+  DMMotor(protocol::ProtocolV1::SharedPtr protocol, uint8_t id, 
+          float kp, float kd);
   virtual ~DMMotor() = default;
 
-  void UpdateCommand(const sensor_msgs::msg::JointState& state) override;
+  void UpdateCommand(const dummy_interface::msg::MotorControl& cmd) override;
+  void SetState(const sensor_msgs::msg::JointState& state) override;
   void UpdateState() override;
  
  private:
@@ -20,9 +22,9 @@ class DMMotor final : public IMotor {
   double velocity_;
   double torque_;
   double temperature_;
+  float default_kp_;
+  float default_kd_;
 
-  double kp_;
-  double kd_;
   double pos_set_;
   double vel_set_;
   bool is_controlled_;

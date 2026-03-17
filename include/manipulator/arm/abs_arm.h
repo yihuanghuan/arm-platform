@@ -5,7 +5,7 @@
 #include <string>
 
 #include <sensor_msgs/msg/joint_state.hpp>
-
+#include <dummy_interface/msg/motor_control.hpp>
 #include <manipulator/arm/i_arm.h>
 #include <manipulator/motor/i_motor.h>
 #include <manipulator/bus/i_bus.h>
@@ -24,9 +24,8 @@ class AbsArm : public IArm {
 
   void SetBus(bus::IBus::UniquePtr bus);
 
-  // IArm interface implementation
-  bool SetJointStates(const sensor_msgs::msg::JointState& state) override;
-  // TODO：return joint states if necessary
+  bool SetMotorCommand(const dummy_interface::msg::MotorControl& cmd);
+  bool SetJointStates(const sensor_msgs::msg::JointState& state);
   virtual void GetJointStates();
 
   // Additional methods

@@ -16,7 +16,7 @@ ArmHardwareNode::ArmHardwareNode()
   // ------------------- ROS interfaces -------------------
   pub_joint_state_ = this->create_publisher<dummy_interface::msg::MotorState>(
     "arm/joint_feedback", 10);
-
+  //TODO: use motor control instead of jointstate
   sub_joint_ctrl_ = this->create_subscription<sensor_msgs::msg::JointState>(
     "joint_states", 10, [this](const sensor_msgs::msg::JointState::SharedPtr msg) {
       arm_.SetJointStates(*msg);

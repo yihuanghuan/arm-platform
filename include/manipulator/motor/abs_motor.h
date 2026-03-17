@@ -1,6 +1,6 @@
 #pragma once
 #include <memory>
-#include <sensor_msgs/msg/joint_state.hpp>
+#include <dummy_interface/msg/motor_control.hpp>
 #include <manipulator/motor/i_motor.h>
 #include <manipulator/protocol/i_protocol.h>
 
@@ -12,8 +12,8 @@ class AbsMotor : public IMotor {
   virtual ~AbsMotor() = default;
 
   // IMotor interface implementation
-  void UpdateState() override;
-  void UpdateCommand(const sensor_msgs::msg::JointState& state) override;
+  void UpdateState(const std::vector<uint8_t>& data) override;
+  void UpdateCommand(const dummy_interface::msg::MotorControl& cmd) override;
  
  private:
   protocol::IProtocol::SharedPtr protocol_;

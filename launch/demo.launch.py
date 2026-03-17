@@ -24,7 +24,6 @@ def generate_launch_description():
                 {'port_name': '/dev/ttyUSB0'},
             ]
         ),
-        # Node(package='manipulator', executable='moveit_bridge_node', name='moveit_bridge_node', output='screen'),
         # Node(
         #     package='v4l2_camera',
         #     executable='v4l2_camera_node',

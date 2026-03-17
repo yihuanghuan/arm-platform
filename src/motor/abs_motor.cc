@@ -9,8 +9,8 @@ void AbsMotor::UpdateState(const std::vector<uint8_t>& data) {
   protocol_->Pop(data);
 }
 
-void AbsMotor::UpdateCommand(const sensor_msgs::msg::JointState& state) {
+void AbsMotor::UpdateCommand(const dummy_interface::msg::MotorControl& cmd) {
   std::vector<uint8_t> bytes_to_send;
-  protocol_->MakeFrame(state, bytes_to_send);
+  protocol_->MakeFrame(cmd, bytes_to_send);
 }
 }
