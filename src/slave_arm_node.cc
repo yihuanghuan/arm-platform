@@ -1,3 +1,4 @@
+//天空端
 #include <manipulator/slave_arm_node.h>
 #include <chrono>
 
@@ -14,21 +15,35 @@ SlaveArmNode::SlaveArmNode()
   this->get_parameter("port_name", port);
 
   arm_.Init(port, 921600);
-
-  sub_compensation_ = this->create_subscription<std_msgs::msg::Float64MultiArray>(
-      "/master/arm/joint_compensation", 10,
-      [this](const std_msgs::msg::Float64MultiArray::ConstSharedPtr& msg) { 
+  //天空端需要订阅一个东西 1.地面端发布的关节实际位置
+  sub_position_ = this->create_subscription<std_msgs::msg::Float64MultiArray>(
+      "/master/arm/joint_positions", 10,
+      [this](const std_msgs::msg::Float64MultiArray::ConstSharedPtr& msg) {  //这个函数把关节位置转发了，遥操作基本功能实现
         if (msg->data.size() >= 7) {
-          std::array<double, 7> tau_comp;
+          std::array<double, 7> ground_joint_position;
+
           for (int i = 0; i < 7; ++i) {
-            tau_comp[i] = msg->data[i];
+            ground_joint_position[i] = msg->data[i];
           }
-          gravity_compensation_.SetUavPose(geometry_msgs::msg::Point());
-          auto computed_tau = gravity_compensation_.Compute(tau_comp);
+          dummy_interface::msg::MotorControl cmd;
+          cmd.header.stamp = this->now();
+          cmd.current.resize(7);
+          for (int i = 0; i < 7; ++i) {
+            cmd.position[i] = ground_joint_position[i];
+            cmd.p[i] = 7.0;
+            cmd.velocity[i] = 7.0;
+            cmd.d[i] = 7.0;
+          }
+
+            arm_.SetMotorCommand(cmd);
         }
       });
 
-  pub_joint_state_ = this->create_publisher<dummy_interface::msg::MotorState>("arm/joint_feedback", 10);
+  
+  //天空端需要发布两个东西1.检测到的力矩 2.计算出的补偿力矩
+  pub_joint_state_ = this->create_publisher<dummy_interface::msg::MotorState>("arm/joint_feedback", 10); //1
+  pub_calculate_compentation_ = this->create_publisher<std_msgs::msg::Float64MultiArray>("/uav/arm/joint_compensation", 10); //2
+
 
   control_timer_ = this->create_wall_timer(
       std::chrono::milliseconds(10),
@@ -55,7 +70,7 @@ SlaveArmNode::~SlaveArmNode() {
 
 void SlaveArmNode::ControlLoop() {
   arm_.GetState(arm_state_);
-
+  ComputeAndPublishCompensation();
   dummy_interface::msg::MotorState joint_state;
   joint_state.header.stamp = this->now();
   for (int i = 0; i < 7; ++i) {
@@ -64,6 +79,23 @@ void SlaveArmNode::ControlLoop() {
   }
 
   pub_joint_state_->publish(joint_state);
+}
+
+
+void SlaveArmNode::ComputeAndPublishCompensation() {
+    std::array<double, 7> joint_positions;
+    for (int i = 0; i < 7; ++i) {
+      joint_positions[i] = arm_state_.position[i];
+    }
+
+
+    auto tau_comp = gravity_compensation_.Compute(joint_positions);
+
+    std_msgs::msg::Float64MultiArray tau_comp_msg;
+    for (int i = 0; i < 7; ++i) {
+      tau_comp_msg.data.push_back(tau_comp[i]);
+    }
+    pub_calculate_compentation_->publish(tau_comp_msg);
 }
 
 void SlaveArmNode::DebugInfoCallback() {

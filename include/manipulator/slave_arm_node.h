@@ -20,13 +20,15 @@ class SlaveArmNode : public rclcpp::Node {
 
  private:
   void ControlLoop();
+  void ComputeAndPublishCompensation();
   void DebugInfoCallback();
 
   rclcpp::TimerBase::SharedPtr control_timer_;
   rclcpp::TimerBase::SharedPtr debug_timer_;
   rclcpp::Publisher<dummy_interface::msg::MotorState>::SharedPtr pub_joint_state_;
+  rclcpp::Subscription<std_msgs::msg::Float64MultiArray>::SharedPtr sub_position_;
   rclcpp::Subscription<std_msgs::msg::Float64MultiArray>::SharedPtr sub_compensation_;
-
+  rclcpp::Publisher<std_msgs::msg::Float64MultiArray>::SharedPtr pub_calculate_compentation_;
   arm::AL1Beta& arm_;
   arm::AL1Beta::JointState arm_state_;
   GravityCompensation gravity_compensation_;

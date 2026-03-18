@@ -1,3 +1,4 @@
+//地面端
 #include <manipulator/master_arm_node.h>
 #include <chrono>
 #include <algorithm>
@@ -27,7 +28,9 @@ MasterArmNode::MasterArmNode()
   double G_GAIN_2 = this->get_parameter("G_GAIN_2").as_double();
   double MAX_TORQUE = this->get_parameter("MAX_TORQUE").as_double();
   double GRAVITY = this->get_parameter("GRAVITY").as_double();
-  gravity_compensation_.SetParams(G_GAIN_0, G_GAIN_1, G_GAIN_2, MAX_TORQUE, GRAVITY);
+  double FORCE_FEEDBACK_THRESHOLD = this->get_parameter("FORCE_FEEDBACK_THRESHOLD").as_double();
+  double FORCE_FEEDBACK_GAIN = this->get_parameter("FORCE_FEEDBACK_GAIN").as_double();
+  gravity_compensation_.SetParams(G_GAIN_0, G_GAIN_1, G_GAIN_2, MAX_TORQUE, GRAVITY, FORCE_FEEDBACK_THRESHOLD, FORCE_FEEDBACK_GAIN);
 
   double uav_roll = this->get_parameter("uav_roll").as_double();
   double uav_pitch = this->get_parameter("uav_pitch").as_double();
@@ -39,15 +42,35 @@ MasterArmNode::MasterArmNode()
   gravity_compensation_.SetUavPose(uav_pose);
 
   arm_.Init(port, 921600);
-
   sub_uav_pose_ = this->create_subscription<geometry_msgs::msg::Point>(
       "/uav/pose", 10,
       [this](const geometry_msgs::msg::Point::ConstSharedPtr& msg) { 
         gravity_compensation_.SetUavPose(*msg);
       });
 
-  pub_joint_state_ = this->create_publisher<dummy_interface::msg::MotorState>("arm/joint_feedback", 10);
-  pub_joint_compensation_ = this->create_publisher<std_msgs::msg::Float64MultiArray>("/uav/arm/joint_compensation", 10);
+  //地面端只需要发布关节的实际位置
+  pub_joint_position_ = this->create_publisher<std_msgs::msg::Float64MultiArray>("/master/arm/joint_positions", 10);
+  // pub_joint_state_ = this->create_publisher<dummy_interface::msg::MotorState>("arm/joint_feedback", 10);
+  // pub_joint_compensation_ = this->create_publisher<std_msgs::msg::Float64MultiArray>("/uav/arm/joint_compensation", 10);
+
+  //地面端需要订阅天空端检测到的力矩和计算出的力矩
+  sub_uav_joint_currents = this->create_subscription<dummy_interface::msg::MotorControl>(
+      "/uav/arm/joint_currents", 10,
+      [this](const  dummy_interface::msg::MotorControl::ConstSharedPtr& msg) { 
+        for(int i = 0; i < 7; ++i) {
+          uav_joint_currents[i] = msg->current[i];
+        }
+        // 处理接收到的关节电流数据
+      });
+  
+
+  sub_uav_calculate_compensation = this->create_subscription<std_msgs::msg::Float64MultiArray>(
+      "/uav/arm/joint_compensation", 10,
+      [this](const std_msgs::msg::Float64MultiArray::ConstSharedPtr& msg) { 
+        // 处理接收到的计算补偿数据
+        for(int i = 0; i < 7; i++)
+          uav_compensation_torques[i] = msg->data[i];
+      });
 
   control_timer_ = this->create_wall_timer(
       std::chrono::milliseconds(10),
@@ -74,7 +97,8 @@ MasterArmNode::~MasterArmNode() {
 
 void MasterArmNode::ControlLoop() {
   arm_.GetState(arm_state_);
-  ComputeAndPublishCompensation();
+  ComputeAndPublishCompensation();//零重力
+
 }
 
 void MasterArmNode::ComputeAndPublishCompensation() {
@@ -84,7 +108,7 @@ void MasterArmNode::ComputeAndPublishCompensation() {
   }
 
   auto tau_comp = gravity_compensation_.Compute(joint_positions);
-
+  tau_comp = gravity_compensation_.collision_detection(tau_comp,uav_joint_currents,uav_compensation_torques); //力反馈 可以加个参数控制是否开启反馈
   dummy_interface::msg::MotorControl cmd;
   std_msgs::msg::Float64MultiArray tau_comp_msg;
   cmd.header.stamp = this->now();
@@ -106,8 +130,10 @@ void MasterArmNode::ComputeAndPublishCompensation() {
     joint_state.current.push_back(arm_state_.current[i]);
   }
 
-  pub_joint_state_->publish(joint_state);
-  pub_joint_compensation_->publish(tau_comp_msg);
+
+
+  // pub_joint_state_->publish(joint_state);
+  // pub_joint_compensation_->publish(tau_comp_msg);
 }
 
 void MasterArmNode::DebugInfoCallback() {

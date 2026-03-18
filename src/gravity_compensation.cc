@@ -13,15 +13,20 @@ GravityCompensation::GravityCompensation() {
   params_.G_GAIN_2 = 1.0;
   params_.MAX_TORQUE = 3.0;
   params_.GRAVITY = 9.81;
+  params_.FORCE_FEEDBACK_THRESHOLD = 0.2; 
+  params_.FORCE_FEEDBACK_GAIN = 0.2; 
 }
 
 void GravityCompensation::SetParams(double G_GAIN_0, double G_GAIN_1, double G_GAIN_2,
-                                double MAX_TORQUE, double GRAVITY) {
+                                double MAX_TORQUE, double GRAVITY,double FORCE_FEEDBACK_THRESHOLD, double FORCE_FEEDBACK_GAIN) {
   params_.G_GAIN_0 = G_GAIN_0;
   params_.G_GAIN_1 = G_GAIN_1;
   params_.G_GAIN_2 = G_GAIN_2;
   params_.MAX_TORQUE = MAX_TORQUE;
   params_.GRAVITY = GRAVITY;
+  params_.FORCE_FEEDBACK_THRESHOLD = FORCE_FEEDBACK_THRESHOLD;
+  params_.FORCE_FEEDBACK_GAIN = FORCE_FEEDBACK_GAIN;
+
 }
 
 void GravityCompensation::SetUavPose(const geometry_msgs::msg::Point& pose) {
@@ -113,5 +118,19 @@ std::array<double, 7> GravityCompensation::Compute(const std::array<double, 7>& 
 
   return tau_comp;
 }
-
+//这里的力反馈实质上是对碰撞的检测，重点在于区分机械臂检测到的力矩是重力造成的还是碰撞造成的。所以无人机上的机械臂也需要进行重力补偿计算。
+//远端重力补偿力矩和检测到力矩差值过大就说明发生了碰撞
+std::array<double, 7> GravityCompensation::collision_detection(const std::array<double, 7>& tau_comp,const std::array<double, 7>& joint_currents_,const std::array<double, 7>& compensation_torques) {
+    std::array<double,7> tau_current;
+    tau_current = tau_comp;
+    for(int i = 0;i < 7;i++){
+        if(std::abs(joint_currents_[i] - compensation_torques[i]) > 0.2){
+          tau_current[i] += - 0.2 * (joint_currents_[i] - compensation_torques[i]);
+        }
+        else{
+            tau_current[i] += 0.0f; 
+        }
+    }
+    return tau_current;
+}
 } // namespace manipulator

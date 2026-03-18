@@ -13,10 +13,10 @@ class GravityCompensation {
   ~GravityCompensation() = default;
 
   void SetParams(double G_GAIN_0, double G_GAIN_1, double G_GAIN_2, 
-                double MAX_TORQUE, double GRAVITY);
+                double MAX_TORQUE, double GRAVITY,double FORCE_FEEDBACK_THRESHOLD, double FORCE_FEEDBACK_GAIN);
   void SetUavPose(const geometry_msgs::msg::Point& pose);
   std::array<double, 7> Compute(const std::array<double, 7>& joint_positions);
-
+  std::array<double, 7> collision_detection(const std::array<double, 7>& tau_comp,const std::array<double, 7>& joint_currents_,const std::array<double, 7>& compensation_torques);
  private:
   Eigen::Matrix4d DhTransform(double a, double alpha, double d, double theta);
   void ForwardKinematics(const std::array<double, 7>& q, 
@@ -57,6 +57,8 @@ class GravityCompensation {
     double G_GAIN_2;
     double MAX_TORQUE;
     double GRAVITY;
+    double FORCE_FEEDBACK_THRESHOLD;
+    double FORCE_FEEDBACK_GAIN;
   };
   CompensationParams params_;
 
