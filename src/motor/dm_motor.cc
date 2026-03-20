@@ -20,6 +20,8 @@ void DMMotor::UpdateState() {
     position_ = -position_;
     velocity_ = -velocity_;
   }
+  if (not is_received_) pos_set_ = position_;
+  is_received_ = true;
 }
 
 void DMMotor::SetState(const sensor_msgs::msg::JointState& state) {
@@ -37,7 +39,10 @@ void DMMotor::UpdateCommand(const dummy_interface::msg::MotorControl& cmd) {
   // Use constant Kp and Kd values; only a one-time publication is needed.
   protocol_->SetKp(id_, cmd.p[id_]);
   protocol_->SetKd(id_, cmd.d[id_]);
-  
+  protocol_->SetCurrent(id_, is_mirror_ ? -cmd.current[id_] : cmd.current[id_]);
+
+  if (cmd.position.empty()) return;
+
   double pos_err = cmd.position[id_] - pos_set_;
   if (abs(pos_err) < 0.01 and abs(vel_set_) < 0.1) {
     vel_set_ = 0;
@@ -62,9 +67,7 @@ void DMMotor::UpdateCommand(const dummy_interface::msg::MotorControl& cmd) {
 
   if(id_ < 6) pos_set_ +=  vel_set_ * DT_;
   else pos_set_ = cmd.position[id_]; // joint7(gripper) requires rapid movement
-  protocol_->SetPosition(id_, is_mirror_ ? -cmd.position[id_] : cmd.position[id_]);
-  protocol_->SetVelocity(id_, is_mirror_ ? -cmd.velocity[id_] : cmd.velocity[id_]);
-  protocol_->SetCurrent(id_, is_mirror_ ? -cmd.current[id_] : cmd.current[id_]);
-
+  protocol_->SetPosition(id_, is_mirror_ ? -pos_set_ : pos_set_);
+  protocol_->SetVelocity(id_, is_mirror_ ? -vel_set_ : vel_set_);
 }
 }

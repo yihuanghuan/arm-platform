@@ -97,6 +97,7 @@ void SlaveArmNode::ControlLoop() {
   pub_joint_controller_->publish(cmd_);
 
   ComputeAndPublishCompensation();
+  arm_.SetMotorCommand(cmd_);
 
   std_msgs::msg::Float64MultiArray joint_currents_msg;
   for (int i = 0; i < 7; ++i) {
