@@ -57,8 +57,8 @@ SlaveArmNode::SlaveArmNode()
   cmd_.current.resize(7);
   cmd_.position.resize(7);
   cmd_.p = {20, 10, 10, 5, 1, 1, 1};
-  cmd_.velocity = {7, 7, 7, 7, 7, 7, 7};
-  cmd_.d = {7, 7, 7, 7, 7, 7, 7};
+  cmd_.velocity = {0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2};
+  cmd_.d = {0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1};
 
   control_timer_ = this->create_wall_timer(
       std::chrono::milliseconds(10),

@@ -28,7 +28,7 @@ class DMMotor final : public IMotor {
 
   double pos_set_;
   double vel_set_;
-  bool is_controlled_;
+  bool is_received_;
   const double MAX_ACCELERATION_ = 100;
   const double DT_ = 0.005;
   const double MAX_VELOCITY_ = 20;

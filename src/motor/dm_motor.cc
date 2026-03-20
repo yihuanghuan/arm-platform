@@ -12,7 +12,6 @@ DMMotor::DMMotor(protocol::ProtocolV1::SharedPtr protocol, uint8_t id,
 void DMMotor::UpdateState() {
   position_ = protocol_->GetPosition(id_);
   // avoid sudden jitter caused by incorrent initial set value
-  if (not is_controlled_) pos_set_ = position_;
   velocity_ = protocol_->GetVelocity(id_);
   torque_ = protocol_->GetCurrent(id_); // DM motors return torque instead of current
   temperature_ = protocol_->GetTemperature(id_);
@@ -34,7 +33,7 @@ void DMMotor::SetState(const sensor_msgs::msg::JointState& state) {
 }
 
 void DMMotor::UpdateCommand(const dummy_interface::msg::MotorControl& cmd) {
-  if(id_ == 3) return;
+  if (not is_received_) return;
   // Use constant Kp and Kd values; only a one-time publication is needed.
   protocol_->SetKp(id_, cmd.p[id_]);
   protocol_->SetKd(id_, cmd.d[id_]);
