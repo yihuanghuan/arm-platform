@@ -29,7 +29,7 @@ class AL1Beta final : public AbsArm {
 
   void Init(const std::string& port, uint32_t baud);
   // void GetJointStates() override {}
-  void GetState(JointState& state);
+  void GetState(JointState& state);  
 
  private:
   AL1Beta();

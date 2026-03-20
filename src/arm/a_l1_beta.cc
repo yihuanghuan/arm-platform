@@ -15,7 +15,7 @@ void AL1Beta::Init(const std::string& port, uint32_t baud) {
 
   auto joint1 = std::make_shared<motor::DMMotor>(protocol_, 0, 30, 0.2);
   AddMotor("joint1", joint1);
-  auto joint2 = std::make_shared<motor::DMMotor>(protocol_, 1, 50, 0.2);
+  auto joint2 = std::make_shared<motor::DMMotor>(protocol_, 1, 50, 0.2, true);
   AddMotor("joint2", joint2);
   auto joint3 = std::make_shared<motor::DMMotor>(protocol_, 2, 50, 0.2);
   AddMotor("joint3", joint3);
@@ -51,5 +51,8 @@ void AL1Beta::GetState(JointState& state) {
     state.voltage[i] = protocol_->GetVoltage(i);
     state.temperature[i] = protocol_->GetTemperature(i);
   }
+  state.position[1] = -state.position[1];
+  state.velocity[1] = -state.velocity[1];
+  state.current[1] = -state.current[1];
 }
 }

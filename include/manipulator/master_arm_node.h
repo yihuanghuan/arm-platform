@@ -38,6 +38,7 @@ class MasterArmNode : public rclcpp::Node {
   std::array<double, 7> uav_joint_currents = {0, 0, 0, 0, 0, 0, 0};
   std::array<double, 7> uav_compensation_torques = {0, 0, 0, 0, 0, 0, 0};
   GravityCompensation gravity_compensation_;
+  dummy_interface::msg::MotorControl cmd_;
 };
 
 } // namespace manipulator

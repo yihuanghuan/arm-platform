@@ -19,6 +19,8 @@ MasterArmNode::MasterArmNode()
   this->declare_parameter<double>("uav_yaw", 0.0);
   this->declare_parameter<bool>("debug_info", false);
   this->declare_parameter<double>("debug_rate", 1.0);
+  this->declare_parameter<double>("FORCE_FEEDBACK_THRESHOLD", 0.5);
+  this->declare_parameter<double>("FORCE_FEEDBACK_GAIN", 0.5);
 
   std::string port;
   this->get_parameter("port_name", port);
@@ -40,6 +42,12 @@ MasterArmNode::MasterArmNode()
   uav_pose.y = uav_roll;
   uav_pose.z = uav_pitch;
   gravity_compensation_.SetUavPose(uav_pose);
+
+  cmd_.current.resize(7);
+  cmd_.position.resize(7);
+  cmd_.p.resize(7);
+  cmd_.velocity.resize(7);
+  cmd_.d.resize(7);
 
   arm_.Init(port, 921600);
   sub_uav_pose_ = this->create_subscription<geometry_msgs::msg::Point>(
@@ -98,7 +106,6 @@ MasterArmNode::~MasterArmNode() {
 void MasterArmNode::ControlLoop() {
   arm_.GetState(arm_state_);
   ComputeAndPublishCompensation();//零重力
-
 }
 
 void MasterArmNode::ComputeAndPublishCompensation() {
@@ -108,32 +115,26 @@ void MasterArmNode::ComputeAndPublishCompensation() {
   }
 
   auto tau_comp = gravity_compensation_.Compute(joint_positions);
-  tau_comp = gravity_compensation_.collision_detection(tau_comp,uav_joint_currents,uav_compensation_torques); //力反馈 可以加个参数控制是否开启反馈
-  dummy_interface::msg::MotorControl cmd;
+  // tau_comp = gravity_compensation_.collision_detection(tau_comp,uav_joint_currents,uav_compensation_torques); //力反馈 可以加个参数控制是否开启反馈
   std_msgs::msg::Float64MultiArray tau_comp_msg;
-  cmd.header.stamp = this->now();
-  cmd.current.resize(7);
+  cmd_.header.stamp = this->now();
   for (int i = 0; i < 7; ++i) {
-    cmd.current[i] = tau_comp[i];
-    cmd.p[i] = 7.0;
-    cmd.velocity[i] = 7.0;
-    cmd.d[i] = 7.0;
+    cmd_.current[i] = tau_comp[i];
     tau_comp_msg.data.push_back(tau_comp[i]);
   }
 
-  arm_.SetMotorCommand(cmd);
+  arm_.SetMotorCommand(cmd_);
 
-  dummy_interface::msg::MotorState joint_state;
-  joint_state.header.stamp = this->now();
-  for (int i = 0; i < 7; ++i) {
-    joint_state.position.push_back(arm_state_.position[i]);
-    joint_state.current.push_back(arm_state_.current[i]);
-  }
+  // dummy_interface::msg::MotorState joint_state;
+  // joint_state.header.stamp = this->now();
+  // for (int i = 0; i < 7; ++i) {
+  //   joint_state.position.push_back(arm_state_.position[i]);
+  //   joint_state.current.push_back(arm_state_.current[i]);
+  // }
 
 
-
-  // pub_joint_state_->publish(joint_state);
-  // pub_joint_compensation_->publish(tau_comp_msg);
+//   pub_joint_state_->publish(joint_state);
+//   pub_joint_compensation_->publish(tau_comp_msg);
 }
 
 void MasterArmNode::DebugInfoCallback() {
