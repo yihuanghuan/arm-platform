@@ -32,7 +32,7 @@ class MasterArmNode : public rclcpp::Node {
   rclcpp::Subscription<std_msgs::msg::Float64MultiArray>::SharedPtr sub_uav_calculate_compensation;
   // rclcpp::Publisher<std_msgs::msg::Float64MultiArray>::SharedPtr pub_joint_compensation_;
   rclcpp::Subscription<geometry_msgs::msg::Point>::SharedPtr sub_uav_pose_;
-  rclcpp::Subscription<dummy_interface::msg::MotorControl>::SharedPtr sub_uav_joint_currents;
+  rclcpp::Subscription<std_msgs::msg::Float64MultiArray>::SharedPtr sub_uav_joint_currents;
   arm::AL1Beta& arm_;
   arm::AL1Beta::JointState arm_state_;
   std::array<double, 7> uav_joint_currents = {0, 0, 0, 0, 0, 0, 0};

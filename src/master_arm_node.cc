@@ -62,11 +62,11 @@ MasterArmNode::MasterArmNode()
   // pub_joint_compensation_ = this->create_publisher<std_msgs::msg::Float64MultiArray>("/uav/arm/joint_compensation", 10);
 
   //地面端需要订阅天空端检测到的力矩和计算出的力矩
-  sub_uav_joint_currents = this->create_subscription<dummy_interface::msg::MotorControl>(
+  sub_uav_joint_currents = this->create_subscription<std_msgs::msg::Float64MultiArray>(
       "/uav/arm/joint_currents", 10,
-      [this](const  dummy_interface::msg::MotorControl::ConstSharedPtr& msg) { 
+      [this](const std_msgs::msg::Float64MultiArray::ConstSharedPtr& msg) { 
         for(int i = 0; i < 7; ++i) {
-          uav_joint_currents[i] = msg->current[i];
+          uav_joint_currents[i] = msg->data[i];
         }
         // 处理接收到的关节电流数据
       });
@@ -115,7 +115,7 @@ void MasterArmNode::ComputeAndPublishCompensation() {
   }
 
   auto tau_comp = gravity_compensation_.Compute(joint_positions);
-  // tau_comp = gravity_compensation_.collision_detection(tau_comp,uav_joint_currents,uav_compensation_torques); //力反馈 可以加个参数控制是否开启反馈
+  tau_comp = gravity_compensation_.collision_detection(tau_comp,uav_joint_currents,uav_compensation_torques); //力反馈 可以加个参数控制是否开启反馈
   std_msgs::msg::Float64MultiArray tau_comp_msg;
   cmd_.header.stamp = this->now();
   for (int i = 0; i < 7; ++i) {
@@ -125,16 +125,13 @@ void MasterArmNode::ComputeAndPublishCompensation() {
 
   arm_.SetMotorCommand(cmd_);
 
-  // dummy_interface::msg::MotorState joint_state;
-  // joint_state.header.stamp = this->now();
-  // for (int i = 0; i < 7; ++i) {
-  //   joint_state.position.push_back(arm_state_.position[i]);
-  //   joint_state.current.push_back(arm_state_.current[i]);
-  // }
+  std_msgs::msg::Float64MultiArray joint_position_msg;
 
+  for (int i = 0; i < 7; ++i) {
+    joint_position_msg.data.push_back(arm_state_.position[i]);
+  }
 
-//   pub_joint_state_->publish(joint_state);
-//   pub_joint_compensation_->publish(tau_comp_msg);
+  pub_joint_position_->publish(joint_position_msg);
 }
 
 void MasterArmNode::DebugInfoCallback() {
