@@ -63,8 +63,8 @@ void DMMotor::UpdateCommand(const dummy_interface::msg::MotorControl& cmd) {
 
   if(id_ < 6) pos_set_ +=  vel_set_ * DT_;
   else pos_set_ = cmd.position[id_]; // joint7(gripper) requires rapid movement
-  protocol_->SetPosition(id_, cmd.position[id_]);
-  protocol_->SetVelocity(id_, cmd.velocity[id_]);
+  protocol_->SetPosition(id_, is_mirror_ ? -cmd.position[id_] : cmd.position[id_]);
+  protocol_->SetVelocity(id_, is_mirror_ ? -cmd.velocity[id_] : cmd.velocity[id_]);
   protocol_->SetCurrent(id_, is_mirror_ ? -cmd.current[id_] : cmd.current[id_]);
 
 }

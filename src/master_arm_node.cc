@@ -50,11 +50,6 @@ MasterArmNode::MasterArmNode()
   cmd_.d.resize(7);
 
   arm_.Init(port, 921600);
-  sub_uav_pose_ = this->create_subscription<geometry_msgs::msg::Point>(
-      "/uav/pose", 10,
-      [this](const geometry_msgs::msg::Point::ConstSharedPtr& msg) { 
-        gravity_compensation_.SetUavPose(*msg);
-      });
 
   //地面端只需要发布关节的实际位置
   pub_joint_position_ = this->create_publisher<std_msgs::msg::Float64MultiArray>("/master/arm/joint_positions", 10);
