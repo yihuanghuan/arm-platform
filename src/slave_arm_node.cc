@@ -1,4 +1,3 @@
-//天空端
 #include <manipulator/slave_arm_node.h>
 #include <chrono>
 
@@ -6,44 +5,60 @@ namespace manipulator {
 
 SlaveArmNode::SlaveArmNode()
     : Node("slave_arm_node"),
-      arm_(arm::AL1Beta::Instance()) {
+      arm_(arm::AL1Beta::Instance()),
+      got_feedback_(false) {
   this->declare_parameter<std::string>("port_name", "/dev/ttyUSB0");
   this->declare_parameter<bool>("debug_info", false);
   this->declare_parameter<double>("debug_rate", 1.0);
+  this->declare_parameter<double>("G_GAIN_0", 0.5);
+  this->declare_parameter<double>("G_GAIN_1", 0.5);
+  this->declare_parameter<double>("G_GAIN_2", 1.0);
+  this->declare_parameter<double>("MAX_TORQUE", 3.0);
+  this->declare_parameter<double>("GRAVITY", 9.81);
+  this->declare_parameter<double>("FORCE_FEEDBACK_THRESHOLD", 0.5);
+  this->declare_parameter<double>("FORCE_FEEDBACK_GAIN", 0.5);
 
   std::string port;
   this->get_parameter("port_name", port);
 
+  double G_GAIN_0 = this->get_parameter("G_GAIN_0").as_double();
+  double G_GAIN_1 = this->get_parameter("G_GAIN_1").as_double();
+  double G_GAIN_2 = this->get_parameter("G_GAIN_2").as_double();
+  double MAX_TORQUE = this->get_parameter("MAX_TORQUE").as_double();
+  double GRAVITY = this->get_parameter("GRAVITY").as_double();
+  double FORCE_FEEDBACK_THRESHOLD = this->get_parameter("FORCE_FEEDBACK_THRESHOLD").as_double();
+  double FORCE_FEEDBACK_GAIN = this->get_parameter("FORCE_FEEDBACK_GAIN").as_double();
+  gravity_compensation_.SetParams(G_GAIN_0, G_GAIN_1, G_GAIN_2, MAX_TORQUE, GRAVITY, FORCE_FEEDBACK_THRESHOLD, FORCE_FEEDBACK_GAIN);
+
   arm_.Init(port, 921600);
-  //天空端需要订阅一个东西 1.地面端发布的关节实际位置
+
   sub_position_ = this->create_subscription<std_msgs::msg::Float64MultiArray>(
       "/master/arm/joint_positions", 10,
-      [this](const std_msgs::msg::Float64MultiArray::ConstSharedPtr& msg) {  //这个函数把关节位置转发了，遥操作基本功能实现
+      [this](const std_msgs::msg::Float64MultiArray::ConstSharedPtr& msg) {
         if (msg->data.size() >= 7) {
-          std::array<double, 7> ground_joint_position;
-
           for (int i = 0; i < 7; ++i) {
-            ground_joint_position[i] = msg->data[i];
+            ground_joint_positions_[i] = msg->data[i];
           }
-          dummy_interface::msg::MotorControl cmd;
-          cmd.header.stamp = this->now();
-          cmd.current.resize(7);
-          for (int i = 0; i < 7; ++i) {
-            cmd.position[i] = ground_joint_position[i];
-            cmd.p[i] = 7.0;
-            cmd.velocity[i] = 7.0;
-            cmd.d[i] = 7.0;
-          }
-
-            arm_.SetMotorCommand(cmd);
+          got_feedback_ = true;
         }
       });
 
-  
-  //天空端需要发布两个东西1.检测到的力矩 2.计算出的补偿力矩
-  pub_joint_state_ = this->create_publisher<dummy_interface::msg::MotorState>("arm/joint_feedback", 10); //1
-  pub_calculate_compentation_ = this->create_publisher<std_msgs::msg::Float64MultiArray>("/uav/arm/joint_compensation", 10); //2
+  sub_uav_pose_ = this->create_subscription<geometry_msgs::msg::Point>(
+      "/uav/pose", 10,
+      [this](const geometry_msgs::msg::Point::ConstSharedPtr& msg) {
+        gravity_compensation_.SetUavPose(*msg);
+      });
 
+  pub_joint_state_ = this->create_publisher<dummy_interface::msg::MotorState>("/uav/arm/joint_feedback", 10);
+  pub_calculate_compensation_ = this->create_publisher<std_msgs::msg::Float64MultiArray>("/uav/arm/joint_compensation", 10);
+  pub_joint_controller_ = this->create_publisher<dummy_interface::msg::MotorControl>("/uav/arm/joint_controller", 10);
+  pub_joint_currents_ = this->create_publisher<std_msgs::msg::Float64MultiArray>("/uav/arm/joint_currents", 10);
+
+  cmd_.current.resize(7);
+  cmd_.position.resize(7);
+  cmd_.p = {20, 10, 10, 5, 1, 1, 1};
+  cmd_.velocity = {7, 7, 7, 7, 7, 7, 7};
+  cmd_.d = {7, 7, 7, 7, 7, 7, 7};
 
   control_timer_ = this->create_wall_timer(
       std::chrono::milliseconds(10),
@@ -58,7 +73,7 @@ SlaveArmNode::SlaveArmNode()
         [this]() { return DebugInfoCallback(); });
   }
 
-  RCLCPP_INFO(this->get_logger(), "SlaveArmNode initialized (passive mode, 100Hz state read)");
+  RCLCPP_INFO(this->get_logger(), "SlaveArmNode initialized (controlled mode, 100Hz control loop)");
 }
 
 SlaveArmNode::~SlaveArmNode() {
@@ -70,32 +85,39 @@ SlaveArmNode::~SlaveArmNode() {
 
 void SlaveArmNode::ControlLoop() {
   arm_.GetState(arm_state_);
-  ComputeAndPublishCompensation();
-  dummy_interface::msg::MotorState joint_state;
-  joint_state.header.stamp = this->now();
-  for (int i = 0; i < 7; ++i) {
-    joint_state.position.push_back(arm_state_.position[i]);
-    joint_state.current.push_back(arm_state_.current[i]);
-  }
+  
+  if (!got_feedback_) return;
 
-  pub_joint_state_->publish(joint_state);
+  std::vector<double> cmd_pos(7, 0.0);
+  for (int i = 0; i < 7; ++i) {
+    cmd_pos[i] = ground_joint_positions_[i];
+  }
+  cmd_.position = cmd_pos;
+  cmd_.header.stamp = this->now();
+  pub_joint_controller_->publish(cmd_);
+
+  ComputeAndPublishCompensation();
+
+  std_msgs::msg::Float64MultiArray joint_currents_msg;
+  for (int i = 0; i < 7; ++i) {
+    joint_currents_msg.data.push_back(arm_state_.current[i]);
+  }
+  pub_joint_currents_->publish(joint_currents_msg);
 }
 
-
 void SlaveArmNode::ComputeAndPublishCompensation() {
-    std::array<double, 7> joint_positions;
-    for (int i = 0; i < 7; ++i) {
-      joint_positions[i] = arm_state_.position[i];
-    }
+  std::array<double, 7> joint_positions;
+  for (int i = 0; i < 7; ++i) {
+    joint_positions[i] = arm_state_.position[i];
+  }
 
+  auto tau_comp = gravity_compensation_.Compute(joint_positions);
 
-    auto tau_comp = gravity_compensation_.Compute(joint_positions);
-
-    std_msgs::msg::Float64MultiArray tau_comp_msg;
-    for (int i = 0; i < 7; ++i) {
-      tau_comp_msg.data.push_back(tau_comp[i]);
-    }
-    pub_calculate_compentation_->publish(tau_comp_msg);
+  std_msgs::msg::Float64MultiArray tau_comp_msg;
+  for (int i = 0; i < 7; ++i) {
+    tau_comp_msg.data.push_back(tau_comp[i]);
+  }
+  pub_calculate_compensation_->publish(tau_comp_msg);
 }
 
 void SlaveArmNode::DebugInfoCallback() {
@@ -110,6 +132,9 @@ void SlaveArmNode::DebugInfoCallback() {
   RCLCPP_INFO(this->get_logger(), "Joint currents (A): [%.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f]",
               arm_state_.current[0], arm_state_.current[1], arm_state_.current[2],
               arm_state_.current[3], arm_state_.current[4], arm_state_.current[5], arm_state_.current[6]);
+  RCLCPP_INFO(this->get_logger(), "Ground joint positions (rad): [%.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f]",
+              ground_joint_positions_[0], ground_joint_positions_[1], ground_joint_positions_[2],
+              ground_joint_positions_[3], ground_joint_positions_[4], ground_joint_positions_[5], ground_joint_positions_[6]);
 }
 
 } // namespace manipulator

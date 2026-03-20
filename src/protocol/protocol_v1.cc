@@ -18,10 +18,6 @@ void ProtocolV1::Pop(std::vector<uint8_t>& out) {
     MakeFrame(0x10, buf, 28, out);
     // out.insert(out.end(), data.begin(), data.end());
     pos_cmd_updated_ = false;
-    auto logger = rclcpp::get_logger("Controller");
-    RCLCPP_INFO(logger, "Send pos, %f %f %f %f %f %f %f",
-   desired_positions_[0], desired_positions_[1], desired_positions_[2], desired_positions_[3], 
-   desired_positions_[4], desired_positions_[5], desired_positions_[6]);
   } 
   
   if (vel_cmd_updated_) {
