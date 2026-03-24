@@ -21,6 +21,7 @@ MasterArmNode::MasterArmNode()
   this->declare_parameter<double>("debug_rate", 1.0);
   this->declare_parameter<double>("FORCE_FEEDBACK_THRESHOLD", 0.5);
   this->declare_parameter<double>("FORCE_FEEDBACK_GAIN", 0.5);
+  this->declare_parameter<bool>("publish_joint_state", true);
 
   std::string port;
   this->get_parameter("port_name", port);
@@ -44,35 +45,26 @@ MasterArmNode::MasterArmNode()
   gravity_compensation_.SetUavPose(uav_pose);
 
   cmd_.current.resize(7);
-  cmd_.position.resize(7);
   cmd_.p.resize(7);
   cmd_.velocity.resize(7);
   cmd_.d.resize(7);
 
   arm_.Init(port, 921600);
 
+  bool publish_joint_state = this->get_parameter("publish_joint_state").as_bool();
+
+
   //地面端只需要发布关节的实际位置
-  pub_joint_position_ = this->create_publisher<std_msgs::msg::Float64MultiArray>("/master/arm/joint_positions", 10);
-  // pub_joint_state_ = this->create_publisher<dummy_interface::msg::MotorState>("arm/joint_feedback", 10);
-  // pub_joint_compensation_ = this->create_publisher<std_msgs::msg::Float64MultiArray>("/uav/arm/joint_compensation", 10);
+  pub_joint_state_ = this->create_publisher<sensor_msgs::msg::JointState>("joint_states", 10);
 
-  //地面端需要订阅天空端检测到的力矩和计算出的力矩
-  sub_uav_joint_currents = this->create_subscription<std_msgs::msg::Float64MultiArray>(
-      "/uav/arm/joint_currents", 10,
-      [this](const std_msgs::msg::Float64MultiArray::ConstSharedPtr& msg) { 
-        for(int i = 0; i < 7; ++i) {
-          uav_joint_currents[i] = msg->data[i];
-        }
-        // 处理接收到的关节电流数据
-      });
-  
-
-  sub_uav_calculate_compensation = this->create_subscription<std_msgs::msg::Float64MultiArray>(
-      "/uav/arm/joint_compensation", 10,
-      [this](const std_msgs::msg::Float64MultiArray::ConstSharedPtr& msg) { 
+  sub_slave_state_ = this->create_subscription<sensor_msgs::msg::JointState>(
+      "/slave/joint_states", 10,
+      [this](const sensor_msgs::msg::JointState::ConstSharedPtr& msg) { 
         // 处理接收到的计算补偿数据
-        for(int i = 0; i < 7; i++)
-          uav_compensation_torques[i] = msg->data[i];
+        for(int i = 0; i < 7; i++) {
+          uav_compensation_torques[i] = msg->effort[i];
+          uav_joint_currents[i] = msg->velocity[i];
+        }
       });
 
   control_timer_ = this->create_wall_timer(
@@ -100,7 +92,17 @@ MasterArmNode::~MasterArmNode() {
 
 void MasterArmNode::ControlLoop() {
   arm_.GetState(arm_state_);
-  ComputeAndPublishCompensation();//零重力
+  ComputeAndPublishCompensation();
+  
+  sensor_msgs::msg::JointState joint_state_msg;
+  joint_state_msg.header.stamp = this->now();
+  joint_state_msg.header.frame_id = "base_link";
+  joint_state_msg.position = arm_state_.position;
+  joint_state_msg.name = {"joint1", "joint2", "joint3", "joint4", "joint5", "joint6", "joint7"};
+  joint_state_msg.effort = arm_state_.current;
+  joint_state_msg.velocity = arm_state_.velocity;
+  pub_joint_state_->publish(joint_state_msg);
+  
 }
 
 void MasterArmNode::ComputeAndPublishCompensation() {
@@ -117,24 +119,18 @@ void MasterArmNode::ComputeAndPublishCompensation() {
     cmd_.current[i] = tau_comp[i];
     tau_comp_msg.data.push_back(tau_comp[i]);
   }
-
   arm_.SetMotorCommand(cmd_);
-
-  std_msgs::msg::Float64MultiArray joint_position_msg;
-
-  for (int i = 0; i < 7; ++i) {
-    joint_position_msg.data.push_back(arm_state_.position[i]);
-  }
-
-  pub_joint_position_->publish(joint_position_msg);
 }
 
 void MasterArmNode::DebugInfoCallback() {
   bool debug_info = this->get_parameter("debug_info").as_bool();
   if(not debug_info) return;
-  RCLCPP_INFO(this->get_logger(), "Joint currents (A): [%.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f]",
-              arm_state_.current[0], arm_state_.current[1], arm_state_.current[2],
-              arm_state_.current[3], arm_state_.current[4], arm_state_.current[5], arm_state_.current[6]);
+  RCLCPP_INFO(this->get_logger(), "Joint position (rad): [%.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f]",
+              arm_state_.position[0], arm_state_.position[1], arm_state_.position[2],
+              arm_state_.position[3], arm_state_.position[4], arm_state_.position[5], arm_state_.position[6]);
+  // RCLCPP_INFO(this->get_logger(), "Joint currents (A): [%.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f]",
+  //             arm_state_.current[0], arm_state_.current[1], arm_state_.current[2],
+  //             arm_state_.current[3], arm_state_.current[4], arm_state_.current[5], arm_state_.current[6]);
 }
 
 } // namespace manipulator

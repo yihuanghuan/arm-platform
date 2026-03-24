@@ -27,12 +27,10 @@ class MasterArmNode : public rclcpp::Node {
 
   rclcpp::TimerBase::SharedPtr control_timer_;
   rclcpp::TimerBase::SharedPtr debug_timer_;
-  // rclcpp::Publisher<dummy_interface::msg::MotorState>::SharedPtr pub_joint_state_;
-  rclcpp::Publisher<std_msgs::msg::Float64MultiArray>::SharedPtr pub_joint_position_;
-  rclcpp::Subscription<std_msgs::msg::Float64MultiArray>::SharedPtr sub_uav_calculate_compensation;
+  rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr pub_joint_state_;
   // rclcpp::Publisher<std_msgs::msg::Float64MultiArray>::SharedPtr pub_joint_compensation_;
   rclcpp::Subscription<geometry_msgs::msg::Point>::SharedPtr sub_uav_pose_;
-  rclcpp::Subscription<std_msgs::msg::Float64MultiArray>::SharedPtr sub_uav_joint_currents;
+  rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr sub_slave_state_;
   arm::AL1Beta& arm_;
   arm::AL1Beta::JointState arm_state_;
   std::array<double, 7> uav_joint_currents = {0, 0, 0, 0, 0, 0, 0};

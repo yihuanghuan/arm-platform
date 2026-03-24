@@ -8,6 +8,7 @@ def generate_launch_description():
             executable='slave_arm_node',
             name='slave_arm_node',
             output='screen',
+            namespace='/slave',
             parameters=[
                 # 串口端口名
                 {'port_name': '/dev/ttyUSB0'},
@@ -26,7 +27,9 @@ def generate_launch_description():
                 # 调试信息开关
                 {'debug_info': True},
                 # 调试信息打印频率（Hz）
-                {'debug_rate': 1.0}
+                {'debug_rate': 1.0},
+                # 是否发布 joint states
+                {'publish_joint_states': True}
             ]
         ),
     ])

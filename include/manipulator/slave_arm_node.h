@@ -22,18 +22,18 @@ class SlaveArmNode : public rclcpp::Node {
 
  private:
   void ControlLoop();
-  void ComputeAndPublishCompensation();
   void DebugInfoCallback();
 
   rclcpp::TimerBase::SharedPtr control_timer_;
   rclcpp::TimerBase::SharedPtr debug_timer_;
   
-  rclcpp::Publisher<dummy_interface::msg::MotorState>::SharedPtr pub_joint_state_;
-  rclcpp::Publisher<std_msgs::msg::Float64MultiArray>::SharedPtr pub_calculate_compensation_;
-  rclcpp::Publisher<dummy_interface::msg::MotorControl>::SharedPtr pub_joint_controller_;
-  rclcpp::Publisher<std_msgs::msg::Float64MultiArray>::SharedPtr pub_joint_currents_;
+  rclcpp::Publisher<dummy_interface::msg::MotorState>::SharedPtr pub_joint_feedback_;
+  rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr pub_joint_state_;
+  // rclcpp::Publisher<std_msgs::msg::Float64MultiArray>::SharedPtr pub_calculate_compensation_;
+  // rclcpp::Publisher<dummy_interface::msg::MotorControl>::SharedPtr pub_joint_controller_;
+  // rclcpp::Publisher<std_msgs::msg::Float64MultiArray>::SharedPtr pub_joint_currents_;
   
-  rclcpp::Subscription<std_msgs::msg::Float64MultiArray>::SharedPtr sub_position_;
+  rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr sub_master_state_;
   rclcpp::Subscription<geometry_msgs::msg::Point>::SharedPtr sub_uav_pose_;
   
   arm::AL1Beta& arm_;
@@ -43,6 +43,7 @@ class SlaveArmNode : public rclcpp::Node {
   bool got_feedback_;
   dummy_interface::msg::MotorControl cmd_;
   std::array<double, 7> ground_joint_positions_;
+  std::array<double, 7> ground_joint_velocities_;
   
 };
 
