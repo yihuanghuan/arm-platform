@@ -17,6 +17,7 @@ SlaveArmNode::SlaveArmNode()
   this->declare_parameter<double>("GRAVITY", 9.81);
   this->declare_parameter<double>("FORCE_FEEDBACK_THRESHOLD", 0.5);
   this->declare_parameter<double>("FORCE_FEEDBACK_GAIN", 0.5);
+  this->declare_parameter<bool>("publish_joint_states", true);
 
   std::string port;
   this->get_parameter("port_name", port);
@@ -32,12 +33,13 @@ SlaveArmNode::SlaveArmNode()
 
   arm_.Init(port, 921600);
 
-  sub_position_ = this->create_subscription<std_msgs::msg::Float64MultiArray>(
-      "/master/arm/joint_positions", 10,
-      [this](const std_msgs::msg::Float64MultiArray::ConstSharedPtr& msg) {
-        if (msg->data.size() >= 7) {
+  sub_master_state_ = this->create_subscription<sensor_msgs::msg::JointState>(
+      "/master/joint_states", 10,
+      [this](const sensor_msgs::msg::JointState::ConstSharedPtr& msg) {
+        if (msg->position.size() >= 7 and msg->velocity.size() >= 7) {
           for (int i = 0; i < 7; ++i) {
-            ground_joint_positions_[i] = msg->data[i];
+            ground_joint_positions_[i] = msg->position[i];
+            ground_joint_velocities_[i] = msg->velocity[i];
           }
           got_feedback_ = true;
         }
@@ -49,15 +51,13 @@ SlaveArmNode::SlaveArmNode()
         gravity_compensation_.SetUavPose(*msg);
       });
 
-  pub_joint_state_ = this->create_publisher<dummy_interface::msg::MotorState>("/uav/arm/joint_feedback", 10);
-  pub_calculate_compensation_ = this->create_publisher<std_msgs::msg::Float64MultiArray>("/uav/arm/joint_compensation", 10);
-  pub_joint_controller_ = this->create_publisher<dummy_interface::msg::MotorControl>("/uav/arm/joint_controller", 10);
-  pub_joint_currents_ = this->create_publisher<std_msgs::msg::Float64MultiArray>("/uav/arm/joint_currents", 10);
+  pub_joint_feedback_ = this->create_publisher<dummy_interface::msg::MotorState>("/uav/arm/joint_feedback", 10);
+  pub_joint_state_ = this->create_publisher<sensor_msgs::msg::JointState>("joint_states", 10);
 
   cmd_.current.resize(7);
   cmd_.position.resize(7);
-  cmd_.p = {20, 10, 10, 5, 1, 1, 1};
-  cmd_.velocity = {0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2};
+  cmd_.velocity.resize(7);
+  cmd_.p = {10, 10, 10, 5, 1, 1, 1};
   cmd_.d = {0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1};
 
   control_timer_ = this->create_wall_timer(
@@ -86,39 +86,34 @@ SlaveArmNode::~SlaveArmNode() {
 void SlaveArmNode::ControlLoop() {
   arm_.GetState(arm_state_);
   
+  sensor_msgs::msg::JointState joint_state_msg;
+  joint_state_msg.header.stamp = this->now();
+  joint_state_msg.name = {"joint1", "joint2", "joint3", "joint4", "joint5", "joint6", "joint7"};
+
+  
   if (!got_feedback_) return;
 
   std::vector<double> cmd_pos(7, 0.0);
   for (int i = 0; i < 7; ++i) {
-    cmd_pos[i] = ground_joint_positions_[i];
+    cmd_.position[i] = ground_joint_positions_[i];
+    cmd_.velocity[i] = ground_joint_velocities_[i];
   }
-  cmd_.position = cmd_pos;
   cmd_.header.stamp = this->now();
-  pub_joint_controller_->publish(cmd_);
-
-  ComputeAndPublishCompensation();
   arm_.SetMotorCommand(cmd_);
 
-  std_msgs::msg::Float64MultiArray joint_currents_msg;
-  for (int i = 0; i < 7; ++i) {
-    joint_currents_msg.data.push_back(arm_state_.current[i]);
-  }
-  pub_joint_currents_->publish(joint_currents_msg);
-}
-
-void SlaveArmNode::ComputeAndPublishCompensation() {
   std::array<double, 7> joint_positions;
   for (int i = 0; i < 7; ++i) {
     joint_positions[i] = arm_state_.position[i];
   }
 
   auto tau_comp = gravity_compensation_.Compute(joint_positions);
-
-  std_msgs::msg::Float64MultiArray tau_comp_msg;
   for (int i = 0; i < 7; ++i) {
-    tau_comp_msg.data.push_back(tau_comp[i]);
+    joint_state_msg.effort.push_back(tau_comp[i]);
+    joint_state_msg.velocity.push_back(arm_state_.current[i]);
+    joint_state_msg.position.push_back(arm_state_.position[i]);
   }
-  pub_calculate_compensation_->publish(tau_comp_msg);
+  pub_joint_state_->publish(joint_state_msg);
+
 }
 
 void SlaveArmNode::DebugInfoCallback() {
@@ -127,15 +122,15 @@ void SlaveArmNode::DebugInfoCallback() {
     return;
   }
 
-  RCLCPP_INFO(this->get_logger(), "Joint positions (rad): [%.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f]",
-              arm_state_.position[0], arm_state_.position[1], arm_state_.position[2],
-              arm_state_.position[3], arm_state_.position[4], arm_state_.position[5], arm_state_.position[6]);
-  RCLCPP_INFO(this->get_logger(), "Joint currents (A): [%.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f]",
-              arm_state_.current[0], arm_state_.current[1], arm_state_.current[2],
-              arm_state_.current[3], arm_state_.current[4], arm_state_.current[5], arm_state_.current[6]);
-  RCLCPP_INFO(this->get_logger(), "Ground joint positions (rad): [%.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f]",
-              ground_joint_positions_[0], ground_joint_positions_[1], ground_joint_positions_[2],
-              ground_joint_positions_[3], ground_joint_positions_[4], ground_joint_positions_[5], ground_joint_positions_[6]);
+  // RCLCPP_INFO(this->get_logger(), "Joint positions (rad): [%.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f]",
+  //             arm_state_.position[0], arm_state_.position[1], arm_state_.position[2],
+  //             arm_state_.position[3], arm_state_.position[4], arm_state_.position[5], arm_state_.position[6]);
+  // RCLCPP_INFO(this->get_logger(), "Joint currents (A): [%.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f]",
+  //             arm_state_.current[0], arm_state_.current[1], arm_state_.current[2],
+  //             arm_state_.current[3], arm_state_.current[4], arm_state_.current[5], arm_state_.current[6]);
+  // RCLCPP_INFO(this->get_logger(), "Ground joint positions (rad): [%.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f]",
+  //             ground_joint_positions_[0], ground_joint_positions_[1], ground_joint_positions_[2],
+  //             ground_joint_positions_[3], ground_joint_positions_[4], ground_joint_positions_[5], ground_joint_positions_[6]);
 }
 
 } // namespace manipulator
