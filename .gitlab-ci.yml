@@ -64,5 +64,3 @@ build-verify:
       - docker-build.log
       - docker-run.log
     expire_in: 1 week
-    reports:
-      junit: docker-run.log
