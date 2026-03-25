@@ -29,7 +29,7 @@ build-verify:
         docker build -f docker/Dockerfile.verify -t manipulator:verify . --progress=plain
       fi
     - echo "Running docker container..."
-    - docker run --rm manipulator:verify || echo "Docker run failed with exit code: $?"
+    - docker run --rm manipulator:verify
   only:
     - develop
   tags:
