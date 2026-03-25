@@ -4,14 +4,19 @@ stages:
 build-verify:
   stage: build
   before_script:
+    - echo "=========================================="
     - echo "Starting CI pipeline..."
-    - whoami
-    - pwd
-    - ls -la
+    - echo "=========================================="
+    - echo "System information:"
+    - uname -a
+    - df -h
+    - free -h
+    - echo "Docker information:"
     - docker --version
     - docker info || echo "Docker info failed"
+    - echo "=========================================="
+    - echo "Checking for existing Docker image..."
     - |
-      echo "Checking for existing Docker image..."
       if docker image inspect manipulator:verify >/dev/null 2>&1; then
         echo "Docker image already exists, skipping build"
         SKIP_BUILD=true
@@ -20,16 +25,35 @@ build-verify:
         SKIP_BUILD=false
       fi
     - echo "SKIP_BUILD=$SKIP_BUILD"
+    - echo "=========================================="
   script:
     - |
       if [ "$SKIP_BUILD" = true ]; then
         echo "Skipping docker build, using existing image"
       else
+        echo "=========================================="
         echo "Building docker image..."
-        docker build -f docker/Dockerfile.verify -t manipulator:verify . --progress=plain
+        echo "=========================================="
+        docker build -f docker/Dockerfile.verify -t manipulator:verify . --progress=plain 2>&1 | tee docker-build.log
+        echo "=========================================="
+        echo "Docker build completed"
+        echo "=========================================="
       fi
+    - echo "=========================================="
     - echo "Running docker container..."
-    - docker run --rm manipulator:verify
+    - echo "=========================================="
+    - docker run --rm manipulator:verify 2>&1 | tee docker-run.log
+    - echo "=========================================="
+    - echo "CI pipeline completed successfully!"
+    - echo "=========================================="
+    - echo "Build artifacts:"
+    - ls -la *.log 2>/dev/null || echo "No log files found"
+  after_script:
+    - echo "=========================================="
+    - echo "Pipeline summary:"
+    - echo "Build status: $CI_JOB_STATUS"
+    - echo "Job duration: $CI_JOB_DURATION"
+    - echo "=========================================="
   only:
     - develop
   tags:
@@ -37,5 +61,8 @@ build-verify:
   artifacts:
     when: always
     paths:
-      - build/
+      - docker-build.log
+      - docker-run.log
     expire_in: 1 week
+    reports:
+      junit: docker-run.log

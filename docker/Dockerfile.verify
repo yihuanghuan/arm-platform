@@ -45,7 +45,7 @@ RUN cd /ros_ws && \
     rosdep install --from-paths src --ignore-src -r -y || true
 
 # Build workspace - only build required packages
-RUN /bin/bash -c "source /opt/ros/humble/setup.bash && cd /ros_ws && colcon build --packages-select serial dummy_interface manipulator --cmake-args -DCMAKE_BUILD_TYPE=Release"
+RUN /bin/bash -c "source /opt/ros/humble/setup.bash && cd /ros_ws && colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release"
 
 # Verify build success
 RUN ls -la /ros_ws/build/manipulator/ && \
