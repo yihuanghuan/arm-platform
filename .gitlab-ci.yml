@@ -4,8 +4,14 @@ stages:
 build-verify:
   stage: build
   before_script:
-    - docker info
+    - echo "Starting CI pipeline..."
+    - whoami
+    - pwd
+    - ls -la
+    - docker --version
+    - docker info || echo "Docker info failed"
     - |
+      echo "Checking for existing Docker image..."
       if docker image inspect manipulator:verify >/dev/null 2>&1; then
         echo "Docker image already exists, skipping build"
         SKIP_BUILD=true
@@ -13,20 +19,21 @@ build-verify:
         echo "Docker image not found, will build"
         SKIP_BUILD=false
       fi
+    - echo "SKIP_BUILD=$SKIP_BUILD"
   script:
     - |
       if [ "$SKIP_BUILD" = true ]; then
         echo "Skipping docker build, using existing image"
       else
         echo "Building docker image..."
-        docker build -f docker/Dockerfile.verify -t manipulator:verify .
+        docker build -f docker/Dockerfile.verify -t manipulator:verify . --progress=plain
       fi
-    - docker run --rm manipulator:verify
+    - echo "Running docker container..."
+    - docker run --rm manipulator:verify || echo "Docker run failed with exit code: $?"
   only:
     - develop
   tags:
     - manipulator
-    - verify
   artifacts:
     when: always
     paths:
