@@ -1,15 +1,8 @@
 stages:
   - build
 
-variables:
-  DOCKER_DRIVER: overlay2
-  DOCKER_TLS_CERTDIR: "/certs"
-
 build-verify:
   stage: build
-  image: docker:24.0.7
-  services:
-    - docker:24.0.7-dind
   before_script:
     - docker info
     - |
@@ -32,13 +25,10 @@ build-verify:
   only:
     - develop
   tags:
+    - manipulator
     - verify
   artifacts:
     when: always
     paths:
       - build/
     expire_in: 1 week
-  cache:
-    key: docker-cache-${CI_COMMIT_REF_SLUG}
-    paths:
-      - /var/lib/docker
