@@ -1,0 +1,44 @@
+stages:
+  - build
+
+variables:
+  DOCKER_DRIVER: overlay2
+  DOCKER_TLS_CERTDIR: "/certs"
+
+build-verify:
+  stage: build
+  image: docker:24.0.7
+  services:
+    - docker:24.0.7-dind
+  before_script:
+    - docker info
+    - |
+      if docker image inspect manipulator:verify >/dev/null 2>&1; then
+        echo "Docker image already exists, skipping build"
+        SKIP_BUILD=true
+      else
+        echo "Docker image not found, will build"
+        SKIP_BUILD=false
+      fi
+  script:
+    - |
+      if [ "$SKIP_BUILD" = true ]; then
+        echo "Skipping docker build, using existing image"
+      else
+        echo "Building docker image..."
+        docker build -f docker/Dockerfile.verify -t manipulator:verify .
+      fi
+    - docker run --rm manipulator:verify
+  only:
+    - develop
+  tags:
+    - verify
+  artifacts:
+    when: always
+    paths:
+      - build/
+    expire_in: 1 week
+  cache:
+    key: docker-cache-${CI_COMMIT_REF_SLUG}
+    paths:
+      - /var/lib/docker
