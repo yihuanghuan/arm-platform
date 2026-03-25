@@ -51,8 +51,8 @@ build-verify:
   after_script:
     - echo "=========================================="
     - echo "Pipeline summary:"
-    - echo "Build status: $CI_JOB_STATUS"
-    - echo "Job duration: $CI_JOB_DURATION"
+    - echo "Build status $CI_JOB_STATUS"
+    - echo "Job duration $CI_JOB_DURATION"
     - echo "=========================================="
   only:
     - develop
@@ -64,3 +64,5 @@ build-verify:
       - docker-build.log
       - docker-run.log
     expire_in: 1 week
+    reports:
+      junit: docker-run.log
