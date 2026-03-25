@@ -1,5 +1,6 @@
 #pragma once
 #include <memory>
+#include <dummy_interface/msg/motor_control.hpp>
 #include <sensor_msgs/msg/joint_state.hpp>
 
 namespace manipulator::motor {
@@ -11,7 +12,8 @@ class IMotor {
   virtual ~IMotor() = default;
 
   virtual void UpdateState() = 0;
-  virtual void UpdateCommand(const sensor_msgs::msg::JointState& state) = 0;
+  virtual void SetState(const sensor_msgs::msg::JointState& state) = 0;
+  virtual void UpdateCommand(const dummy_interface::msg::MotorControl& cmd) = 0;
 };
 
 } // namespace manipulator::motor

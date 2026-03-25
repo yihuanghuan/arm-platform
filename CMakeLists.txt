@@ -14,6 +14,8 @@ find_package(sensor_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(dummy_interface REQUIRED)
 find_package(serial REQUIRED)
+find_package(geometry_msgs REQUIRED)
+find_package(Eigen3 REQUIRED)
 
 
 # ==============================
@@ -30,7 +32,20 @@ add_library(manipulator_core
   src/protocol/protocol_v1.cc
 )
 
+add_library(gravity_compensation
+  src/gravity_compensation.cc
+)
+
+target_link_libraries(gravity_compensation
+  Eigen3::Eigen
+)
+
 target_include_directories(manipulator_core PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>
+)
+
+target_include_directories(gravity_compensation PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>
 )
@@ -41,6 +56,13 @@ ament_target_dependencies(manipulator_core
   dummy_interface
   serial
   sensor_msgs
+)
+
+ament_target_dependencies(gravity_compensation
+  rclcpp
+  std_msgs
+  geometry_msgs
+  Eigen3
 )
 
 # ==============================
@@ -54,22 +76,38 @@ target_link_libraries(arm_hardware_node
   manipulator_core
 )
 
-# add_executable(moveit_bridge_node
-#   src/moveit_bridge_node.cc
-# )
+add_executable(master_arm_node
+  src/master_arm_node.cc
+)
 
-# ament_target_dependencies(moveit_bridge_node
-#   rclcpp
-#   sensor_msgs
-#   std_msgs
-#   dummy_interface
-# )
+target_link_libraries(master_arm_node
+  manipulator_core
+  gravity_compensation
+)
 
-# target_include_directories(moveit_bridge_node PUBLIC
-#   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-#   $<INSTALL_INTERFACE:include>
-# )
+ament_target_dependencies(master_arm_node
+  rclcpp
+  sensor_msgs
+  std_msgs
+  dummy_interface
+  geometry_msgs
+)
 
+add_executable(slave_arm_node
+  src/slave_arm_node.cc
+)
+
+target_link_libraries(slave_arm_node
+  manipulator_core
+  gravity_compensation
+)
+
+ament_target_dependencies(slave_arm_node
+  rclcpp
+  sensor_msgs
+  std_msgs
+  dummy_interface
+)
 
 # ==============================
 # Install
@@ -77,6 +115,8 @@ target_link_libraries(arm_hardware_node
 install(TARGETS
   manipulator_core
   arm_hardware_node
+  master_arm_node
+  slave_arm_node
   # moveit_bridge_node
   EXPORT export_${PROJECT_NAME}
   ARCHIVE DESTINATION lib

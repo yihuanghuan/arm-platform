@@ -4,6 +4,7 @@
 #include <string>
 #include <map>
 #include <sensor_msgs/msg/joint_state.hpp>
+#include <dummy_interface/msg/motor_control.hpp>
 
 namespace manipulator::arm {
 
@@ -18,8 +19,7 @@ class IArm {
  public:
   virtual ~IArm() = default;
 
-  // Access joint states
-  virtual bool SetJointStates(const sensor_msgs::msg::JointState& states) = 0;
+  virtual bool SetMotorCommand(const dummy_interface::msg::MotorControl& cmd) = 0;
   virtual void GetJointStates() = 0;
 };
 
