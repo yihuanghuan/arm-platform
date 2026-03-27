@@ -8,7 +8,7 @@ namespace manipulator::motor {
 class DMMotor final : public IMotor {
  public:
   DMMotor(protocol::ProtocolV1::SharedPtr protocol, uint8_t id, 
-          float kp, float kd, bool is_mirror = false);
+          float kp, float kd);
   virtual ~DMMotor() = default;
 
   void UpdateCommand(const dummy_interface::msg::MotorControl& cmd) override;
@@ -18,7 +18,6 @@ class DMMotor final : public IMotor {
  private:
   protocol::ProtocolV1::SharedPtr protocol_;
   uint8_t id_;
-  bool is_mirror_;
   double position_;
   double velocity_;
   double torque_;

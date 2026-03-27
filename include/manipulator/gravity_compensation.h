@@ -39,6 +39,14 @@ class GravityCompensation {
   void SetUavPose(const geometry_msgs::msg::Point& pose);
 
   /**
+   * @brief Set arm rotation angle (for rotated arm mounting)
+   * @param roll Roll rotation in radians
+   * @param pitch Pitch rotation in radians
+   * @param yaw Yaw rotation in radians
+   */
+  void SetRotationAngle(double roll, double pitch, double yaw);
+
+  /**
    * @brief Compute gravity compensation torques
    * @param joint_positions Current joint positions in radians
    * @return Array of 7 compensation torques in Nm
@@ -89,7 +97,7 @@ class GravityCompensation {
   // DH parameters for each joint: {a, alpha, d, theta_offset}
   const std::array<std::array<double, 4>, 6> DH_PARAMS_ = {{
       {D_BASE,    M_PI / 2,    L_BASE,     M_PI / 2},
-      {-L_ARM,    M_PI,        0,          -M_PI / 2},
+      {-L_ARM,    0,        0,          -M_PI / 2},
       {-D_ELBOW,  M_PI / 2,    0,          0},
       {0,         M_PI / 2,    L_FOREARM,  M_PI},
       {0,         M_PI / 2,    0,          0},
@@ -120,6 +128,9 @@ class GravityCompensation {
 
   // UAV pose (roll=x, pitch=y, yaw=z in radians)
   geometry_msgs::msg::Point uav_pose_;
+
+  // Arm rotation matrix (for rotated arm mounting)
+  Eigen::Matrix3d rotation_matrix_ = Eigen::Matrix3d::Identity();
 };
 
 } // namespace manipulator

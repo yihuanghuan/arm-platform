@@ -10,8 +10,15 @@ def generate_launch_description():
         description='Whether to publish joint states'
     )
     
+    publish_joint_feedback_arg = DeclareLaunchArgument(
+        'publish_joint_feedback',
+        default_value='False',
+        description='Whether to publish joint feedback'
+    )
+    
     return LaunchDescription([
         publish_joint_state_arg,
+        publish_joint_feedback_arg,
         Node(
             package='manipulator',
             executable='master_arm_node',
@@ -20,11 +27,11 @@ def generate_launch_description():
             namespace='master',
             parameters=[
                 # 串口端口名
-                {'port_name': '/dev/ttyUSB1'},
+                {'port_name': '/dev/ttyUSB0'},
                 # 关节增益参数（0/1/2轴）
-                {'G_GAIN_0': 0.0},
+                {'G_GAIN_0': 0.9},
                 {'G_GAIN_1': 0.5},
-                {'G_GAIN_2': 1.0},
+                {'G_GAIN_2': 1.1},
                 # 最大扭矩限制
                 {'MAX_TORQUE': 3.0},
                 # 重力加速度
@@ -33,6 +40,10 @@ def generate_launch_description():
                 {'uav_roll': 0.0},
                 {'uav_pitch': 0.0},
                 {'uav_yaw': 0.0},
+                # 机械臂旋转角度（弧度制，roll/pitch/yaw）
+                {'arm_roll': -1.5708},
+                {'arm_pitch': 0.0},
+                {'arm_yaw': 0.0},
                 # 调试信息开关
                 {'debug_info': True},
                 # 调试信息打印频率（Hz）
@@ -42,7 +53,9 @@ def generate_launch_description():
                 # 力反馈增益
                 {'FORCE_FEEDBACK_GAIN': 0.5},
                 # 是否发布joint_state
-                {'publish_joint_state': LaunchConfiguration('publish_joint_state')}
+                {'publish_joint_state': LaunchConfiguration('publish_joint_state')},
+                # 是否发布joint_feedback
+                {'publish_joint_feedback': LaunchConfiguration('publish_joint_feedback')}
             ]
         ),
     ])

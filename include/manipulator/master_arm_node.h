@@ -57,6 +57,7 @@ class MasterArmNode : public rclcpp::Node {
 
   // ROS 2 publishers and subscribers
   rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr pub_joint_state_;
+  rclcpp::Publisher<dummy_interface::msg::MotorState>::SharedPtr pub_joint_feedback_;
   // rclcpp::Publisher<std_msgs::msg::Float64MultiArray>::SharedPtr pub_joint_compensation_;
   rclcpp::Subscription<geometry_msgs::msg::Point>::SharedPtr sub_uav_pose_;
   rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr sub_slave_state_;

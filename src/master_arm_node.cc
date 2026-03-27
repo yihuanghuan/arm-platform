@@ -17,11 +17,15 @@ MasterArmNode::MasterArmNode()
   this->declare_parameter<double>("uav_roll", 0.0);
   this->declare_parameter<double>("uav_pitch", 0.0);
   this->declare_parameter<double>("uav_yaw", 0.0);
+  this->declare_parameter<double>("arm_roll", 0.0);
+  this->declare_parameter<double>("arm_pitch", 0.0);
+  this->declare_parameter<double>("arm_yaw", 0.0);
   this->declare_parameter<bool>("debug_info", false);
   this->declare_parameter<double>("debug_rate", 1.0);
   this->declare_parameter<double>("FORCE_FEEDBACK_THRESHOLD", 0.5);
   this->declare_parameter<double>("FORCE_FEEDBACK_GAIN", 0.5);
   this->declare_parameter<bool>("publish_joint_state", true);
+  this->declare_parameter<bool>("publish_joint_feedback", false);
 
   std::string port;
   this->get_parameter("port_name", port);
@@ -38,11 +42,15 @@ MasterArmNode::MasterArmNode()
   double uav_roll = this->get_parameter("uav_roll").as_double();
   double uav_pitch = this->get_parameter("uav_pitch").as_double();
   double uav_yaw = this->get_parameter("uav_yaw").as_double();
+  double arm_roll = this->get_parameter("arm_roll").as_double();
+  double arm_pitch = this->get_parameter("arm_pitch").as_double();
+  double arm_yaw = this->get_parameter("arm_yaw").as_double();
   geometry_msgs::msg::Point uav_pose;
   uav_pose.x = uav_yaw;
   uav_pose.y = uav_roll;
   uav_pose.z = uav_pitch;
   gravity_compensation_.SetUavPose(uav_pose);
+  gravity_compensation_.SetRotationAngle(arm_roll, arm_pitch, arm_yaw);
 
   cmd_.current.resize(7);
   cmd_.p.resize(7);
@@ -52,10 +60,16 @@ MasterArmNode::MasterArmNode()
   arm_.Init(port, 921600);
 
   bool publish_joint_state = this->get_parameter("publish_joint_state").as_bool();
+  bool publish_joint_feedback = this->get_parameter("publish_joint_feedback").as_bool();
 
 
   //地面端只需要发布关节的实际位置
   pub_joint_state_ = this->create_publisher<sensor_msgs::msg::JointState>("joint_states", 10);
+  
+  // Create joint feedback publisher if enabled
+  if (publish_joint_feedback) {
+    pub_joint_feedback_ = this->create_publisher<dummy_interface::msg::MotorState>("joint_feedback", 10);
+  }
 
   sub_slave_state_ = this->create_subscription<sensor_msgs::msg::JointState>(
       "/slave/joint_states", 10,
@@ -103,6 +117,18 @@ void MasterArmNode::ControlLoop() {
   joint_state_msg.velocity = arm_state_.velocity;
   pub_joint_state_->publish(joint_state_msg);
   
+  // Publish joint feedback message if enabled
+  if (pub_joint_feedback_) {
+    dummy_interface::msg::MotorState joint_feedback_msg;
+    joint_feedback_msg.header.stamp = this->now();
+    joint_feedback_msg.position = arm_state_.position;
+    joint_feedback_msg.velocity = arm_state_.velocity;
+    joint_feedback_msg.current = arm_state_.current;
+    joint_feedback_msg.temperature = arm_state_.temperature;
+    // Set voltage and temperature to empty arrays as we don't have this data
+    pub_joint_feedback_->publish(joint_feedback_msg);
+  }
+  
 }
 
 void MasterArmNode::ComputeAndPublishCompensation() {
@@ -128,9 +154,9 @@ void MasterArmNode::DebugInfoCallback() {
   RCLCPP_INFO(this->get_logger(), "Joint position (rad): [%.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f]",
               arm_state_.position[0], arm_state_.position[1], arm_state_.position[2],
               arm_state_.position[3], arm_state_.position[4], arm_state_.position[5], arm_state_.position[6]);
-  // RCLCPP_INFO(this->get_logger(), "Joint currents (A): [%.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f]",
-  //             arm_state_.current[0], arm_state_.current[1], arm_state_.current[2],
-  //             arm_state_.current[3], arm_state_.current[4], arm_state_.current[5], arm_state_.current[6]);
+  RCLCPP_INFO(this->get_logger(), "Joint currents (A): [%.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f]",
+              arm_state_.current[0], arm_state_.current[1], arm_state_.current[2],
+              arm_state_.current[3], arm_state_.current[4], arm_state_.current[5], arm_state_.current[6]);
 }
 
 } // namespace manipulator

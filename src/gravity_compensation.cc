@@ -33,6 +33,14 @@ void GravityCompensation::SetUavPose(const geometry_msgs::msg::Point& pose) {
   uav_pose_ = pose;
 }
 
+void GravityCompensation::SetRotationAngle(double roll, double pitch, double yaw) {
+  Eigen::AngleAxisd roll_angle(roll, Eigen::Vector3d::UnitX());
+  Eigen::AngleAxisd pitch_angle(pitch, Eigen::Vector3d::UnitY());
+  Eigen::AngleAxisd yaw_angle(yaw, Eigen::Vector3d::UnitZ());
+  
+  rotation_matrix_ = (yaw_angle * pitch_angle * roll_angle).toRotationMatrix();
+}
+
 Eigen::Matrix4d GravityCompensation::DhTransform(double a, double alpha, double d, double theta) {
   double ct = std::cos(theta), st = std::sin(theta);
   double ca = std::cos(alpha), sa = std::sin(alpha);
@@ -88,24 +96,26 @@ std::array<double, 7> GravityCompensation::Compute(const std::array<double, 7>& 
   std::array<double, 7> tau_gravity = {0, 0, 0, 0, 0, 0, 0};
 
   for (int j = 0; j < 7; ++j) {
-    for (int i = j; i < 6; ++i) {
+    for (int i = j + 1; i < 6; ++i) {
       Eigen::Vector3d r_motor = origins[i] - origins[j];
       Eigen::Vector3d J_col = z_axes[j].cross(r_motor);
       double f = MOTOR_MASSES_[i] * params_.GRAVITY;
-      Eigen::Vector3d f_gravity_motor = Eigen::Vector3d(0, 0, f);
+      Eigen::Vector3d f_gravity_original = Eigen::Vector3d(0, 0, f);
+      Eigen::Vector3d f_gravity_motor = rotation_matrix_ * f_gravity_original;
       tau_gravity[j] += J_col.dot(f_gravity_motor);
     }
 
-    for (int i = j; i < 6; ++i) {
+    for (int i = j + 1; i < 6; ++i) {
       Eigen::Vector3d r_link = link_coms[i] - origins[j];
       Eigen::Vector3d J_col = z_axes[j].cross(r_link);
       double f = LINK_MASSES_[i] * params_.GRAVITY;
-      Eigen::Vector3d f_gravity_link = Eigen::Vector3d(0, 0, f);
+      Eigen::Vector3d f_gravity_original = Eigen::Vector3d(0, 0, f);
+      Eigen::Vector3d f_gravity_link = rotation_matrix_ * f_gravity_original;
       tau_gravity[j] += J_col.dot(f_gravity_link);
     }
   }
 
-  tau_gravity[0] = std::sin(roll) * params_.G_GAIN_0;
+  tau_gravity[0] *= params_.G_GAIN_0;
   tau_gravity[1] *= params_.G_GAIN_1;
   tau_gravity[2] *= params_.G_GAIN_2;
 

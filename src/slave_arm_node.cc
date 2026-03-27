@@ -51,7 +51,7 @@ SlaveArmNode::SlaveArmNode()
         gravity_compensation_.SetUavPose(*msg);
       });
 
-  pub_joint_feedback_ = this->create_publisher<dummy_interface::msg::MotorState>("/uav/arm/joint_feedback", 10);
+  pub_joint_feedback_ = this->create_publisher<dummy_interface::msg::MotorState>("joint_feedback", 10);
   pub_joint_state_ = this->create_publisher<sensor_msgs::msg::JointState>("joint_states", 10);
 
   cmd_.current.resize(7);
