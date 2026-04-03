@@ -9,9 +9,7 @@ MasterArmNode::MasterArmNode()
     : Node("master_arm_node"),
       arm_(arm::AL1Beta::Instance()) {
   this->declare_parameter<std::string>("port_name", "/dev/ttyUSB0");
-  this->declare_parameter<double>("G_GAIN_0", 0.5);
-  this->declare_parameter<double>("G_GAIN_1", 0.5);
-  this->declare_parameter<double>("G_GAIN_2", 1.0);
+  this->declare_parameter<std::string>("urdf_path", "/home/iusl/huaben_ws/src/ti5-description/urdf/ARM_1KG_STD.urdf");
   this->declare_parameter<double>("MAX_TORQUE", 3.0);
   this->declare_parameter<double>("GRAVITY", 9.81);
   this->declare_parameter<double>("uav_roll", 0.0);
@@ -30,14 +28,19 @@ MasterArmNode::MasterArmNode()
   std::string port;
   this->get_parameter("port_name", port);
 
-  double G_GAIN_0 = this->get_parameter("G_GAIN_0").as_double();
-  double G_GAIN_1 = this->get_parameter("G_GAIN_1").as_double();
-  double G_GAIN_2 = this->get_parameter("G_GAIN_2").as_double();
+  std::string urdf_path;
+  this->get_parameter("urdf_path", urdf_path);
+  if (!gravity_compensation_.LoadModel(urdf_path)) {
+    RCLCPP_ERROR(this->get_logger(), "Failed to load URDF model from: %s", urdf_path.c_str());
+  } else {
+    RCLCPP_INFO(this->get_logger(), "URDF model loaded successfully from: %s", urdf_path.c_str());
+  }
+
   double MAX_TORQUE = this->get_parameter("MAX_TORQUE").as_double();
   double GRAVITY = this->get_parameter("GRAVITY").as_double();
   double FORCE_FEEDBACK_THRESHOLD = this->get_parameter("FORCE_FEEDBACK_THRESHOLD").as_double();
   double FORCE_FEEDBACK_GAIN = this->get_parameter("FORCE_FEEDBACK_GAIN").as_double();
-  gravity_compensation_.SetParams(G_GAIN_0, G_GAIN_1, G_GAIN_2, MAX_TORQUE, GRAVITY, FORCE_FEEDBACK_THRESHOLD, FORCE_FEEDBACK_GAIN);
+  gravity_compensation_.SetParams(MAX_TORQUE, GRAVITY, FORCE_FEEDBACK_THRESHOLD, FORCE_FEEDBACK_GAIN);
 
   double uav_roll = this->get_parameter("uav_roll").as_double();
   double uav_pitch = this->get_parameter("uav_pitch").as_double();
@@ -105,7 +108,7 @@ MasterArmNode::~MasterArmNode() {
 }
 
 void MasterArmNode::ControlLoop() {
-  arm_.GetState(arm_state_);
+  arm_state_ = arm_.GetJointStates();
   ComputeAndPublishCompensation();
   
   sensor_msgs::msg::JointState joint_state_msg;
@@ -138,7 +141,7 @@ void MasterArmNode::ComputeAndPublishCompensation() {
   }
 
   auto tau_comp = gravity_compensation_.Compute(joint_positions);
-  tau_comp = gravity_compensation_.collision_detection(tau_comp,uav_joint_currents,uav_compensation_torques); //力反馈 可以加个参数控制是否开启反馈
+  // tau_comp = gravity_compensation_.collision_detection(tau_comp,uav_joint_currents,uav_compensation_torques); //力反馈 可以加个参数控制是否开启反馈
   std_msgs::msg::Float64MultiArray tau_comp_msg;
   cmd_.header.stamp = this->now();
   for (int i = 0; i < 7; ++i) {
@@ -154,9 +157,9 @@ void MasterArmNode::DebugInfoCallback() {
   RCLCPP_INFO(this->get_logger(), "Joint position (rad): [%.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f]",
               arm_state_.position[0], arm_state_.position[1], arm_state_.position[2],
               arm_state_.position[3], arm_state_.position[4], arm_state_.position[5], arm_state_.position[6]);
-  RCLCPP_INFO(this->get_logger(), "Joint currents (A): [%.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f]",
-              arm_state_.current[0], arm_state_.current[1], arm_state_.current[2],
-              arm_state_.current[3], arm_state_.current[4], arm_state_.current[5], arm_state_.current[6]);
+  // RCLCPP_INFO(this->get_logger(), "Joint currents (A): [%.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f]",
+  //             tau_comp[0], tau_comp[1], tau_comp[2],
+  //             tau_comp[3], tau_comp[4], tau_comp[5], tau_comp[6]);
 }
 
 } // namespace manipulator

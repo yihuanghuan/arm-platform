@@ -41,7 +41,7 @@ def generate_launch_description():
                 {'uav_pitch': 0.0},
                 {'uav_yaw': 0.0},
                 # 机械臂旋转角度（弧度制，roll/pitch/yaw）
-                {'arm_roll': -1.5708},
+                {'arm_roll': 0.0},
                 {'arm_pitch': 0.0},
                 {'arm_yaw': 0.0},
                 # 调试信息开关
@@ -55,7 +55,8 @@ def generate_launch_description():
                 # 是否发布joint_state
                 {'publish_joint_state': LaunchConfiguration('publish_joint_state')},
                 # 是否发布joint_feedback
-                {'publish_joint_feedback': LaunchConfiguration('publish_joint_feedback')}
+                {'publish_joint_feedback': LaunchConfiguration('publish_joint_feedback')},
+                {'urdf_path': "/home/iusl/huaben_ws/src/dummy_description/urdf/arm/A-L1-GAMMA/arm.urdf"}
             ]
         ),
     ])

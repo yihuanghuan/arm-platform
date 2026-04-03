@@ -84,7 +84,7 @@ SlaveArmNode::~SlaveArmNode() {
 }
 
 void SlaveArmNode::ControlLoop() {
-  arm_.GetState(arm_state_);
+  arm_state_ = arm_.GetJointStates();
   
   sensor_msgs::msg::JointState joint_state_msg;
   joint_state_msg.header.stamp = this->now();

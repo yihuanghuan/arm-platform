@@ -20,7 +20,7 @@ class IArm {
   virtual ~IArm() = default;
 
   virtual bool SetMotorCommand(const dummy_interface::msg::MotorControl& cmd) = 0;
-  virtual void GetJointStates() = 0;
+  virtual void UpdateJointStates() = 0;
 };
 
 } // namespace manipulator::arm

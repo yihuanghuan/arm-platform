@@ -21,6 +21,20 @@ namespace manipulator::arm {
  */
 class AbsArm : public IArm {
  public:
+   /**
+   * @brief Joint state structure for AL1Beta arm
+   * 
+   * Contains position, velocity, current, voltage, and temperature
+   * data for all 7 joints.
+   */
+  struct JointState {
+    std::vector<double> position;      ///< Joint positions in radians
+    std::vector<double> velocity;      ///< Joint velocities in rad/s
+    std::vector<double> current;       ///< Motor currents in Amperes
+    std::vector<double> voltage;       ///< Motor voltages in Volts
+    std::vector<double> temperature;   ///< Motor temperatures in Celsius
+    std::vector<std::string> name;
+  };
   /**
    * @brief Default constructor
    */
@@ -48,12 +62,6 @@ class AbsArm : public IArm {
   ~AbsArm() = default;
 
   /**
-   * @brief Set communication bus for the arm
-   * @param bus Unique pointer to communication bus
-   */
-  void SetBus(bus::IBus::UniquePtr bus);
-
-  /**
    * @brief Send motor command to hardware
    * @param cmd Motor control message containing current, position, velocity, etc.
    * @return True if command was sent successfully, false otherwise
@@ -67,14 +75,10 @@ class AbsArm : public IArm {
    */
   bool SetJointStates(const sensor_msgs::msg::JointState& state);
 
-  /**
-   * @brief Get current joint states from hardware
-   * 
-   * This virtual method should be overridden by derived classes
-   * to read joint states from actual hardware.
-   */
-  virtual void GetJointStates();
+  AbsArm::JointState& GetJointStates();
 
+protected:
+//     virtual bool CheckJointLimits() const;
   /**
    * @brief Add a motor to the arm
    * @param name Motor name/identifier
@@ -87,10 +91,22 @@ class AbsArm : public IArm {
    * @param name Motor name/identifier
    */
   void RemoveMotor(const std::string& name);
+  
+  /**
+   * @brief Set communication bus for the arm
+   * @param bus Unique pointer to communication bus
+   */
+  void SetBus(bus::IBus::UniquePtr bus);
 
-// protected:
-//     virtual bool CheckJointLimits() const;
  private:
+  /**
+   * @brief Get current joint states from hardware
+   * 
+   * This virtual method should be overridden by derived classes
+   * to read joint states from actual hardware.
+   */
+  void UpdateJointStates() final;
+
   /**
    * @brief Communication bus for hardware interaction
    */
@@ -100,6 +116,7 @@ class AbsArm : public IArm {
    * @brief Map of motor name to motor instance
    */
   std::map<std::string, motor::IMotor::SharedPtr> motor_map_;
+  JointState joint_states_;
 
   // std::vector<JointLimit> joint_limits_;
 };

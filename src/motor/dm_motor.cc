@@ -27,7 +27,6 @@ void DMMotor::SetState(const sensor_msgs::msg::JointState& state) {
   cmd.d.push_back(default_kd_);
   UpdateCommand(cmd);
 }
-
 void DMMotor::UpdateCommand(const dummy_interface::msg::MotorControl& cmd) {
   if (not is_received_) return;
   protocol_->SetKp(id_, cmd.p[id_]);
@@ -52,5 +51,25 @@ void DMMotor::UpdateCommand(const dummy_interface::msg::MotorControl& cmd) {
   RCLCPP_INFO(logger, "pos_set_: %f, cmd.position[id_]: %f, position_: %f", pos_set_, cmd.position[id_], position_);
   protocol_->SetPosition(id_, pos_set_);
   protocol_->SetVelocity(id_, cmd.velocity[id_]);
+}
+
+double DMMotor::GetPosition() const {
+  return position_;
+}
+
+double DMMotor::GetVelocity() const {
+  return velocity_;
+}
+
+double DMMotor::GetCurrent() const {
+  return torque_;
+}
+
+double DMMotor::GetTemperature() const {
+  return temperature_;
+}
+
+double DMMotor::GetVoltage() const {
+  return voltage_;
 }
 }

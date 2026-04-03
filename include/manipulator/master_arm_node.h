@@ -11,7 +11,7 @@
 #include <dummy_interface/msg/motor_control.hpp>
 #include <geometry_msgs/msg/point.hpp>
 #include <manipulator/arm/a_l1_beta.h>
-#include <manipulator/gravity_compensation.h>
+#include <manipulator/gravity_compensation_pinocchio.h>
 
 namespace manipulator {
 
@@ -71,7 +71,7 @@ class MasterArmNode : public rclcpp::Node {
   std::array<double, 7> uav_compensation_torques = {0, 0, 0, 0, 0, 0, 0};
 
   // Gravity compensation algorithm
-  GravityCompensation gravity_compensation_;
+  GravityCompensationPinocchio gravity_compensation_;
 
   // Motor control command
   dummy_interface::msg::MotorControl cmd_;

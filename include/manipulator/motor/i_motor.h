@@ -14,6 +14,12 @@ class IMotor {
   virtual void UpdateState() = 0;
   virtual void SetState(const sensor_msgs::msg::JointState& state) = 0;
   virtual void UpdateCommand(const dummy_interface::msg::MotorControl& cmd) = 0;
+
+  virtual double GetPosition() const = 0;
+  virtual double GetVelocity() const = 0;
+  virtual double GetCurrent() const = 0;
+  virtual double GetTemperature() const = 0;
+  virtual double GetVoltage() const = 0;
 };
 
 } // namespace manipulator::motor

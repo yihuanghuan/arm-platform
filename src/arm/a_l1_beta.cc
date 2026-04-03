@@ -41,18 +41,4 @@ void AL1Beta::Init(const std::string& port, uint32_t baud) {
 
   SetBus(std::make_unique<bus::SerialBus>(port, baud, std::move(protocol_factory)));
 }
-
-void AL1Beta::GetState(JointState& state) {
-  GetJointStates();
-  for(uint8_t i = 0; i < 7; i++) {
-    state.position[i] = protocol_->GetPosition(i);
-    state.velocity[i] = protocol_->GetVelocity(i);
-    state.current[i] = protocol_->GetCurrent(i);
-    state.voltage[i] = protocol_->GetVoltage(i);
-    state.temperature[i] = protocol_->GetTemperature(i);
-  }
-  // state.position[1] = -state.position[1];
-  // state.velocity[1] = -state.velocity[1];
-  // state.current[1] = -state.current[1];
-}
 }

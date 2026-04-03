@@ -14,6 +14,12 @@ class DMMotor final : public IMotor {
   void UpdateCommand(const dummy_interface::msg::MotorControl& cmd) override;
   void SetState(const sensor_msgs::msg::JointState& state) override;
   void UpdateState() override;
+
+  double GetPosition() const override;
+  double GetVelocity() const override;
+  double GetCurrent() const override;
+  double GetTemperature() const override;
+  double GetVoltage() const override;
  
  private:
   protocol::ProtocolV1::SharedPtr protocol_;
@@ -22,6 +28,7 @@ class DMMotor final : public IMotor {
   double velocity_;
   double torque_;
   double temperature_;
+  double voltage_;
   float default_kp_;
   float default_kd_;
 

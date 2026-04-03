@@ -36,8 +36,8 @@ ArmHardwareNode::~ArmHardwareNode() = default;
 // 200Hz real-time control loop
 // --------------------------------------------------------
 void ArmHardwareNode::ControlLoop() {
-  arm_.GetState(arm_current_state_);
-
+  arm_current_state_ = arm_.GetJointStates();
+  
   dummy_interface::msg::MotorState msg;
   msg.header.stamp = this->now();
 
