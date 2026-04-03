@@ -10,7 +10,7 @@
 #include <dummy_interface/msg/motor_control.hpp>
 #include <std_msgs/msg/float64_multi_array.hpp>
 #include <geometry_msgs/msg/point.hpp>
-#include <manipulator/arm/a_l1_beta.h>
+#include <manipulator/arm/abs_arm.h>
 #include <manipulator/gravity_compensation.h>
 
 namespace manipulator {
@@ -36,8 +36,8 @@ class SlaveArmNode : public rclcpp::Node {
   rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr sub_master_state_;
   rclcpp::Subscription<geometry_msgs::msg::Point>::SharedPtr sub_uav_pose_;
   
-  arm::AL1Beta& arm_;
-  arm::AL1Beta::JointState arm_state_;
+  arm::AbsArm::UniPtr arm_;
+  arm::AbsArm::JointState arm_state_;
   GravityCompensation gravity_compensation_;
   
   bool got_feedback_;

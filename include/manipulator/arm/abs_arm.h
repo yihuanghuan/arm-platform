@@ -21,6 +21,7 @@ namespace manipulator::arm {
  */
 class AbsArm : public IArm {
  public:
+  using UniPtr = std::unique_ptr<AbsArm>;
    /**
    * @brief Joint state structure for AL1Beta arm
    * 
@@ -76,6 +77,8 @@ class AbsArm : public IArm {
   bool SetJointStates(const sensor_msgs::msg::JointState& state);
 
   AbsArm::JointState& GetJointStates();
+
+  virtual void Init(const std::string& port, uint32_t baud);
 
 protected:
 //     virtual bool CheckJointLimits() const;

@@ -16,7 +16,7 @@ find_package(dummy_interface REQUIRED)
 find_package(serial REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(Eigen3 REQUIRED)
-
+find_package(pinocchio REQUIRED)
 
 # ==============================
 # Arm Platform Core Library
@@ -24,6 +24,8 @@ find_package(Eigen3 REQUIRED)
 add_library(manipulator_core
   src/arm/abs_arm.cc
   src/arm/a_l1_beta.cc
+  src/arm/a_l1_gamma.cc
+  src/arm/arm_factory.cc
   src/bus/abs_bus.cc
   src/bus/serial_bus.cc
   src/motor/dm_motor.cc
@@ -40,12 +42,26 @@ target_link_libraries(gravity_compensation
   Eigen3::Eigen
 )
 
+add_library(gravity_compensation_pinocchio
+  src/gravity_compensation_pinocchio.cc
+)
+
+target_link_libraries(gravity_compensation_pinocchio
+  Eigen3::Eigen
+  pinocchio::pinocchio
+)
+
 target_include_directories(manipulator_core PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>
 )
 
 target_include_directories(gravity_compensation PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>
+)
+
+target_include_directories(gravity_compensation_pinocchio PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>
 )
@@ -59,6 +75,13 @@ ament_target_dependencies(manipulator_core
 )
 
 ament_target_dependencies(gravity_compensation
+  rclcpp
+  std_msgs
+  geometry_msgs
+  Eigen3
+)
+
+ament_target_dependencies(gravity_compensation_pinocchio
   rclcpp
   std_msgs
   geometry_msgs
@@ -82,7 +105,7 @@ add_executable(master_arm_node
 
 target_link_libraries(master_arm_node
   manipulator_core
-  gravity_compensation
+  gravity_compensation_pinocchio
 )
 
 ament_target_dependencies(master_arm_node
@@ -114,6 +137,8 @@ ament_target_dependencies(slave_arm_node
 # ==============================
 install(TARGETS
   manipulator_core
+  gravity_compensation
+  gravity_compensation_pinocchio
   arm_hardware_node
   master_arm_node
   slave_arm_node

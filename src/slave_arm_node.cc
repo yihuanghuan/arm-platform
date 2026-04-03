@@ -1,11 +1,11 @@
 #include <manipulator/slave_arm_node.h>
+#include <manipulator/arm/arm_factory.h>
 #include <chrono>
 
 namespace manipulator {
 
 SlaveArmNode::SlaveArmNode()
     : Node("slave_arm_node"),
-      arm_(arm::AL1Beta::Instance()),
       got_feedback_(false) {
   this->declare_parameter<std::string>("port_name", "/dev/ttyUSB0");
   this->declare_parameter<bool>("debug_info", false);
@@ -31,7 +31,10 @@ SlaveArmNode::SlaveArmNode()
   double FORCE_FEEDBACK_GAIN = this->get_parameter("FORCE_FEEDBACK_GAIN").as_double();
   gravity_compensation_.SetParams(G_GAIN_0, G_GAIN_1, G_GAIN_2, MAX_TORQUE, GRAVITY, FORCE_FEEDBACK_THRESHOLD, FORCE_FEEDBACK_GAIN);
 
-  arm_.Init(port, 921600);
+  std::string arm_type;
+  this->get_parameter("arm_type", arm_type);
+  arm_ = arm::ArmFactory::Instance().Create(arm_type);
+  arm_->Init(port, 921600);
 
   sub_master_state_ = this->create_subscription<sensor_msgs::msg::JointState>(
       "/master/joint_states", 10,
@@ -84,7 +87,7 @@ SlaveArmNode::~SlaveArmNode() {
 }
 
 void SlaveArmNode::ControlLoop() {
-  arm_state_ = arm_.GetJointStates();
+  arm_state_ = arm_->GetJointStates();
   
   sensor_msgs::msg::JointState joint_state_msg;
   joint_state_msg.header.stamp = this->now();
@@ -99,7 +102,7 @@ void SlaveArmNode::ControlLoop() {
     cmd_.velocity[i] = ground_joint_velocities_[i];
   }
   cmd_.header.stamp = this->now();
-  arm_.SetMotorCommand(cmd_);
+  arm_->SetMotorCommand(cmd_);
 
   std::array<double, 7> joint_positions;
   for (int i = 0; i < 7; ++i) {

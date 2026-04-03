@@ -22,7 +22,8 @@ def generate_launch_description():
             output='screen',
             parameters=[
                 {'port_name': '/dev/ttyUSB0'},
-            ]
+                {'arm_type': 'a_l1_beta'},
+            ],
         ),
         # Node(
         #     package='v4l2_camera',

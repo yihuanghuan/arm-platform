@@ -5,10 +5,15 @@
 
 namespace manipulator::motor {
 
+enum class CoordinateSystem {
+  RightHand,
+  LeftHand
+};
+
 class DMMotor final : public IMotor {
  public:
   DMMotor(protocol::ProtocolV1::SharedPtr protocol, uint8_t id, 
-          float kp, float kd);
+          float kp, float kd, CoordinateSystem coord_system = CoordinateSystem::RightHand);
   virtual ~DMMotor() = default;
 
   void UpdateCommand(const dummy_interface::msg::MotorControl& cmd) override;
@@ -36,6 +41,7 @@ class DMMotor final : public IMotor {
   double vel_set_;
   bool is_received_;
   const double DT_ = 0.005;
+  CoordinateSystem coord_system_;
 };
 
 } // namespace manipulator::motor

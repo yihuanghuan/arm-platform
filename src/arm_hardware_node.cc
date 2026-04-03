@@ -1,17 +1,21 @@
 #include <manipulator/arm_hardware_node.h>
+#include <manipulator/arm/arm_factory.h>
 
 using namespace std::chrono_literals;
 
 namespace manipulator {
 
 ArmHardwareNode::ArmHardwareNode() 
-  : Node("robot_arm_node"), arm_(arm::AL1Beta::Instance()) {
+  : Node("robot_arm_node") {
   // ------------------- Hardware stack -------------------
   std::string port;
   this->declare_parameter<std::string>("port_name", "/dev/ttyUSB0");
   this->get_parameter("port_name", port);
 
-  arm_.Init(port, 921600);
+  std::string arm_type;
+  this->get_parameter("arm_type", arm_type);
+  arm_ = arm::ArmFactory::Instance().Create(arm_type);
+  arm_->Init(port, 921600);
 
   // ------------------- ROS interfaces -------------------
   pub_joint_state_ = this->create_publisher<dummy_interface::msg::MotorState>(
@@ -19,7 +23,7 @@ ArmHardwareNode::ArmHardwareNode()
   //TODO: use motor control instead of jointstate
   sub_joint_ctrl_ = this->create_subscription<sensor_msgs::msg::JointState>(
     "joint_states", 10, [this](const sensor_msgs::msg::JointState::SharedPtr msg) {
-      arm_.SetJointStates(*msg);
+      arm_->SetJointStates(*msg);
     });
 
   // ------------------- Control loop timer -------------------
@@ -36,7 +40,7 @@ ArmHardwareNode::~ArmHardwareNode() = default;
 // 200Hz real-time control loop
 // --------------------------------------------------------
 void ArmHardwareNode::ControlLoop() {
-  arm_current_state_ = arm_.GetJointStates();
+  arm_current_state_ = arm_->GetJointStates();
   
   dummy_interface::msg::MotorState msg;
   msg.header.stamp = this->now();

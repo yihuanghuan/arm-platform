@@ -1,4 +1,5 @@
 #include <manipulator/arm/abs_arm.h>
+#include <stdexcept>
 #include <algorithm>
 
 namespace manipulator::arm {
@@ -7,6 +8,10 @@ AbsArm::AbsArm() {
 }
 AbsArm::AbsArm(bus::IBus::UniquePtr bus) : bus_(std::move(bus)){
 
+}
+
+void AbsArm::Init(const std::string& port, uint32_t baud) {
+  throw std::runtime_error("Init not implemented for this arm type");
 }
 
 void AbsArm::SetBus(bus::IBus::UniquePtr bus) {

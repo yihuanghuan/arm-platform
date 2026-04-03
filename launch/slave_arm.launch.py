@@ -10,6 +10,7 @@ def generate_launch_description():
             output='screen',
             namespace='/slave',
             parameters=[
+                {'arm_type': 'a_l1_gamma'},
                 # 串口端口名
                 {'port_name': '/dev/ttyUSB0'},
                 # 关节增益参数（0/1/2轴）

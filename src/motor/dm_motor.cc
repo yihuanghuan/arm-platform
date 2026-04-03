@@ -4,8 +4,8 @@
 auto logger = rclcpp::get_logger("Controller");
 namespace manipulator::motor {
 DMMotor::DMMotor(protocol::ProtocolV1::SharedPtr protocol, uint8_t id, 
-                 float kp, float kd)
- : protocol_(protocol), id_(id), default_kp_(kp), default_kd_(kd), vel_set_(0) {
+                 float kp, float kd, CoordinateSystem coord_system)
+ : protocol_(protocol), id_(id), default_kp_(kp), default_kd_(kd), vel_set_(0), coord_system_(coord_system) {
 
 }
 
@@ -14,6 +14,13 @@ void DMMotor::UpdateState() {
   velocity_ = protocol_->GetVelocity(id_);
   torque_ = protocol_->GetCurrent(id_);
   temperature_ = protocol_->GetTemperature(id_);
+  
+  if (coord_system_ == CoordinateSystem::LeftHand) {
+    position_ = -position_;
+    velocity_ = -velocity_;
+    torque_ = -torque_;
+  }
+  
   if (not is_received_) pos_set_ = position_;
   is_received_ = true;
 }
@@ -21,17 +28,31 @@ void DMMotor::UpdateState() {
 void DMMotor::SetState(const sensor_msgs::msg::JointState& state) {
   dummy_interface::msg::MotorControl cmd;
 
-  cmd.position.push_back(state.position[0]);
-  cmd.velocity.push_back(state.velocity[0]);
+  double pos = state.position[0];
+  double vel = state.velocity[0];
+  
+  if (coord_system_ == CoordinateSystem::LeftHand) {
+    pos = -pos;
+    vel = -vel;
+  }
+
+  cmd.position.push_back(pos);
+  cmd.velocity.push_back(vel);
   cmd.p.push_back(default_kp_);
   cmd.d.push_back(default_kd_);
   UpdateCommand(cmd);
 }
 void DMMotor::UpdateCommand(const dummy_interface::msg::MotorControl& cmd) {
   if (not is_received_) return;
+  
+  double current = cmd.current[id_];
+  if (coord_system_ == CoordinateSystem::LeftHand) {
+    current = -current;
+  }
   protocol_->SetKp(id_, cmd.p[id_]);
   protocol_->SetKd(id_, cmd.d[id_]);
-  protocol_->SetCurrent(id_, cmd.current[id_]);
+  protocol_->SetCurrent(id_, current);
+  
   if (cmd.position.empty()) return;
 
   double pos_err = cmd.position[id_] - position_;
@@ -48,9 +69,19 @@ void DMMotor::UpdateCommand(const dummy_interface::msg::MotorControl& cmd) {
   pos_set_ = std::clamp(pos_set_, std::min(cmd.position[id_], position_), std::max(cmd.position[id_], position_));
   
   if (id_ == 6) pos_set_ = cmd.position[id_];
+  
+  double vel_cmd = cmd.velocity[id_];
+  if (coord_system_ == CoordinateSystem::LeftHand) {
+    vel_cmd = -vel_cmd;
+  }
+  double pos_set_send = pos_set_;
+  if (coord_system_ == CoordinateSystem::LeftHand) {
+    pos_set_send = -pos_set_;
+  }
+  
   RCLCPP_INFO(logger, "pos_set_: %f, cmd.position[id_]: %f, position_: %f", pos_set_, cmd.position[id_], position_);
-  protocol_->SetPosition(id_, pos_set_);
-  protocol_->SetVelocity(id_, cmd.velocity[id_]);
+  protocol_->SetPosition(id_, pos_set_send);
+  protocol_->SetVelocity(id_, vel_cmd);
 }
 
 double DMMotor::GetPosition() const {

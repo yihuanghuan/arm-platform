@@ -10,8 +10,8 @@
 #include <dummy_interface/msg/motor_state.hpp>
 #include <dummy_interface/msg/motor_control.hpp>
 #include <geometry_msgs/msg/point.hpp>
-#include <manipulator/arm/a_l1_beta.h>
 #include <manipulator/gravity_compensation_pinocchio.h>
+#include <manipulator/arm/abs_arm.h>
 
 namespace manipulator {
 
@@ -63,8 +63,8 @@ class MasterArmNode : public rclcpp::Node {
   rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr sub_slave_state_;
 
   // Hardware interface
-  arm::AL1Beta& arm_;
-  arm::AL1Beta::JointState arm_state_;
+  arm::AbsArm::UniPtr arm_;
+  arm::AbsArm::JointState arm_state_;
 
   // Force feedback data from slave arm
   std::array<double, 7> uav_joint_currents = {0, 0, 0, 0, 0, 0, 0};

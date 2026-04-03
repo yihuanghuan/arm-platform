@@ -2,13 +2,15 @@
 #include <manipulator/master_arm_node.h>
 #include <chrono>
 #include <algorithm>
+#include <manipulator/arm/arm_factory.h>
 
 namespace manipulator {
 
 MasterArmNode::MasterArmNode()
-    : Node("master_arm_node"),
-      arm_(arm::AL1Beta::Instance()) {
+    : Node("master_arm_node") {
+  
   this->declare_parameter<std::string>("port_name", "/dev/ttyUSB0");
+  this->declare_parameter<std::string>("arm_type", "a_l1_beta");
   this->declare_parameter<std::string>("urdf_path", "/home/iusl/huaben_ws/src/ti5-description/urdf/ARM_1KG_STD.urdf");
   this->declare_parameter<double>("MAX_TORQUE", 3.0);
   this->declare_parameter<double>("GRAVITY", 9.81);
@@ -55,12 +57,17 @@ MasterArmNode::MasterArmNode()
   gravity_compensation_.SetUavPose(uav_pose);
   gravity_compensation_.SetRotationAngle(arm_roll, arm_pitch, arm_yaw);
 
+  std::string arm_type;
+  this->get_parameter("arm_type", arm_type);
+  arm_ = arm::ArmFactory::Instance().Create(arm_type);
+  arm_->Init(port, 921600);
+
   cmd_.current.resize(7);
   cmd_.p.resize(7);
   cmd_.velocity.resize(7);
   cmd_.d.resize(7);
 
-  arm_.Init(port, 921600);
+  RCLCPP_INFO(this->get_logger(), "Arm type '%s' initialized", arm_type.c_str());
 
   bool publish_joint_state = this->get_parameter("publish_joint_state").as_bool();
   bool publish_joint_feedback = this->get_parameter("publish_joint_feedback").as_bool();
@@ -108,7 +115,7 @@ MasterArmNode::~MasterArmNode() {
 }
 
 void MasterArmNode::ControlLoop() {
-  arm_state_ = arm_.GetJointStates();
+  arm_state_ = arm_->GetJointStates();
   ComputeAndPublishCompensation();
   
   sensor_msgs::msg::JointState joint_state_msg;
@@ -148,7 +155,7 @@ void MasterArmNode::ComputeAndPublishCompensation() {
     cmd_.current[i] = tau_comp[i];
     tau_comp_msg.data.push_back(tau_comp[i]);
   }
-  arm_.SetMotorCommand(cmd_);
+  arm_->SetMotorCommand(cmd_);
 }
 
 void MasterArmNode::DebugInfoCallback() {
@@ -157,9 +164,9 @@ void MasterArmNode::DebugInfoCallback() {
   RCLCPP_INFO(this->get_logger(), "Joint position (rad): [%.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f]",
               arm_state_.position[0], arm_state_.position[1], arm_state_.position[2],
               arm_state_.position[3], arm_state_.position[4], arm_state_.position[5], arm_state_.position[6]);
-  // RCLCPP_INFO(this->get_logger(), "Joint currents (A): [%.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f]",
-  //             tau_comp[0], tau_comp[1], tau_comp[2],
-  //             tau_comp[3], tau_comp[4], tau_comp[5], tau_comp[6]);
+  RCLCPP_INFO(this->get_logger(), "Joint currents (A): [%.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f]",
+              arm_state_.current[0], arm_state_.current[1], arm_state_.current[2],
+              arm_state_.current[3], arm_state_.current[4], arm_state_.current[5], arm_state_.current[6]);
 }
 
 } // namespace manipulator
