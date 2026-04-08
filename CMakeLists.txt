@@ -122,7 +122,7 @@ add_executable(slave_arm_node
 
 target_link_libraries(slave_arm_node
   manipulator_core
-  gravity_compensation
+  gravity_compensation_pinocchio
 )
 
 ament_target_dependencies(slave_arm_node
