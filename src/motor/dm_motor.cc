@@ -40,12 +40,16 @@ void DMMotor::SetState(const sensor_msgs::msg::JointState& state) {
   cmd.velocity.push_back(vel);
   cmd.p.push_back(default_kp_);
   cmd.d.push_back(default_kd_);
+  cmd.current.push_back(0.1);
   UpdateCommand(cmd);
 }
 void DMMotor::UpdateCommand(const dummy_interface::msg::MotorControl& cmd) {
   if (not is_received_) return;
+
+  uint8_t cmd_ind = id_;
+  if (cmd.position.size() == 1) cmd_ind = 0;
   
-  double current = cmd.current[id_];
+  double current = cmd.current[cmd_ind];
   if (coord_system_ == CoordinateSystem::LeftHand) {
     current = -current;
   }
@@ -53,9 +57,7 @@ void DMMotor::UpdateCommand(const dummy_interface::msg::MotorControl& cmd) {
   protocol_->SetKd(id_, cmd.d[id_]);
   protocol_->SetCurrent(id_, current);
   
-  if (cmd.position.empty()) return;
-
-  double pos_err = cmd.position[id_] - position_;
+  double pos_err = cmd.position[cmd_ind] - position_;
   if (abs(pos_err) < 0.01) {
     pos_set_ = position_;
     return;
@@ -66,7 +68,7 @@ void DMMotor::UpdateCommand(const dummy_interface::msg::MotorControl& cmd) {
     delta = (delta >= 0) ? 0.01 : -0.01;
   }
   pos_set_ += delta;
-  pos_set_ = std::clamp(pos_set_, std::min(cmd.position[id_], position_), std::max(cmd.position[id_], position_));
+  pos_set_ = std::clamp(pos_set_, std::min(cmd.position[cmd_ind], position_), std::max(cmd.position[cmd_ind], position_));
   
   if (id_ == 6) pos_set_ = cmd.position[id_];
   

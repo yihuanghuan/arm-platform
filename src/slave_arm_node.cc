@@ -15,9 +15,16 @@ SlaveArmNode::SlaveArmNode()
   this->declare_parameter<double>("G_GAIN_2", 1.0);
   this->declare_parameter<double>("MAX_TORQUE", 3.0);
   this->declare_parameter<double>("GRAVITY", 9.81);
+  this->declare_parameter<double>("uav_roll", 0.0);
+  this->declare_parameter<double>("uav_pitch", 0.0);
+  this->declare_parameter<double>("uav_yaw", 0.0);
+  this->declare_parameter<double>("arm_roll", 0.0);
+  this->declare_parameter<double>("arm_pitch", 0.0);
+  this->declare_parameter<double>("arm_yaw", 0.0);
   this->declare_parameter<double>("FORCE_FEEDBACK_THRESHOLD", 0.5);
   this->declare_parameter<double>("FORCE_FEEDBACK_GAIN", 0.5);
-  this->declare_parameter<bool>("publish_joint_states", true);
+  this->declare_parameter<bool>("publish_joint_state", true);
+  this->declare_parameter<bool>("publish_joint_feedback", false);
 
   std::string port;
   this->get_parameter("port_name", port);
@@ -35,6 +42,18 @@ SlaveArmNode::SlaveArmNode()
   this->get_parameter("arm_type", arm_type);
   arm_ = arm::ArmFactory::Instance().Create(arm_type);
   arm_->Init(port, 921600);
+  // double uav_roll = this->get_parameter("uav_roll").as_double();
+  // double uav_pitch = this->get_parameter("uav_pitch").as_double();
+  // double uav_yaw = this->get_parameter("uav_yaw").as_double();
+  // double arm_roll = this->get_parameter("arm_roll").as_double();
+  // double arm_pitch = this->get_parameter("arm_pitch").as_double();
+  // double arm_yaw = this->get_parameter("arm_yaw").as_double();
+  // geometry_msgs::msg::Point uav_pose;
+  // uav_pose.x = uav_yaw;
+  // uav_pose.y = uav_roll;
+  // uav_pose.z = uav_pitch;
+  // gravity_compensation_.SetUavPose(uav_pose);
+  // gravity_compensation_.SetRotationAngle(arm_roll, arm_pitch, arm_yaw);
 
   sub_master_state_ = this->create_subscription<sensor_msgs::msg::JointState>(
       "/master/joint_states", 10,
@@ -54,8 +73,16 @@ SlaveArmNode::SlaveArmNode()
         gravity_compensation_.SetUavPose(*msg);
       });
 
-  pub_joint_feedback_ = this->create_publisher<dummy_interface::msg::MotorState>("joint_feedback", 10);
-  pub_joint_state_ = this->create_publisher<sensor_msgs::msg::JointState>("joint_states", 10);
+  bool publish_joint_state = this->get_parameter("publish_joint_state").as_bool();
+  bool publish_joint_feedback = this->get_parameter("publish_joint_feedback").as_bool();
+
+  if (publish_joint_state) {
+    pub_joint_state_ = this->create_publisher<sensor_msgs::msg::JointState>("joint_states", 10);
+  }
+  
+  if (publish_joint_feedback) {
+    pub_joint_feedback_ = this->create_publisher<dummy_interface::msg::MotorState>("joint_feedback", 10);
+  }
 
   cmd_.current.resize(7);
   cmd_.position.resize(7);
@@ -89,10 +116,8 @@ SlaveArmNode::~SlaveArmNode() {
 void SlaveArmNode::ControlLoop() {
   arm_state_ = arm_->GetJointStates();
   
-  sensor_msgs::msg::JointState joint_state_msg;
-  joint_state_msg.header.stamp = this->now();
-  joint_state_msg.name = {"joint1", "joint2", "joint3", "joint4", "joint5", "joint6", "joint7"};
-
+  bool publish_joint_state = this->get_parameter("publish_joint_state").as_bool();
+  bool publish_joint_feedback = this->get_parameter("publish_joint_feedback").as_bool();
   
   if (!got_feedback_) return;
 
@@ -110,13 +135,28 @@ void SlaveArmNode::ControlLoop() {
   }
 
   auto tau_comp = gravity_compensation_.Compute(joint_positions);
-  for (int i = 0; i < 7; ++i) {
-    joint_state_msg.effort.push_back(tau_comp[i]);
-    joint_state_msg.velocity.push_back(arm_state_.current[i]);
-    joint_state_msg.position.push_back(arm_state_.position[i]);
-  }
-  pub_joint_state_->publish(joint_state_msg);
 
+  if (publish_joint_state) {
+    sensor_msgs::msg::JointState joint_state_msg;
+    joint_state_msg.header.stamp = this->now();
+    joint_state_msg.name = {"joint1", "joint2", "joint3", "joint4", "joint5", "joint6", "joint7"};
+    for (int i = 0; i < 7; ++i) {
+      joint_state_msg.effort.push_back(tau_comp[i]);
+      joint_state_msg.velocity.push_back(arm_state_.current[i]);
+      joint_state_msg.position.push_back(arm_state_.position[i]);
+    }
+    pub_joint_state_->publish(joint_state_msg);
+  }
+
+  if (publish_joint_feedback) {
+    dummy_interface::msg::MotorState joint_feedback_msg;
+    joint_feedback_msg.header.stamp = this->now();
+    for (int i = 0; i < 7; ++i) {
+      joint_feedback_msg.position.push_back(arm_state_.position[i]);
+      joint_feedback_msg.current.push_back(arm_state_.current[i]);
+    }
+    pub_joint_feedback_->publish(joint_feedback_msg);
+  }
 }
 
 void SlaveArmNode::DebugInfoCallback() {
