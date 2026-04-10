@@ -150,15 +150,17 @@ void SlaveArmNode::ControlLoop() {
       joint_state_msg.position.push_back(arm_state_.position[i]);
     }
     pub_joint_state_->publish(joint_state_msg);
+    
   }
 
   if (publish_joint_feedback) {
     dummy_interface::msg::MotorState joint_feedback_msg;
     joint_feedback_msg.header.stamp = this->now();
-    for (int i = 0; i < 7; ++i) {
-      joint_feedback_msg.position.push_back(arm_state_.position[i]);
-      joint_feedback_msg.current.push_back(arm_state_.current[i]);
-    }
+    joint_feedback_msg.position = arm_state_.position;
+    joint_feedback_msg.velocity = arm_state_.velocity;
+    joint_feedback_msg.current = arm_state_.current;
+    joint_feedback_msg.temperature = arm_state_.temperature;
+    // Set voltage and temperature to empty arrays as we don't have this data
     pub_joint_feedback_->publish(joint_feedback_msg);
   }
 }

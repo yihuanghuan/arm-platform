@@ -10,6 +10,7 @@ ArmHardwareNode::ArmHardwareNode()
   // ------------------- Hardware stack -------------------
   std::string port;
   this->declare_parameter<std::string>("port_name", "/dev/ttyUSB0");
+  this->declare_parameter<std::string>("arm_type", "a_l1_gamma");
   this->get_parameter("port_name", port);
 
   std::string arm_type;

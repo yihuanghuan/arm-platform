@@ -59,7 +59,7 @@ def generate_launch_description():
                 {'publish_joint_state': LaunchConfiguration('publish_joint_state')},
                 # 是否发布joint_feedback
                 {'publish_joint_feedback': LaunchConfiguration('publish_joint_feedback')},
-                {'urdf_path': PathJoinSubstitution([FindPackageShare('manipulator'), 'config/manipulator', 'arm.urdf'])}
+                {'urdf_path': PathJoinSubstitution([FindPackageShare('manipulator'), 'arm.urdf'])}
             ]
         ),
     ])
