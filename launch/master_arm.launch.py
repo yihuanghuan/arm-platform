@@ -2,6 +2,8 @@ from launch import LaunchDescription
 from launch_ros.actions import Node
 from launch.actions import ExecuteProcess, DeclareLaunchArgument
 from launch.substitutions import LaunchConfiguration
+from launch.substitutions import PathJoinSubstitution
+from launch_ros.substitutions import FindPackageShare
 
 def generate_launch_description():
     publish_joint_state_arg = DeclareLaunchArgument(
@@ -57,7 +59,7 @@ def generate_launch_description():
                 {'publish_joint_state': LaunchConfiguration('publish_joint_state')},
                 # 是否发布joint_feedback
                 {'publish_joint_feedback': LaunchConfiguration('publish_joint_feedback')},
-                {'urdf_path': "/home/iusl/huaben_ws/src/dummy_description/urdf/arm/A-L1-GAMMA/arm.urdf"}
+                {'urdf_path': PathJoinSubstitution([FindPackageShare('manipulator'), 'arm.urdf'])}
             ]
         ),
     ])

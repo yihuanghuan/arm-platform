@@ -53,9 +53,12 @@ void DMMotor::UpdateCommand(const dummy_interface::msg::MotorControl& cmd) {
   if (coord_system_ == CoordinateSystem::LeftHand) {
     current = -current;
   }
-  protocol_->SetKp(id_, cmd.p[id_]);
-  protocol_->SetKd(id_, cmd.d[id_]);
+  protocol_->SetKp(id_, cmd.p[cmd_ind]);
+  protocol_->SetKd(id_, cmd.d[cmd_ind]);
   protocol_->SetCurrent(id_, current);
+
+  if(cmd.position.empty()) return;
+
   
   double pos_err = cmd.position[cmd_ind] - position_;
   if (abs(pos_err) < 0.01) {
