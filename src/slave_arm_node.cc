@@ -10,9 +10,6 @@ SlaveArmNode::SlaveArmNode()
   this->declare_parameter<std::string>("port_name", "/dev/ttyUSB0");
   this->declare_parameter<bool>("debug_info", false);
   this->declare_parameter<double>("debug_rate", 1.0);
-  this->declare_parameter<double>("G_GAIN_0", 0.5);
-  this->declare_parameter<double>("G_GAIN_1", 0.5);
-  this->declare_parameter<double>("G_GAIN_2", 1.0);
   this->declare_parameter<double>("MAX_TORQUE", 3.0);
   this->declare_parameter<double>("GRAVITY", 9.81);
   this->declare_parameter<double>("uav_roll", 0.0);
@@ -25,35 +22,42 @@ SlaveArmNode::SlaveArmNode()
   this->declare_parameter<double>("FORCE_FEEDBACK_GAIN", 0.5);
   this->declare_parameter<bool>("publish_joint_state", true);
   this->declare_parameter<bool>("publish_joint_feedback", false);
+  this->declare_parameter<std::string>("urdf_path", "/home/iusl/huaben_ws/src/ti5-description/urdf/ARM_1KG_STD.urdf");
+  this->declare_parameter<std::string>("arm_type", "a_l1_gamma");
 
   std::string port;
   this->get_parameter("port_name", port);
 
-  double G_GAIN_0 = this->get_parameter("G_GAIN_0").as_double();
-  double G_GAIN_1 = this->get_parameter("G_GAIN_1").as_double();
-  double G_GAIN_2 = this->get_parameter("G_GAIN_2").as_double();
+  std::string urdf_path;
+  this->get_parameter("urdf_path", urdf_path);
+  if (!gravity_compensation_.LoadModel(urdf_path)) {
+    RCLCPP_ERROR(this->get_logger(), "Failed to load URDF model from: %s", urdf_path.c_str());
+  } else {
+    RCLCPP_INFO(this->get_logger(), "URDF model loaded successfully from: %s", urdf_path.c_str());
+  }
+
   double MAX_TORQUE = this->get_parameter("MAX_TORQUE").as_double();
   double GRAVITY = this->get_parameter("GRAVITY").as_double();
   double FORCE_FEEDBACK_THRESHOLD = this->get_parameter("FORCE_FEEDBACK_THRESHOLD").as_double();
   double FORCE_FEEDBACK_GAIN = this->get_parameter("FORCE_FEEDBACK_GAIN").as_double();
-  gravity_compensation_.SetParams(G_GAIN_0, G_GAIN_1, G_GAIN_2, MAX_TORQUE, GRAVITY, FORCE_FEEDBACK_THRESHOLD, FORCE_FEEDBACK_GAIN);
+  gravity_compensation_.SetParams(MAX_TORQUE, GRAVITY, FORCE_FEEDBACK_THRESHOLD, FORCE_FEEDBACK_GAIN);
 
   std::string arm_type;
   this->get_parameter("arm_type", arm_type);
   arm_ = arm::ArmFactory::Instance().Create(arm_type);
   arm_->Init(port, 921600);
-  // double uav_roll = this->get_parameter("uav_roll").as_double();
-  // double uav_pitch = this->get_parameter("uav_pitch").as_double();
-  // double uav_yaw = this->get_parameter("uav_yaw").as_double();
-  // double arm_roll = this->get_parameter("arm_roll").as_double();
-  // double arm_pitch = this->get_parameter("arm_pitch").as_double();
-  // double arm_yaw = this->get_parameter("arm_yaw").as_double();
-  // geometry_msgs::msg::Point uav_pose;
-  // uav_pose.x = uav_yaw;
-  // uav_pose.y = uav_roll;
-  // uav_pose.z = uav_pitch;
-  // gravity_compensation_.SetUavPose(uav_pose);
-  // gravity_compensation_.SetRotationAngle(arm_roll, arm_pitch, arm_yaw);
+  double uav_roll = this->get_parameter("uav_roll").as_double();
+  double uav_pitch = this->get_parameter("uav_pitch").as_double();
+  double uav_yaw = this->get_parameter("uav_yaw").as_double();
+  double arm_roll = this->get_parameter("arm_roll").as_double();
+  double arm_pitch = this->get_parameter("arm_pitch").as_double();
+  double arm_yaw = this->get_parameter("arm_yaw").as_double();
+  geometry_msgs::msg::Point uav_pose;
+  uav_pose.x = uav_yaw;
+  uav_pose.y = uav_roll;
+  uav_pose.z = uav_pitch;
+  gravity_compensation_.SetUavPose(uav_pose);
+  gravity_compensation_.SetRotationAngle(arm_roll, arm_pitch, arm_yaw);
 
   sub_master_state_ = this->create_subscription<sensor_msgs::msg::JointState>(
       "/master/joint_states", 10,

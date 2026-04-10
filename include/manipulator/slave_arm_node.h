@@ -11,7 +11,7 @@
 #include <std_msgs/msg/float64_multi_array.hpp>
 #include <geometry_msgs/msg/point.hpp>
 #include <manipulator/arm/abs_arm.h>
-#include <manipulator/gravity_compensation.h>
+#include <manipulator/gravity_compensation_pinocchio.h>
 
 namespace manipulator {
 
@@ -38,7 +38,7 @@ class SlaveArmNode : public rclcpp::Node {
   
   arm::AbsArm::UniPtr arm_;
   arm::AbsArm::JointState arm_state_;
-  GravityCompensation gravity_compensation_;
+  GravityCompensationPinocchio gravity_compensation_;
   
   bool got_feedback_;
   dummy_interface::msg::MotorControl cmd_;

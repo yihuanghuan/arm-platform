@@ -2,6 +2,8 @@ from launch import LaunchDescription
 from launch_ros.actions import Node
 from launch.actions import DeclareLaunchArgument
 from launch.substitutions import LaunchConfiguration
+from launch_ros.substitutions import FindPackageShare
+from launch.substitutions import PathJoinSubstitution
 
 def generate_launch_description():
     publish_joint_state_arg = DeclareLaunchArgument(
@@ -12,7 +14,7 @@ def generate_launch_description():
     
     publish_joint_feedback_arg = DeclareLaunchArgument(
         'publish_joint_feedback',
-        default_value='False',
+        default_value='True',
         description='Whether to publish joint feedback'
     )
     
@@ -42,7 +44,7 @@ def generate_launch_description():
                 {'uav_pitch': 0.0},
                 {'uav_yaw': 0.0},
                 # 机械臂旋转角度（弧度制，roll/pitch/yaw）
-                {'arm_roll': -1.5708},
+                {'arm_roll': 0.0},
                 {'arm_pitch': 0.0},
                 {'arm_yaw': 0.0},
                 # 调试信息开关
@@ -57,7 +59,7 @@ def generate_launch_description():
                 {'publish_joint_state': LaunchConfiguration('publish_joint_state')},
                 # 是否发布joint_feedback
                 {'publish_joint_feedback': LaunchConfiguration('publish_joint_feedback')},
-                {'urdf_path': "/home/iusl/huaben_ws/src/dummy_description/urdf/arm/A-L1-GAMMA/arm.urdf"}
+                {'urdf_path': PathJoinSubstitution([FindPackageShare('manipulator'), 'config/manipulator', 'arm.urdf'])}
             ]
         ),
     ])
