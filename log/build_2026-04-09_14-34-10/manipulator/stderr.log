@@ -1,0 +1,100 @@
+[01m[K/mnt/emmc/cat_home/arm-platform/src/slave_arm_node.cc:471:8:[m[K [01;31m[Kerror: [m[K‘[01m[KMotorCmd[m[K’ in namespace ‘[01m[Kmanipulator::arm[m[K’ does not name a type
+  471 |   arm::[01;31m[KMotorCmd[m[K cmd_;
+      |        [01;31m[K^~~~~~~~[m[K
+[01m[K/mnt/emmc/cat_home/arm-platform/src/slave_arm_node.cc:472:8:[m[K [01;31m[Kerror: [m[K‘[01m[KMotorState[m[K’ in namespace ‘[01m[Kmanipulator::arm[m[K’ does not name a type
+  472 |   arm::[01;31m[KMotorState[m[K arm_state_;
+      |        [01;31m[K^~~~~~~~~~[m[K
+[01m[K/mnt/emmc/cat_home/arm-platform/src/slave_arm_node.cc:[m[K In constructor ‘[01m[Kmanipulator::SlaveArmNode::SlaveArmNode()[m[K’:
+[01m[K/mnt/emmc/cat_home/arm-platform/src/slave_arm_node.cc:490:15:[m[K [01;35m[Kwarning: [m[K‘[01m[Kmanipulator::SlaveArmNode::ee_frame_name_[m[K’ will be initialized after [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wreorder-Wreorder]8;;[m[K]
+  490 |   std::string [01;35m[Kee_frame_name_[m[K;
+      |               [01;35m[K^~~~~~~~~~~~~~[m[K
+[01m[K/mnt/emmc/cat_home/arm-platform/src/slave_arm_node.cc:477:8:[m[K [01;35m[Kwarning: [m[K  ‘[01m[Kbool manipulator::SlaveArmNode::model_loaded_[m[K’ [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wreorder-Wreorder]8;;[m[K]
+  477 |   bool [01;35m[Kmodel_loaded_[m[K;
+      |        [01;35m[K^~~~~~~~~~~~~[m[K
+[01m[K/mnt/emmc/cat_home/arm-platform/src/slave_arm_node.cc:43:3:[m[K [01;35m[Kwarning: [m[K  when initialized here [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wreorder-Wreorder]8;;[m[K]
+   43 |   [01;35m[KSlaveArmNode[m[K()
+      |   [01;35m[K^~~~~~~~~~~~[m[K
+[01m[K/mnt/emmc/cat_home/arm-platform/src/slave_arm_node.cc:111:32:[m[K [01;31m[Kerror: [m[K‘[01m[Kclass manipulator::GravityCompensation[m[K’ has no member named ‘[01m[KLoadModel[m[K’
+  111 |     if (!gravity_compensation_.[01;31m[KLoadModel[m[K(urdf_path)) {
+      |                                [01;31m[K^~~~~~~~~[m[K
+[01m[K/mnt/emmc/cat_home/arm-platform/src/slave_arm_node.cc:121:36:[m[K [01;31m[Kerror: [m[Kno matching function for call to ‘[01m[Kmanipulator::GravityCompensation::SetParams(double&, double&, double&, double&)[m[K’
+  121 |     [01;31m[Kgravity_compensation_.SetParams(MAX_TORQUE, GRAVITY, FORCE_FEEDBACK_THRESHOLD, FORCE_FEEDBACK_GAIN)[m[K;
+      |     [01;31m[K~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[m[K
+In file included from [01m[K/mnt/emmc/cat_home/arm-platform/src/slave_arm_node.cc:21[m[K:
+[01m[K/mnt/emmc/cat_home/arm-platform/include/manipulator/gravity_compensation.h:32:8:[m[K [01;36m[Knote: [m[Kcandidate: ‘[01m[Kvoid manipulator::GravityCompensation::SetParams(double, double, double, double, double, double, double)[m[K’
+   32 |   void [01;36m[KSetParams[m[K(double G_GAIN_0, double G_GAIN_1, double G_GAIN_2,
+      |        [01;36m[K^~~~~~~~~[m[K
+[01m[K/mnt/emmc/cat_home/arm-platform/include/manipulator/gravity_compensation.h:32:8:[m[K [01;36m[Knote: [m[K  candidate expects 7 arguments, 4 provided
+[01m[K/mnt/emmc/cat_home/arm-platform/src/slave_arm_node.cc:146:11:[m[K [01;31m[Kerror: [m[K‘[01m[Kusing element_type = class manipulator::arm::IArm[m[K’ {aka ‘[01m[Kclass manipulator::arm::IArm[m[K’} has no member named ‘[01m[KInit[m[K’
+  146 |     arm_->[01;31m[KInit[m[K(port, 921600);
+      |           [01;31m[K^~~~[m[K
+[01m[K/mnt/emmc/cat_home/arm-platform/src/slave_arm_node.cc:148:5:[m[K [01;31m[Kerror: [m[K‘[01m[Kcmd_[m[K’ was not declared in this scope
+  148 |     [01;31m[Kcmd_[m[K.current.resize(7, 0.0);
+      |     [01;31m[K^~~~[m[K
+[01m[K/mnt/emmc/cat_home/arm-platform/src/slave_arm_node.cc:[m[K In member function ‘[01m[Kvoid manipulator::SlaveArmNode::ControlLoop()[m[K’:
+[01m[K/mnt/emmc/cat_home/arm-platform/src/slave_arm_node.cc:245:5:[m[K [01;31m[Kerror: [m[K‘[01m[Karm_state_[m[K’ was not declared in this scope
+  245 |     [01;31m[Karm_state_[m[K = arm_->GetJointStates();
+      |     [01;31m[K^~~~~~~~~~[m[K
+[01m[K/mnt/emmc/cat_home/arm-platform/src/slave_arm_node.cc:245:24:[m[K [01;31m[Kerror: [m[K‘[01m[Kusing element_type = class manipulator::arm::IArm[m[K’ {aka ‘[01m[Kclass manipulator::arm::IArm[m[K’} has no member named ‘[01m[KGetJointStates[m[K’; did you mean ‘[01m[KUpdateJointStates[m[K’?
+  245 |     arm_state_ = arm_->[01;31m[KGetJointStates[m[K();
+      |                        [01;31m[K^~~~~~~~~~~~~~[m[K
+      |                        [32m[KUpdateJointStates[m[K
+[01m[K/mnt/emmc/cat_home/arm-platform/src/slave_arm_node.cc:267:5:[m[K [01;31m[Kerror: [m[K‘[01m[Kcmd_[m[K’ was not declared in this scope
+  267 |     [01;31m[Kcmd_[m[K.header.stamp = this->now();
+      |     [01;31m[K^~~~[m[K
+[01m[K/mnt/emmc/cat_home/arm-platform/src/slave_arm_node.cc:[m[K In member function ‘[01m[Kvoid manipulator::SlaveArmNode::PublishJointState()[m[K’:
+[01m[K/mnt/emmc/cat_home/arm-platform/src/slave_arm_node.cc:313:32:[m[K [01;31m[Kerror: [m[K‘[01m[Karm_state_[m[K’ was not declared in this scope
+  313 |     joint_state_msg.position = [01;31m[Karm_state_[m[K.position;
+      |                                [01;31m[K^~~~~~~~~~[m[K
+In file included from [01m[K/opt/ros/humble/include/rclcpp/rclcpp/logging.hpp:24[m[K,
+                 from [01m[K/opt/ros/humble/include/rclcpp/rclcpp/client.hpp:40[m[K,
+                 from [01m[K/opt/ros/humble/include/rclcpp/rclcpp/callback_group.hpp:24[m[K,
+                 from [01m[K/opt/ros/humble/include/rclcpp/rclcpp/any_executable.hpp:20[m[K,
+                 from [01m[K/opt/ros/humble/include/rclcpp/rclcpp/memory_strategy.hpp:25[m[K,
+                 from [01m[K/opt/ros/humble/include/rclcpp/rclcpp/memory_strategies.hpp:18[m[K,
+                 from [01m[K/opt/ros/humble/include/rclcpp/rclcpp/executor_options.hpp:20[m[K,
+                 from [01m[K/opt/ros/humble/include/rclcpp/rclcpp/executor.hpp:37[m[K,
+                 from [01m[K/opt/ros/humble/include/rclcpp/rclcpp/executors/multi_threaded_executor.hpp:25[m[K,
+                 from [01m[K/opt/ros/humble/include/rclcpp/rclcpp/executors.hpp:21[m[K,
+                 from [01m[K/opt/ros/humble/include/rclcpp/rclcpp/rclcpp.hpp:155[m[K,
+                 from [01m[K/mnt/emmc/cat_home/arm-platform/src/slave_arm_node.cc:15[m[K:
+[01m[K/mnt/emmc/cat_home/arm-platform/src/slave_arm_node.cc:[m[K In member function ‘[01m[Kbool manipulator::SlaveArmNode::LoadPinocchioModel(const string&, const string&)[m[K’:
+[01m[K/mnt/emmc/cat_home/arm-platform/src/slave_arm_node.cc:336:19:[m[K [01;35m[Kwarning: [m[Kformat ‘[01m[K%u[m[K’ expects argument of type ‘[01m[Kunsigned int[m[K’, but argument 8 has type ‘[01m[Kpinocchio::FrameIndex[m[K’ {aka ‘[01m[Klong unsigned int[m[K’} [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wformat=-Wformat=]8;;[m[K]
+  336 |                   [01;35m[K"Pinocchio model loaded. nq=%d, nv=%d, ee_frame=%s, frame_id=%u"[m[K,
+      |                   [01;35m[K^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[m[K
+......
+  340 |                   [32m[Kee_frame_id_[m[K);
+      |                   [32m[K~~~~~~~~~~~~[m[K
+      |                   [32m[K|[m[K
+      |                   [32m[Kpinocchio::FrameIndex {aka long unsigned int}[m[K
+[01m[K/mnt/emmc/cat_home/arm-platform/src/slave_arm_node.cc:336:81:[m[K [01;36m[Knote: [m[Kformat string is defined here
+  336 |                   "Pinocchio model loaded. nq=%d, nv=%d, ee_frame=%s, frame_id=[01;36m[K%u[m[K",
+      |                                                                                [01;36m[K~^[m[K
+      |                                                                                 [01;36m[K|[m[K
+      |                                                                                 [01;36m[Kunsigned int[m[K
+      |                                                                                [32m[K%lu[m[K
+In file included from [01m[K/opt/ros/humble/include/rclcpp/rclcpp/logging.hpp:24[m[K,
+                 from [01m[K/opt/ros/humble/include/rclcpp/rclcpp/client.hpp:40[m[K,
+                 from [01m[K/opt/ros/humble/include/rclcpp/rclcpp/callback_group.hpp:24[m[K,
+                 from [01m[K/opt/ros/humble/include/rclcpp/rclcpp/any_executable.hpp:20[m[K,
+                 from [01m[K/opt/ros/humble/include/rclcpp/rclcpp/memory_strategy.hpp:25[m[K,
+                 from [01m[K/opt/ros/humble/include/rclcpp/rclcpp/memory_strategies.hpp:18[m[K,
+                 from [01m[K/opt/ros/humble/include/rclcpp/rclcpp/executor_options.hpp:20[m[K,
+                 from [01m[K/opt/ros/humble/include/rclcpp/rclcpp/executor.hpp:37[m[K,
+                 from [01m[K/opt/ros/humble/include/rclcpp/rclcpp/executors/multi_threaded_executor.hpp:25[m[K,
+                 from [01m[K/opt/ros/humble/include/rclcpp/rclcpp/executors.hpp:21[m[K,
+                 from [01m[K/opt/ros/humble/include/rclcpp/rclcpp/rclcpp.hpp:155[m[K,
+                 from [01m[K/mnt/emmc/cat_home/arm-platform/src/slave_arm_node.cc:15[m[K:
+[01m[K/mnt/emmc/cat_home/arm-platform/src/slave_arm_node.cc:[m[K In member function ‘[01m[Kvoid manipulator::SlaveArmNode::DebugInfoCallback()[m[K’:
+[01m[K/mnt/emmc/cat_home/arm-platform/src/slave_arm_node.cc:436:17:[m[K [01;31m[Kerror: [m[K‘[01m[Karm_state_[m[K’ was not declared in this scope
+  436 |                 [01;31m[Karm_state_[m[K.position[0], arm_state_.position[1], arm_state_.position[2],
+      |                 [01;31m[K^~~~~~~~~~[m[K
+[01m[K/mnt/emmc/cat_home/arm-platform/src/slave_arm_node.cc:441:17:[m[K [01;31m[Kerror: [m[K‘[01m[Karm_state_[m[K’ was not declared in this scope
+  441 |                 [01;31m[Karm_state_[m[K.current[0], arm_state_.current[1], arm_state_.current[2],
+      |                 [01;31m[K^~~~~~~~~~[m[K
+[01m[K/mnt/emmc/cat_home/arm-platform/src/slave_arm_node.cc:447:16:[m[K [01;31m[Kerror: [m[K‘[01m[Karm_state_[m[K’ was not declared in this scope
+  447 |         q[i] = [01;31m[Karm_state_[m[K.position[i];
+      |                [01;31m[K^~~~~~~~~~[m[K
+gmake[2]: *** [CMakeFiles/slave_arm_node.dir/build.make:76：CMakeFiles/slave_arm_node.dir/src/slave_arm_node.cc.o] 错误 1
+gmake[1]: *** [CMakeFiles/Makefile2:279：CMakeFiles/slave_arm_node.dir/all] 错误 2
+gmake: *** [Makefile:146：all] 错误 2

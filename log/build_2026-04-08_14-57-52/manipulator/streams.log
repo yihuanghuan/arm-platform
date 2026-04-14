@@ -1,0 +1,36 @@
+[0.024s] Invoking command in '/mnt/emmc/cat_home/arm-platform/build/manipulator': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/humble /usr/bin/cmake --build /mnt/emmc/cat_home/arm-platform/build/manipulator -- -j8 -l8
+[0.204s] [  9%] Built target gravity_compensation
+[0.234s] [ 61%] Built target manipulator_core
+[0.249s] [ 66%] [32mBuilding CXX object CMakeFiles/gravity_compensation_pinocchio.dir/src/gravity_compensation_pinocchio.cc.o[0m
+[0.314s] [ 76%] Built target arm_hardware_node
+[21.423s] [ 80%] [32m[1mLinking CXX static library libgravity_compensation_pinocchio.a[0m
+[21.599s] [ 80%] Built target gravity_compensation_pinocchio
+[21.711s] [ 85%] [32m[1mLinking CXX executable master_arm_node[0m
+[21.715s] [ 90%] [32mBuilding CXX object CMakeFiles/slave_arm_node.dir/src/slave_arm_node.cc.o[0m
+[23.228s] [ 95%] Built target master_arm_node
+[34.409s] [01m[K/mnt/emmc/cat_home/arm-platform/src/slave_arm_node.cc:[m[K In constructor ‘[01m[Kmanipulator::SlaveArmNode::SlaveArmNode()[m[K’:
+[34.410s] [01m[K/mnt/emmc/cat_home/arm-platform/src/slave_arm_node.cc:77:3:[m[K [01;31m[Kerror: [m[K‘[01m[Ksub_joint_pose[m[K’ was not declared in this scope; did you mean ‘[01m[Kpub_joint_state_[m[K’?
+[34.410s]    77 |   [01;31m[Ksub_joint_pose[m[K = this->create_subscription<sensor_msgs::msg::JointState>(
+[34.410s]       |   [01;31m[K^~~~~~~~~~~~~~[m[K
+[34.411s]       |   [32m[Kpub_joint_state_[m[K
+[34.411s] [01m[K/mnt/emmc/cat_home/arm-platform/src/slave_arm_node.cc:[m[K In lambda function:
+[34.411s] [01m[K/mnt/emmc/cat_home/arm-platform/src/slave_arm_node.cc:80:9:[m[K [01;31m[Kerror: [m[K‘[01m[Karm_pose[m[K’ is not captured
+[34.412s]    80 |         [01;31m[Karm_pose[m[K.position = msg.position;
+[34.412s]       |         [01;31m[K^~~~~~~~[m[K
+[34.413s] [01m[K/mnt/emmc/cat_home/arm-platform/src/slave_arm_node.cc:79:12:[m[K [01;36m[Knote: [m[Kthe lambda has no capture-default
+[34.413s]    79 |       [this[01;36m[K][m[K(const sensor_msgs::msg::JointState::ConstSharedPtr& msg) {
+[34.413s]       |            [01;36m[K^[m[K
+[34.414s] [01m[K/mnt/emmc/cat_home/arm-platform/src/slave_arm_node.cc:74:32:[m[K [01;36m[Knote: [m[K‘[01m[Ksensor_msgs::msg::JointState arm_pose[m[K’ declared here
+[34.414s]    74 |   sensor_msgs::msg::JointState [01;36m[Karm_pose[m[K;
+[34.415s]       |                                [01;36m[K^~~~~~~~[m[K
+[34.415s] [01m[K/mnt/emmc/cat_home/arm-platform/src/slave_arm_node.cc:80:33:[m[K [01;31m[Kerror: [m[K‘[01m[Kconst ConstSharedPtr[m[K’ {aka ‘[01m[Kconst class std::shared_ptr<const sensor_msgs::msg::JointState_<std::allocator<void> > >[m[K’} has no member named ‘[01m[Kposition[m[K’
+[34.415s]    80 |         arm_pose.position = msg.[01;31m[Kposition[m[K;
+[34.416s]       |                                 [01;31m[K^~~~~~~~[m[K
+[34.506s] [01m[K/mnt/emmc/cat_home/arm-platform/src/slave_arm_node.cc:[m[K In constructor ‘[01m[Kmanipulator::SlaveArmNode::SlaveArmNode()[m[K’:
+[34.506s] [01m[K/mnt/emmc/cat_home/arm-platform/src/slave_arm_node.cc:72:8:[m[K [01;35m[Kwarning: [m[Kunused variable ‘[01m[Kpublish_joint_state[m[K’ [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-variable-Wunused-variable]8;;[m[K]
+[34.507s]    72 |   bool [01;35m[Kpublish_joint_state[m[K = this->get_parameter("publish_joint_state").as_bool();
+[34.507s]       |        [01;35m[K^~~~~~~~~~~~~~~~~~~[m[K
+[44.395s] gmake[2]: *** [CMakeFiles/slave_arm_node.dir/build.make:76：CMakeFiles/slave_arm_node.dir/src/slave_arm_node.cc.o] 错误 1
+[44.396s] gmake[1]: *** [CMakeFiles/Makefile2:279：CMakeFiles/slave_arm_node.dir/all] 错误 2
+[44.396s] gmake: *** [Makefile:146：all] 错误 2
+[44.400s] Invoked command in '/mnt/emmc/cat_home/arm-platform/build/manipulator' returned '2': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/humble /usr/bin/cmake --build /mnt/emmc/cat_home/arm-platform/build/manipulator -- -j8 -l8

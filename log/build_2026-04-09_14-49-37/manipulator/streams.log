@@ -1,0 +1,13 @@
+[0.024s] Invoking command in '/mnt/emmc/cat_home/arm-platform/build/manipulator': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/humble /usr/bin/cmake --build /mnt/emmc/cat_home/arm-platform/build/manipulator -- -j8 -l8
+[0.190s] [  9%] Built target gravity_compensation
+[0.236s] [ 19%] Built target gravity_compensation_pinocchio
+[0.243s] [ 71%] Built target manipulator_core
+[0.301s] [35m[1mConsolidate compiler generated dependencies of target slave_arm_node[0m
+[0.337s] [ 80%] Built target arm_hardware_node
+[0.389s] [ 85%] [32mBuilding CXX object CMakeFiles/slave_arm_node.dir/src/slave_arm_node.cc.o[0m
+[0.393s] [ 95%] Built target master_arm_node
+[59.094s] [01m[K/mnt/emmc/cat_home/arm-platform/src/slave_arm_node.cc:[m[K In constructor ‘[01m[Kmanipulator::SlaveArmNode::SlaveArmNode()[m[K’:
+[59.095s] [01m[K/mnt/emmc/cat_home/arm-platform/src/slave_arm_node.cc:389:8:[m[K [01;35m[Kwarning: [m[Kunused variable ‘[01m[Kpublish_joint_state[m[K’ [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-variable-Wunused-variable]8;;[m[K]
+[59.096s]   389 |   bool [01;35m[Kpublish_joint_state[m[K = this->get_parameter("publish_joint_state").as_bool();
+[59.096s]       |        [01;35m[K^~~~~~~~~~~~~~~~~~~[m[K
+[59.097s] gmake[2]: *** [CMakeFiles/slave_arm_node.dir/build.make:76: CMakeFiles/slave_arm_node.dir/src/slave_arm_node.cc.o] 中断

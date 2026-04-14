@@ -1,0 +1,3 @@
+source;share/manipulator/environment/ament_prefix_path.sh
+source;share/manipulator/environment/library_path.sh
+source;share/manipulator/environment/path.sh

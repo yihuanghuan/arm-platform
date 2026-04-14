@@ -1,0 +1,273 @@
+[0.000000] (-) TimerEvent: {}
+[0.000925] (manipulator) JobQueued: {'identifier': 'manipulator', 'dependencies': OrderedDict()}
+[0.001748] (manipulator) JobStarted: {'identifier': 'manipulator'}
+[0.018852] (manipulator) JobProgress: {'identifier': 'manipulator', 'progress': 'cmake'}
+[0.020358] (manipulator) JobProgress: {'identifier': 'manipulator', 'progress': 'build'}
+[0.021736] (manipulator) Command: {'cmd': ['/usr/bin/cmake', '--build', '/mnt/emmc/cat_home/arm-platform/build/manipulator', '--', '-j8', '-l8'], 'cwd': '/mnt/emmc/cat_home/arm-platform/build/manipulator', 'env': OrderedDict([('LESSOPEN', '| /usr/bin/lesspipe %s'), ('USER', 'cat'), ('SSH_CLIENT', '192.168.50.128 50466 22'), ('XDG_SESSION_TYPE', 'tty'), ('GIT_ASKPASS', '/mnt/emmc/cat_home/.vscode-server/cli/servers/Stable-e7fb5e96c0730b9deb70b33781f98e2f35975036/server/extensions/git/dist/askpass.sh'), ('SHLVL', '1'), ('LD_LIBRARY_PATH', '/home/cat/ArmRemoteController/install/mqtt_comm/lib:/home/cat/ArmRemoteController/install/dummy_interface/lib:/home/cat/huaben_ws/install/manipulator/lib:/home/cat/huaben_ws/install/dummy_interface/lib:/home/cat/uav_ws/install/mavros_extras/lib:/home/cat/uav_ws/install/mavros/lib:/home/cat/uav_ws/install/mavros_msgs/lib:/home/cat/uav_ws/install/libmavconn/lib:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/aarch64-linux-gnu:/opt/ros/humble/lib'), ('BROWSER', '/mnt/emmc/cat_home/.vscode-server/cli/servers/Stable-e7fb5e96c0730b9deb70b33781f98e2f35975036/server/bin/helpers/browser.sh'), ('MOTD_SHOWN', 'pam'), ('HOME', '/home/cat'), ('MUTTER_DEBUG_ENABLE_ATOMIC_KMS', '0'), ('CYCLONEDDS_URI', 'file:///home/cat/.ros/cyclonedds.xml'), ('TERM_PROGRAM_VERSION', '1.114.0'), ('VSCODE_IPC_HOOK_CLI', '/run/user/1000/vscode-ipc-8bb55d29-e4c1-4ede-bb93-690ba34e8e0f.sock'), ('ROS_PYTHON_VERSION', '3'), ('VSCODE_GIT_ASKPASS_MAIN', '/mnt/emmc/cat_home/.vscode-server/cli/servers/Stable-e7fb5e96c0730b9deb70b33781f98e2f35975036/server/extensions/git/dist/askpass-main.js'), ('VSCODE_GIT_ASKPASS_NODE', '/mnt/emmc/cat_home/.vscode-server/cli/servers/Stable-e7fb5e96c0730b9deb70b33781f98e2f35975036/server/node'), ('VSCODE_PYTHON_AUTOACTIVATE_GUARD', '1'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('COLORTERM', 'truecolor'), ('COLCON_PREFIX_PATH', '/home/cat/huaben_ws/install:/home/cat/uav_ws/install:/home/cat/ArmRemoteController/install'), ('ROS_DISTRO', 'humble'), ('LOGNAME', 'cat'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('XDG_SESSION_CLASS', 'user'), ('TERM', 'xterm-256color'), ('XDG_SESSION_ID', '7'), ('ROS_LOCALHOST_ONLY', '0'), ('PATH', '/home/cat/.vscode-server/data/User/globalStorage/github.copilot-chat/debugCommand:/home/cat/.vscode-server/data/User/globalStorage/github.copilot-chat/copilotCli:/mnt/emmc/cat_home/.vscode-server/cli/servers/Stable-e7fb5e96c0730b9deb70b33781f98e2f35975036/server/bin/remote-cli:/opt/ros/humble/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('LANG', 'zh_CN.UTF-8'), ('RMW_IMPLEMENTATION', 'rmw_cyclonedds_cpp'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('VSCODE_GIT_IPC_HANDLE', '/run/user/1000/vscode-git-741534cd28.sock'), ('TERM_PROGRAM', 'vscode'), ('ROS_DOMAIN_ID', '6'), ('AMENT_PREFIX_PATH', '/home/cat/ArmRemoteController/install/uav_arm_controller:/home/cat/ArmRemoteController/install/servo_teleop:/home/cat/ArmRemoteController/install/mqtt_comm:/home/cat/ArmRemoteController/install/dummy_arm:/home/cat/ArmRemoteController/install/dummy_interface:/home/cat/ArmRemoteController/install/dummy_description:/home/cat/huaben_ws/install/manipulator:/home/cat/huaben_ws/install/dummy_interface:/home/cat/huaben_ws/install/dummy_arm:/home/cat/uav_ws/install/vrpn_listener:/home/cat/uav_ws/install/odin_ros_driver:/home/cat/uav_ws/install/mavros_extras:/home/cat/uav_ws/install/mavros_examples:/home/cat/uav_ws/install/mavros:/home/cat/uav_ws/install/mavros_msgs:/home/cat/uav_ws/install/libmavconn:/opt/ros/humble'), ('SHELL', '/bin/bash'), ('CLUTTER_PAINT', 'disable-dynamic-max-render-time'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('MUTTER_DEBUG_FORCE_KMS_MODE', 'simple'), ('VSCODE_GIT_ASKPASS_EXTRA_ARGS', ''), ('PWD', '/mnt/emmc/cat_home/arm-platform/build/manipulator'), ('SSH_CONNECTION', '192.168.50.128 50466 192.168.50.126 22'), ('XDG_DATA_DIRS', '/usr/share/gnome:/usr/local/share:/usr/share:/var/lib/snapd/desktop'), ('PYTHONPATH', '/home/cat/ArmRemoteController/install/dummy_interface/local/lib/python3.10/dist-packages:/home/cat/huaben_ws/install/dummy_interface/local/lib/python3.10/dist-packages:/home/cat/uav_ws/install/mavros_examples/local/lib/python3.10/dist-packages:/home/cat/uav_ws/install/mavros/local/lib/python3.10/dist-packages:/home/cat/uav_ws/install/mavros_msgs/local/lib/python3.10/dist-packages:/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages'), ('COLCON', '1'), ('CMAKE_PREFIX_PATH', '/home/cat/ArmRemoteController/install/uav_arm_controller:/home/cat/ArmRemoteController/install/servo_teleop:/home/cat/ArmRemoteController/install/mqtt_comm:/home/cat/ArmRemoteController/install/dummy_arm:/home/cat/ArmRemoteController/install/dummy_interface:/home/cat/ArmRemoteController/install/dummy_description:/home/cat/huaben_ws/install/manipulator:/home/cat/huaben_ws/install/dummy_interface:/home/cat/huaben_ws/install/dummy_arm:/home/cat/uav_ws/install/vrpn_listener:/home/cat/uav_ws/install/odin_ros_driver:/home/cat/uav_ws/install/mavros_extras:/home/cat/uav_ws/install/mavros_examples:/home/cat/uav_ws/install/mavros:/home/cat/uav_ws/install/mavros_msgs:/home/cat/uav_ws/install/libmavconn:/opt/ros/humble')]), 'shell': False}
+[0.099592] (-) TimerEvent: {}
+[0.193125] (manipulator) StdoutLine: {'line': b'[ 52%] Built target manipulator_core\n'}
+[0.199000] (manipulator) StdoutLine: {'line': b'[ 71%] Built target gravity_compensation\n'}
+[0.199478] (manipulator) StdoutLine: {'line': b'[ 66%] Built target gravity_compensation_pinocchio\n'}
+[0.199582] (-) TimerEvent: {}
+[0.235465] (manipulator) StdoutLine: {'line': b'\x1b[35m\x1b[1mConsolidate compiler generated dependencies of target slave_arm_node\x1b[0m\n'}
+[0.282099] (manipulator) StdoutLine: {'line': b'[ 80%] Built target master_arm_node\n'}
+[0.283495] (manipulator) StdoutLine: {'line': b'[ 90%] Built target arm_hardware_node\n'}
+[0.299846] (-) TimerEvent: {}
+[0.328102] (manipulator) StdoutLine: {'line': b'[ 95%] \x1b[32mBuilding CXX object CMakeFiles/slave_arm_node.dir/src/slave_arm_node.cc.o\x1b[0m\n'}
+[0.400232] (-) TimerEvent: {}
+[0.501664] (-) TimerEvent: {}
+[0.602823] (-) TimerEvent: {}
+[0.704174] (-) TimerEvent: {}
+[0.806026] (-) TimerEvent: {}
+[0.907479] (-) TimerEvent: {}
+[1.009176] (-) TimerEvent: {}
+[1.110511] (-) TimerEvent: {}
+[1.211816] (-) TimerEvent: {}
+[1.312987] (-) TimerEvent: {}
+[1.414238] (-) TimerEvent: {}
+[1.515661] (-) TimerEvent: {}
+[1.616913] (-) TimerEvent: {}
+[1.718257] (-) TimerEvent: {}
+[1.819833] (-) TimerEvent: {}
+[1.921109] (-) TimerEvent: {}
+[2.022703] (-) TimerEvent: {}
+[2.124077] (-) TimerEvent: {}
+[2.225377] (-) TimerEvent: {}
+[2.326830] (-) TimerEvent: {}
+[2.428131] (-) TimerEvent: {}
+[2.529388] (-) TimerEvent: {}
+[2.630642] (-) TimerEvent: {}
+[2.731981] (-) TimerEvent: {}
+[2.833170] (-) TimerEvent: {}
+[2.934873] (-) TimerEvent: {}
+[3.036542] (-) TimerEvent: {}
+[3.137798] (-) TimerEvent: {}
+[3.239010] (-) TimerEvent: {}
+[3.340239] (-) TimerEvent: {}
+[3.441488] (-) TimerEvent: {}
+[3.542722] (-) TimerEvent: {}
+[3.643938] (-) TimerEvent: {}
+[3.745203] (-) TimerEvent: {}
+[3.846409] (-) TimerEvent: {}
+[3.947641] (-) TimerEvent: {}
+[4.048878] (-) TimerEvent: {}
+[4.150286] (-) TimerEvent: {}
+[4.251655] (-) TimerEvent: {}
+[4.352901] (-) TimerEvent: {}
+[4.454207] (-) TimerEvent: {}
+[4.555463] (-) TimerEvent: {}
+[4.656738] (-) TimerEvent: {}
+[4.757906] (-) TimerEvent: {}
+[4.858567] (-) TimerEvent: {}
+[4.959328] (-) TimerEvent: {}
+[5.060041] (-) TimerEvent: {}
+[5.160795] (-) TimerEvent: {}
+[5.261446] (-) TimerEvent: {}
+[5.362074] (-) TimerEvent: {}
+[5.462778] (-) TimerEvent: {}
+[5.563487] (-) TimerEvent: {}
+[5.664195] (-) TimerEvent: {}
+[5.764861] (-) TimerEvent: {}
+[5.865515] (-) TimerEvent: {}
+[5.966236] (-) TimerEvent: {}
+[6.066988] (-) TimerEvent: {}
+[6.167821] (-) TimerEvent: {}
+[6.268645] (-) TimerEvent: {}
+[6.369403] (-) TimerEvent: {}
+[6.470136] (-) TimerEvent: {}
+[6.570869] (-) TimerEvent: {}
+[6.671640] (-) TimerEvent: {}
+[6.772413] (-) TimerEvent: {}
+[6.873169] (-) TimerEvent: {}
+[6.973896] (-) TimerEvent: {}
+[7.074675] (-) TimerEvent: {}
+[7.175416] (-) TimerEvent: {}
+[7.276167] (-) TimerEvent: {}
+[7.376997] (-) TimerEvent: {}
+[7.477786] (-) TimerEvent: {}
+[7.578555] (-) TimerEvent: {}
+[7.679295] (-) TimerEvent: {}
+[7.780049] (-) TimerEvent: {}
+[7.880807] (-) TimerEvent: {}
+[7.981648] (-) TimerEvent: {}
+[8.082335] (-) TimerEvent: {}
+[8.183084] (-) TimerEvent: {}
+[8.283804] (-) TimerEvent: {}
+[8.384573] (-) TimerEvent: {}
+[8.485219] (-) TimerEvent: {}
+[8.585940] (-) TimerEvent: {}
+[8.686659] (-) TimerEvent: {}
+[8.787371] (-) TimerEvent: {}
+[8.888088] (-) TimerEvent: {}
+[8.988796] (-) TimerEvent: {}
+[9.089561] (-) TimerEvent: {}
+[9.190277] (-) TimerEvent: {}
+[9.291008] (-) TimerEvent: {}
+[9.391733] (-) TimerEvent: {}
+[9.492469] (-) TimerEvent: {}
+[9.593198] (-) TimerEvent: {}
+[9.693932] (-) TimerEvent: {}
+[9.794659] (-) TimerEvent: {}
+[9.895369] (-) TimerEvent: {}
+[9.996148] (-) TimerEvent: {}
+[10.096897] (-) TimerEvent: {}
+[10.197680] (-) TimerEvent: {}
+[10.298507] (-) TimerEvent: {}
+[10.399161] (-) TimerEvent: {}
+[10.499936] (-) TimerEvent: {}
+[10.600721] (-) TimerEvent: {}
+[10.701466] (-) TimerEvent: {}
+[10.802134] (-) TimerEvent: {}
+[10.903006] (-) TimerEvent: {}
+[11.004359] (-) TimerEvent: {}
+[11.105765] (-) TimerEvent: {}
+[11.207074] (-) TimerEvent: {}
+[11.308348] (-) TimerEvent: {}
+[11.409690] (-) TimerEvent: {}
+[11.511016] (-) TimerEvent: {}
+[11.612381] (-) TimerEvent: {}
+[11.713611] (-) TimerEvent: {}
+[11.815139] (-) TimerEvent: {}
+[11.916536] (-) TimerEvent: {}
+[12.018053] (-) TimerEvent: {}
+[12.119477] (-) TimerEvent: {}
+[12.220861] (-) TimerEvent: {}
+[12.322366] (-) TimerEvent: {}
+[12.423827] (-) TimerEvent: {}
+[12.525330] (-) TimerEvent: {}
+[12.626763] (-) TimerEvent: {}
+[12.728162] (-) TimerEvent: {}
+[12.829461] (-) TimerEvent: {}
+[12.930817] (-) TimerEvent: {}
+[13.032123] (-) TimerEvent: {}
+[13.133398] (-) TimerEvent: {}
+[13.234952] (-) TimerEvent: {}
+[13.336316] (-) TimerEvent: {}
+[13.437675] (-) TimerEvent: {}
+[13.539102] (-) TimerEvent: {}
+[13.540314] (manipulator) StderrLine: {'line': b'\x1b[01m\x1b[K/mnt/emmc/cat_home/arm-platform/src/slave_arm_node.cc:\x1b[m\x1b[K In constructor \xe2\x80\x98\x1b[01m\x1b[Kmanipulator::SlaveArmNode::SlaveArmNode()\x1b[m\x1b[K\xe2\x80\x99:\n'}
+[13.541104] (manipulator) StderrLine: {'line': b'\x1b[01m\x1b[K/mnt/emmc/cat_home/arm-platform/src/slave_arm_node.cc:77:3:\x1b[m\x1b[K \x1b[01;31m\x1b[Kerror: \x1b[m\x1b[K\xe2\x80\x98\x1b[01m\x1b[Ksub_joint_pose\x1b[m\x1b[K\xe2\x80\x99 was not declared in this scope; did you mean \xe2\x80\x98\x1b[01m\x1b[Kpub_joint_state_\x1b[m\x1b[K\xe2\x80\x99?\n'}
+[13.541579] (manipulator) StderrLine: {'line': b'   77 |   \x1b[01;31m\x1b[Ksub_joint_pose\x1b[m\x1b[K = this->create_subscription<sensor_msgs::msg::JointState>(\n'}
+[13.541959] (manipulator) StderrLine: {'line': b'      |   \x1b[01;31m\x1b[K^~~~~~~~~~~~~~\x1b[m\x1b[K\n'}
+[13.542321] (manipulator) StderrLine: {'line': b'      |   \x1b[32m\x1b[Kpub_joint_state_\x1b[m\x1b[K\n'}
+[13.542686] (manipulator) StderrLine: {'line': b'\x1b[01m\x1b[K/mnt/emmc/cat_home/arm-platform/src/slave_arm_node.cc:\x1b[m\x1b[K In lambda function:\n'}
+[13.543050] (manipulator) StderrLine: {'line': b'\x1b[01m\x1b[K/mnt/emmc/cat_home/arm-platform/src/slave_arm_node.cc:80:9:\x1b[m\x1b[K \x1b[01;31m\x1b[Kerror: \x1b[m\x1b[K\xe2\x80\x98\x1b[01m\x1b[Karm_pose\x1b[m\x1b[K\xe2\x80\x99 is not captured\n'}
+[13.543418] (manipulator) StderrLine: {'line': b'   80 |         \x1b[01;31m\x1b[Karm_pose\x1b[m\x1b[K.position = msg.position;\n'}
+[13.543793] (manipulator) StderrLine: {'line': b'      |         \x1b[01;31m\x1b[K^~~~~~~~\x1b[m\x1b[K\n'}
+[13.544165] (manipulator) StderrLine: {'line': b'\x1b[01m\x1b[K/mnt/emmc/cat_home/arm-platform/src/slave_arm_node.cc:79:12:\x1b[m\x1b[K \x1b[01;36m\x1b[Knote: \x1b[m\x1b[Kthe lambda has no capture-default\n'}
+[13.544556] (manipulator) StderrLine: {'line': b'   79 |       [this\x1b[01;36m\x1b[K]\x1b[m\x1b[K(const sensor_msgs::msg::JointState::ConstSharedPtr& msg) {\n'}
+[13.544947] (manipulator) StderrLine: {'line': b'      |            \x1b[01;36m\x1b[K^\x1b[m\x1b[K\n'}
+[13.545323] (manipulator) StderrLine: {'line': b'\x1b[01m\x1b[K/mnt/emmc/cat_home/arm-platform/src/slave_arm_node.cc:74:32:\x1b[m\x1b[K \x1b[01;36m\x1b[Knote: \x1b[m\x1b[K\xe2\x80\x98\x1b[01m\x1b[Ksensor_msgs::msg::JointState arm_pose\x1b[m\x1b[K\xe2\x80\x99 declared here\n'}
+[13.545895] (manipulator) StderrLine: {'line': b'   74 |   sensor_msgs::msg::JointState \x1b[01;36m\x1b[Karm_pose\x1b[m\x1b[K;\n'}
+[13.546274] (manipulator) StderrLine: {'line': b'      |                                \x1b[01;36m\x1b[K^~~~~~~~\x1b[m\x1b[K\n'}
+[13.546646] (manipulator) StderrLine: {'line': b'\x1b[01m\x1b[K/mnt/emmc/cat_home/arm-platform/src/slave_arm_node.cc:80:33:\x1b[m\x1b[K \x1b[01;31m\x1b[Kerror: \x1b[m\x1b[K\xe2\x80\x98\x1b[01m\x1b[Kconst ConstSharedPtr\x1b[m\x1b[K\xe2\x80\x99 {aka \xe2\x80\x98\x1b[01m\x1b[Kconst class std::shared_ptr<const sensor_msgs::msg::JointState_<std::allocator<void> > >\x1b[m\x1b[K\xe2\x80\x99} has no member named \xe2\x80\x98\x1b[01m\x1b[Kposition\x1b[m\x1b[K\xe2\x80\x99\n'}
+[13.547031] (manipulator) StderrLine: {'line': b'   80 |         arm_pose.position = msg.\x1b[01;31m\x1b[Kposition\x1b[m\x1b[K;\n'}
+[13.547399] (manipulator) StderrLine: {'line': b'      |                                 \x1b[01;31m\x1b[K^~~~~~~~\x1b[m\x1b[K\n'}
+[13.635697] (manipulator) StderrLine: {'line': b'\x1b[01m\x1b[K/mnt/emmc/cat_home/arm-platform/src/slave_arm_node.cc:\x1b[m\x1b[K In constructor \xe2\x80\x98\x1b[01m\x1b[Kmanipulator::SlaveArmNode::SlaveArmNode()\x1b[m\x1b[K\xe2\x80\x99:\n'}
+[13.636648] (manipulator) StderrLine: {'line': b'\x1b[01m\x1b[K/mnt/emmc/cat_home/arm-platform/src/slave_arm_node.cc:72:8:\x1b[m\x1b[K \x1b[01;35m\x1b[Kwarning: \x1b[m\x1b[Kunused variable \xe2\x80\x98\x1b[01m\x1b[Kpublish_joint_state\x1b[m\x1b[K\xe2\x80\x99 [\x1b[01;35m\x1b[K\x1b]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-variable\x07-Wunused-variable\x1b]8;;\x07\x1b[m\x1b[K]\n'}
+[13.637071] (manipulator) StderrLine: {'line': b'   72 |   bool \x1b[01;35m\x1b[Kpublish_joint_state\x1b[m\x1b[K = this->get_parameter("publish_joint_state").as_bool();\n'}
+[13.637445] (manipulator) StderrLine: {'line': b'      |        \x1b[01;35m\x1b[K^~~~~~~~~~~~~~~~~~~\x1b[m\x1b[K\n'}
+[13.639169] (-) TimerEvent: {}
+[13.740144] (-) TimerEvent: {}
+[13.841585] (-) TimerEvent: {}
+[13.942905] (-) TimerEvent: {}
+[14.044168] (-) TimerEvent: {}
+[14.145408] (-) TimerEvent: {}
+[14.246697] (-) TimerEvent: {}
+[14.348059] (-) TimerEvent: {}
+[14.449364] (-) TimerEvent: {}
+[14.550671] (-) TimerEvent: {}
+[14.652029] (-) TimerEvent: {}
+[14.753324] (-) TimerEvent: {}
+[14.854551] (-) TimerEvent: {}
+[14.955886] (-) TimerEvent: {}
+[15.057252] (-) TimerEvent: {}
+[15.158685] (-) TimerEvent: {}
+[15.259991] (-) TimerEvent: {}
+[15.361319] (-) TimerEvent: {}
+[15.462588] (-) TimerEvent: {}
+[15.563909] (-) TimerEvent: {}
+[15.665299] (-) TimerEvent: {}
+[15.766624] (-) TimerEvent: {}
+[15.867968] (-) TimerEvent: {}
+[15.969220] (-) TimerEvent: {}
+[16.070493] (-) TimerEvent: {}
+[16.171799] (-) TimerEvent: {}
+[16.273106] (-) TimerEvent: {}
+[16.374589] (-) TimerEvent: {}
+[16.475802] (-) TimerEvent: {}
+[16.577109] (-) TimerEvent: {}
+[16.678450] (-) TimerEvent: {}
+[16.779771] (-) TimerEvent: {}
+[16.881137] (-) TimerEvent: {}
+[16.982523] (-) TimerEvent: {}
+[17.083879] (-) TimerEvent: {}
+[17.185292] (-) TimerEvent: {}
+[17.286624] (-) TimerEvent: {}
+[17.387983] (-) TimerEvent: {}
+[17.489306] (-) TimerEvent: {}
+[17.590638] (-) TimerEvent: {}
+[17.692174] (-) TimerEvent: {}
+[17.793361] (-) TimerEvent: {}
+[17.894121] (-) TimerEvent: {}
+[17.994883] (-) TimerEvent: {}
+[18.095644] (-) TimerEvent: {}
+[18.196390] (-) TimerEvent: {}
+[18.297125] (-) TimerEvent: {}
+[18.397856] (-) TimerEvent: {}
+[18.498587] (-) TimerEvent: {}
+[18.599361] (-) TimerEvent: {}
+[18.700161] (-) TimerEvent: {}
+[18.800891] (-) TimerEvent: {}
+[18.901595] (-) TimerEvent: {}
+[19.002287] (-) TimerEvent: {}
+[19.103004] (-) TimerEvent: {}
+[19.203709] (-) TimerEvent: {}
+[19.304432] (-) TimerEvent: {}
+[19.405163] (-) TimerEvent: {}
+[19.505865] (-) TimerEvent: {}
+[19.606670] (-) TimerEvent: {}
+[19.707476] (-) TimerEvent: {}
+[19.808341] (-) TimerEvent: {}
+[19.909673] (-) TimerEvent: {}
+[20.011006] (-) TimerEvent: {}
+[20.112352] (-) TimerEvent: {}
+[20.213661] (-) TimerEvent: {}
+[20.315008] (-) TimerEvent: {}
+[20.416384] (-) TimerEvent: {}
+[20.517816] (-) TimerEvent: {}
+[20.619198] (-) TimerEvent: {}
+[20.720534] (-) TimerEvent: {}
+[20.821928] (-) TimerEvent: {}
+[20.923224] (-) TimerEvent: {}
+[21.024623] (-) TimerEvent: {}
+[21.125993] (-) TimerEvent: {}
+[21.227307] (-) TimerEvent: {}
+[21.328661] (-) TimerEvent: {}
+[21.430061] (-) TimerEvent: {}
+[21.531438] (-) TimerEvent: {}
+[21.632655] (-) TimerEvent: {}
+[21.733523] (-) TimerEvent: {}
+[21.834276] (-) TimerEvent: {}
+[21.934837] (-) TimerEvent: {}
+[22.035380] (-) TimerEvent: {}
+[22.135988] (-) TimerEvent: {}
+[22.236726] (-) TimerEvent: {}
+[22.337425] (-) TimerEvent: {}
+[22.438258] (-) TimerEvent: {}
+[22.539020] (-) TimerEvent: {}
+[22.639640] (-) TimerEvent: {}
+[22.740334] (-) TimerEvent: {}
+[22.841046] (-) TimerEvent: {}
+[22.941785] (-) TimerEvent: {}
+[23.042431] (-) TimerEvent: {}
+[23.143134] (-) TimerEvent: {}
+[23.243914] (-) TimerEvent: {}
+[23.344669] (-) TimerEvent: {}
+[23.425912] (manipulator) StderrLine: {'line': b'gmake[2]: *** [CMakeFiles/slave_arm_node.dir/build.make:76\xef\xbc\x9aCMakeFiles/slave_arm_node.dir/src/slave_arm_node.cc.o] \xe9\x94\x99\xe8\xaf\xaf 1\n'}
+[23.426863] (manipulator) StderrLine: {'line': b'gmake[1]: *** [CMakeFiles/Makefile2:279\xef\xbc\x9aCMakeFiles/slave_arm_node.dir/all] \xe9\x94\x99\xe8\xaf\xaf 2\n'}
+[23.427253] (manipulator) StderrLine: {'line': b'gmake: *** [Makefile:146\xef\xbc\x9aall] \xe9\x94\x99\xe8\xaf\xaf 2\n'}
+[23.432123] (manipulator) CommandEnded: {'returncode': 2}
+[23.445717] (-) TimerEvent: {}
+[23.451582] (manipulator) JobEnded: {'identifier': 'manipulator', 'rc': 2}
+[23.462676] (-) EventReactorShutdown: {}

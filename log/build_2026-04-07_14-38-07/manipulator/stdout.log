@@ -1,0 +1,7 @@
+[35m[1mConsolidate compiler generated dependencies of target gravity_compensation_pinocchio[0m
+[  9%] Built target gravity_compensation
+[ 33%] Built target gravity_compensation_pinocchio
+[ 71%] Built target manipulator_core
+[ 76%] [32mBuilding CXX object CMakeFiles/slave_arm_node.dir/src/slave_arm_node.cc.o[0m
+[ 85%] Built target arm_hardware_node
+[ 95%] Built target master_arm_node

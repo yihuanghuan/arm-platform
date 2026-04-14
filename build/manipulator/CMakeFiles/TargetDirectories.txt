@@ -1,0 +1,15 @@
+/mnt/emmc/cat_home/arm-platform/build/manipulator/CMakeFiles/uninstall.dir
+/mnt/emmc/cat_home/arm-platform/build/manipulator/CMakeFiles/manipulator_uninstall.dir
+/mnt/emmc/cat_home/arm-platform/build/manipulator/CMakeFiles/manipulator_core.dir
+/mnt/emmc/cat_home/arm-platform/build/manipulator/CMakeFiles/gravity_compensation.dir
+/mnt/emmc/cat_home/arm-platform/build/manipulator/CMakeFiles/gravity_compensation_pinocchio.dir
+/mnt/emmc/cat_home/arm-platform/build/manipulator/CMakeFiles/arm_hardware_node.dir
+/mnt/emmc/cat_home/arm-platform/build/manipulator/CMakeFiles/master_arm_node.dir
+/mnt/emmc/cat_home/arm-platform/build/manipulator/CMakeFiles/slave_arm_node.dir
+/mnt/emmc/cat_home/arm-platform/build/manipulator/CMakeFiles/test.dir
+/mnt/emmc/cat_home/arm-platform/build/manipulator/CMakeFiles/edit_cache.dir
+/mnt/emmc/cat_home/arm-platform/build/manipulator/CMakeFiles/rebuild_cache.dir
+/mnt/emmc/cat_home/arm-platform/build/manipulator/CMakeFiles/list_install_components.dir
+/mnt/emmc/cat_home/arm-platform/build/manipulator/CMakeFiles/install.dir
+/mnt/emmc/cat_home/arm-platform/build/manipulator/CMakeFiles/install/local.dir
+/mnt/emmc/cat_home/arm-platform/build/manipulator/CMakeFiles/install/strip.dir

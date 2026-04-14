@@ -1,0 +1,219 @@
+[0.030s] Invoking command in '/mnt/emmc/cat_home/arm-platform/build/manipulator': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/humble /usr/bin/cmake /mnt/emmc/cat_home/arm-platform -DCMAKE_INSTALL_PREFIX=/mnt/emmc/cat_home/arm-platform/install/manipulator
+[0.687s] -- The C compiler identification is GNU 11.4.0
+[1.091s] -- The CXX compiler identification is GNU 11.4.0
+[1.123s] -- Detecting C compiler ABI info
+[1.378s] -- Detecting C compiler ABI info - done
+[1.388s] -- Check for working C compiler: /usr/bin/cc - skipped
+[1.391s] -- Detecting C compile features
+[1.393s] -- Detecting C compile features - done
+[1.399s] -- Detecting CXX compiler ABI info
+[1.598s] -- Detecting CXX compiler ABI info - done
+[1.609s] -- Check for working CXX compiler: /usr/bin/c++ - skipped
+[1.609s] -- Detecting CXX compile features
+[1.610s] -- Detecting CXX compile features - done
+[1.638s] -- Found ament_cmake: 1.3.12 (/opt/ros/humble/share/ament_cmake/cmake)
+[2.001s] -- Found Python3: /usr/bin/python3 (found version "3.10.12") found components: Interpreter 
+[2.239s] -- Found rclcpp: 16.0.16 (/opt/ros/humble/share/rclcpp/cmake)
+[2.860s] -- Found rosidl_generator_c: 3.1.7 (/opt/ros/humble/share/rosidl_generator_c/cmake)
+[2.876s] -- Found rosidl_adapter: 3.1.7 (/opt/ros/humble/share/rosidl_adapter/cmake)
+[2.902s] -- Found rosidl_generator_cpp: 3.1.7 (/opt/ros/humble/share/rosidl_generator_cpp/cmake)
+[2.944s] -- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c
+[2.988s] -- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp
+[3.113s] -- Found rmw_implementation_cmake: 6.1.2 (/opt/ros/humble/share/rmw_implementation_cmake/cmake)
+[3.123s] -- Found rmw_cyclonedds_cpp: 1.3.4 (/opt/ros/humble/share/rmw_cyclonedds_cpp/cmake)
+[3.196s] -- Using RMW implementation 'rmw_cyclonedds_cpp' as default
+[3.232s] -- Looking for pthread.h
+[3.457s] -- Looking for pthread.h - found
+[3.457s] -- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+[3.672s] -- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+[3.673s] -- Found Threads: TRUE  
+[3.811s] -- Found sensor_msgs: 4.9.0 (/opt/ros/humble/share/sensor_msgs/cmake)
+[3.892s] -- Found dummy_interface: 0.0.0 (/home/cat/ArmRemoteController/install/dummy_interface/share/dummy_interface/cmake)
+[3.926s] -- Found serial: 1.2.1 (/usr/local/share/serial/cmake)
+[3.962s] -- pinocchio_default FOUND. pinocchio_default at /opt/ros/humble/lib/aarch64-linux-gnu/libpinocchio_default.so
+[3.963s] -- pinocchio_parsers FOUND. pinocchio_parsers at /opt/ros/humble/lib/aarch64-linux-gnu/libpinocchio_parsers.so
+[3.968s] -- boost_filesystem FOUND. boost_filesystem at /lib/aarch64-linux-gnu/libboost_filesystem.so
+[4.151s] -- Found Boost: /usr/include (found version "1.74.0") found components: filesystem serialization 
+[4.163s] -- eigenpy FOUND. eigenpy at /opt/ros/humble/lib/aarch64-linux-gnu/libeigenpy.so
+[4.221s] -- Checking for NumPy
+[4.646s] --   NUMPY_INCLUDE_DIRS=/usr/lib/python3/dist-packages/numpy/core/include
+[4.866s] --   NUMPY_VERSION=1.21.5
+[5.389s] -- Found Python3: /usr/bin/python3 (found version "3.10.12") found components: Interpreter Development.Module NumPy 
+[5.390s] -- PythonLibraryDirs: 
+[5.391s] -- PythonLibVersionString: 3.10.12
+[5.424s] -- Python site lib: lib/python3.10/site-packages
+[5.425s] -- Python include dirs: /usr/include/python3.10
+[5.497s] -- Checking for NumPy
+[5.705s] --   NUMPY_INCLUDE_DIRS=/usr/lib/python3/dist-packages/numpy/core/include
+[5.911s] --   NUMPY_VERSION=1.21.5
+[5.912s] -- NumPy include dir: /usr/lib/python3/dist-packages/numpy/core/include
+[5.918s] [33mCMake Warning at /usr/share/cmake-3.22/Modules/FindBoost.cmake:2201 (message):
+[5.919s]   No header defined for python310; skipping header check (note: header-only
+[5.919s]   libraries have no designated component)
+[5.920s] Call Stack (most recent call first):
+[5.920s]   /opt/ros/humble/lib/aarch64-linux-gnu/cmake/eigenpy/boost.cmake:148 (find_package)
+[5.921s]   /opt/ros/humble/lib/aarch64-linux-gnu/cmake/eigenpy/eigenpyConfig.cmake:149 (SEARCH_FOR_BOOST_PYTHON)
+[5.921s]   /usr/share/cmake-3.22/Modules/CMakeFindDependencyMacro.cmake:47 (find_package)
+[5.921s]   /opt/ros/humble/lib/aarch64-linux-gnu/cmake/pinocchio/pinocchioConfig.cmake:161 (find_dependency)
+[5.922s]   CMakeLists.txt:19 (find_package)
+[5.922s] 
+[5.922s] [0m
+[5.925s] -- Found Boost: /usr/include (found version "1.74.0") found components: python310 
+[6.662s] -- Default C++ standard: 201703
+[6.662s] -- Minimal C++ standard upgraded to 11
+[6.663s] -- C++ standard sufficient: Minimal required 11, currently defined: 17
+[6.663s] -- CMAKE_CXX_STANDARD was not set: automatically set to currently defined standard 17
+[6.669s] -- hpp-fcl FOUND. hpp-fcl at /opt/ros/humble/lib/aarch64-linux-gnu/libhpp-fcl.so
+[6.689s] -- Found Boost: /usr/include (found version "1.74.0") found components: chrono serialization filesystem 
+[6.703s] -- C++ standard sufficient: Minimal required 11, currently defined: 17
+[6.708s] -- C++ standard sufficient: Minimal required 11, currently defined: 17
+[6.738s] -- Found ament_lint_auto: 0.12.14 (/opt/ros/humble/share/ament_lint_auto/cmake)
+[6.920s] -- Added test 'cppcheck' to perform static code analysis on C / C++ code
+[6.921s] -- Configured cppcheck include dirs: $<BUILD_INTERFACE:/mnt/emmc/cat_home/arm-platform/include>
+[6.921s] -- Configured cppcheck exclude dirs and/or files: 
+[6.925s] -- Added test 'flake8' to check Python code syntax and style conventions
+[6.929s] -- Added test 'lint_cmake' to check CMake code style
+[6.932s] -- Added test 'pep257' to check Python code against some of the docstring style conventions in PEP 257
+[6.944s] -- Added test 'uncrustify' to check C / C++ code style
+[6.944s] -- Configured uncrustify additional arguments: 
+[6.949s] -- Added test 'xmllint' to check XML markup files
+[6.954s] -- Configuring done
+[7.010s] -- Generating done
+[7.026s] -- Build files have been written to: /mnt/emmc/cat_home/arm-platform/build/manipulator
+[7.057s] Invoked command in '/mnt/emmc/cat_home/arm-platform/build/manipulator' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/humble /usr/bin/cmake /mnt/emmc/cat_home/arm-platform -DCMAKE_INSTALL_PREFIX=/mnt/emmc/cat_home/arm-platform/install/manipulator
+[7.062s] Invoking command in '/mnt/emmc/cat_home/arm-platform/build/manipulator': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/humble /usr/bin/cmake --build /mnt/emmc/cat_home/arm-platform/build/manipulator -- -j8 -l8
+[7.197s] [  4%] [32mBuilding CXX object CMakeFiles/gravity_compensation.dir/src/gravity_compensation.cc.o[0m
+[7.217s] [ 14%] [32mBuilding CXX object CMakeFiles/manipulator_core.dir/src/bus/serial_bus.cc.o[0m
+[7.217s] [ 14%] [32mBuilding CXX object CMakeFiles/manipulator_core.dir/src/arm/a_l1_gamma.cc.o[0m
+[7.217s] [ 19%] [32mBuilding CXX object CMakeFiles/manipulator_core.dir/src/arm/arm_factory.cc.o[0m
+[7.220s] [ 23%] [32mBuilding CXX object CMakeFiles/manipulator_core.dir/src/bus/abs_bus.cc.o[0m
+[7.232s] [ 28%] [32mBuilding CXX object CMakeFiles/manipulator_core.dir/src/arm/a_l1_beta.cc.o[0m
+[7.234s] [ 33%] [32mBuilding CXX object CMakeFiles/gravity_compensation_pinocchio.dir/src/gravity_compensation_pinocchio.cc.o[0m
+[7.235s] [ 38%] [32mBuilding CXX object CMakeFiles/manipulator_core.dir/src/arm/abs_arm.cc.o[0m
+[7.617s] /mnt/emmc/cat_home/arm-platform/src/bus/abs_bus.cc: In instantiation of ‘[01m[Kmanipulator::bus::AbsBus::Send()::<lambda(const auto:1&, auto:2&)> [with auto:1 = std::vector<unsigned char>; auto:2 = std::shared_ptr<manipulator::protocol::IProtocol>][m[K’:
+[7.618s] [01m[K/mnt/emmc/cat_home/arm-platform/include/manipulator/protocol/protocol_factory.h:20:8:[m[K   required from ‘[01m[Kvoid manipulator::protocol::ProtocolFactory::IterateEach(F&&) [with F = manipulator::bus::AbsBus::Send()::<lambda(const auto:1&, auto:2&)>][m[K’
+[7.619s] [01m[K/mnt/emmc/cat_home/arm-platform/src/bus/abs_bus.cc:9:33:[m[K   required from here
+[7.619s] [01m[K/mnt/emmc/cat_home/arm-platform/src/bus/abs_bus.cc:9:53:[m[K [01;35m[Kwarning: [m[Kunused parameter ‘[01m[Kname[m[K’ [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-parameter-Wunused-parameter]8;;[m[K]
+[7.620s]     9 |   protocol_factory_->IterateEach([this]([01;35m[Kconst auto& name[m[K, auto& protocol) {
+[7.620s]       |                                         [01;35m[K~~~~~~~~~~~~^~~~[m[K
+[7.621s] /mnt/emmc/cat_home/arm-platform/src/bus/abs_bus.cc: In instantiation of ‘[01m[Kmanipulator::bus::AbsBus::Read()::<lambda(const auto:3&, auto:4&)> [with auto:3 = std::vector<unsigned char>; auto:4 = std::shared_ptr<manipulator::protocol::IProtocol>][m[K’:
+[7.621s] [01m[K/mnt/emmc/cat_home/arm-platform/include/manipulator/protocol/protocol_factory.h:20:8:[m[K   required from ‘[01m[Kvoid manipulator::protocol::ProtocolFactory::IterateEach(F&&) [with F = manipulator::bus::AbsBus::Read()::<lambda(const auto:3&, auto:4&)>][m[K’
+[7.622s] [01m[K/mnt/emmc/cat_home/arm-platform/src/bus/abs_bus.cc:19:33:[m[K   required from here
+[7.622s] [01m[K/mnt/emmc/cat_home/arm-platform/src/bus/abs_bus.cc:19:61:[m[K [01;35m[Kwarning: [m[Kunused parameter ‘[01m[Kname[m[K’ [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-parameter-Wunused-parameter]8;;[m[K]
+[7.623s]    19 |   protocol_factory_->IterateEach([this, &bytes]([01;35m[Kconst auto& name[m[K, auto& protocol) {
+[7.623s]       |                                                 [01;35m[K~~~~~~~~~~~~^~~~[m[K
+[7.742s] [ 42%] [32mBuilding CXX object CMakeFiles/manipulator_core.dir/src/motor/dm_motor.cc.o[0m
+[8.170s] [01m[K/mnt/emmc/cat_home/arm-platform/src/arm/abs_arm.cc:[m[K In member function ‘[01m[Kvirtual void manipulator::arm::AbsArm::Init(const string&, uint32_t)[m[K’:
+[8.170s] [01m[K/mnt/emmc/cat_home/arm-platform/src/arm/abs_arm.cc:13:38:[m[K [01;35m[Kwarning: [m[Kunused parameter ‘[01m[Kport[m[K’ [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-parameter-Wunused-parameter]8;;[m[K]
+[8.170s]    13 | void AbsArm::Init([01;35m[Kconst std::string& port[m[K, uint32_t baud) {
+[8.170s]       |                   [01;35m[K~~~~~~~~~~~~~~~~~~~^~~~[m[K
+[8.170s] [01m[K/mnt/emmc/cat_home/arm-platform/src/arm/abs_arm.cc:13:53:[m[K [01;35m[Kwarning: [m[Kunused parameter ‘[01m[Kbaud[m[K’ [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-parameter-Wunused-parameter]8;;[m[K]
+[8.170s]    13 | void AbsArm::Init(const std::string& port, [01;35m[Kuint32_t baud[m[K) {
+[8.170s]       |                                            [01;35m[K~~~~~~~~~^~~~[m[K
+[8.195s] [ 47%] [32mBuilding CXX object CMakeFiles/manipulator_core.dir/src/protocol/abs_protocol.cc.o[0m
+[8.902s] [ 52%] [32mBuilding CXX object CMakeFiles/manipulator_core.dir/src/protocol/protocol_factory.cc.o[0m
+[9.501s] [ 57%] [32mBuilding CXX object CMakeFiles/manipulator_core.dir/src/protocol/protocol_v1.cc.o[0m
+[9.579s] [01m[K/mnt/emmc/cat_home/arm-platform/src/protocol/protocol_factory.cc:[m[K In member function ‘[01m[Kmanipulator::protocol::IProtocol::SharedPtr manipulator::protocol::ProtocolFactory::GetProtocol(const string&, const std::vector<unsigned char>&)[m[K’:
+[9.579s] [01m[K/mnt/emmc/cat_home/arm-platform/src/protocol/protocol_factory.cc:9:70:[m[K [01;35m[Kwarning: [m[Kunused parameter ‘[01m[Kprotocol_name[m[K’ [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-parameter-Wunused-parameter]8;;[m[K]
+[9.579s]     9 | otocol::SharedPtr ProtocolFactory::GetProtocol([01;35m[Kconst std::string& protocol_name[m[K,
+[9.579s]       |                                                [01;35m[K~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~[m[K
+[9.579s] 
+[12.421s] [01m[K/mnt/emmc/cat_home/arm-platform/src/gravity_compensation.cc:[m[K In member function ‘[01m[Kstd::array<double, 7> manipulator::GravityCompensation::Compute(const std::array<double, 7>&)[m[K’:
+[12.422s] [01m[K/mnt/emmc/cat_home/arm-platform/src/gravity_compensation.cc:77:10:[m[K [01;35m[Kwarning: [m[Kunused variable ‘[01m[Kroll[m[K’ [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-variable-Wunused-variable]8;;[m[K]
+[12.423s]    77 |   double [01;35m[Kroll[m[K = uav_pose_.y;
+[12.423s]       |          [01;35m[K^~~~[m[K
+[12.424s] [01m[K/mnt/emmc/cat_home/arm-platform/src/gravity_compensation.cc:78:10:[m[K [01;35m[Kwarning: [m[Kunused variable ‘[01m[Kpitch[m[K’ [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-variable-Wunused-variable]8;;[m[K]
+[12.424s]    78 |   double [01;35m[Kpitch[m[K = uav_pose_.z;
+[12.425s]       |          [01;35m[K^~~~~[m[K
+[13.393s] [01m[K/mnt/emmc/cat_home/arm-platform/src/protocol/protocol_v1.cc:[m[K In member function ‘[01m[Kvoid manipulator::protocol::ProtocolV1::Check(manipulator::protocol::ProtocolV1::LinkFrame&)[m[K’:
+[13.394s] [01m[K/mnt/emmc/cat_home/arm-platform/src/protocol/protocol_v1.cc:99:24:[m[K [01;35m[Kwarning: [m[Kcomparison of integer expressions of different signedness: ‘[01m[Ksize_t[m[K’ {aka ‘[01m[Klong unsigned int[m[K’} and ‘[01m[Kint[m[K’ [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wsign-compare-Wsign-compare]8;;[m[K]
+[13.394s]    99 |   for (size_t i = 0; [01;35m[Ki < 4 + f.dataLen[m[K; i++) {
+[13.394s]       |                      [01;35m[K~~^~~~~~~~~~~~~~~[m[K
+[14.394s] [ 61%] [32m[1mLinking CXX static library libgravity_compensation.a[0m
+[14.554s] [ 61%] Built target gravity_compensation
+[15.438s] [ 66%] [32m[1mLinking CXX static library libmanipulator_core.a[0m
+[15.593s] [ 66%] Built target manipulator_core
+[15.665s] [ 71%] [32mBuilding CXX object CMakeFiles/slave_arm_node.dir/src/slave_arm_node.cc.o[0m
+[15.674s] [ 76%] [32mBuilding CXX object CMakeFiles/arm_hardware_node.dir/src/arm_hardware_node.cc.o[0m
+[29.201s] [ 80%] [32m[1mLinking CXX executable arm_hardware_node[0m
+[30.269s] [ 80%] Built target arm_hardware_node
+[31.521s] [ 85%] [32m[1mLinking CXX static library libgravity_compensation_pinocchio.a[0m
+[31.751s] [ 85%] Built target gravity_compensation_pinocchio
+[31.799s] [ 90%] [32mBuilding CXX object CMakeFiles/master_arm_node.dir/src/master_arm_node.cc.o[0m
+[35.379s] [ 95%] [32m[1mLinking CXX executable slave_arm_node[0m
+[36.696s] [ 95%] Built target slave_arm_node
+[43.933s] [01m[K/mnt/emmc/cat_home/arm-platform/src/master_arm_node.cc:[m[K In constructor ‘[01m[Kmanipulator::MasterArmNode::MasterArmNode()[m[K’:
+[43.934s] [01m[K/mnt/emmc/cat_home/arm-platform/src/master_arm_node.cc:72:8:[m[K [01;35m[Kwarning: [m[Kunused variable ‘[01m[Kpublish_joint_state[m[K’ [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-variable-Wunused-variable]8;;[m[K]
+[43.934s]    72 |   bool [01;35m[Kpublish_joint_state[m[K = this->get_parameter("publish_joint_state").as_bool();
+[43.935s]       |        [01;35m[K^~~~~~~~~~~~~~~~~~~[m[K
+[58.469s] [100%] [32m[1mLinking CXX executable master_arm_node[0m
+[59.931s] [100%] Built target master_arm_node
+[59.950s] Invoked command in '/mnt/emmc/cat_home/arm-platform/build/manipulator' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/humble /usr/bin/cmake --build /mnt/emmc/cat_home/arm-platform/build/manipulator -- -j8 -l8
+[59.983s] Invoking command in '/mnt/emmc/cat_home/arm-platform/build/manipulator': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/humble /usr/bin/cmake --install /mnt/emmc/cat_home/arm-platform/build/manipulator
+[60.010s] -- Install configuration: ""
+[60.011s] -- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/lib/libmanipulator_core.a
+[60.015s] -- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/lib/libgravity_compensation.a
+[60.019s] -- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/lib/libgravity_compensation_pinocchio.a
+[60.034s] -- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/lib/manipulator/arm_hardware_node
+[60.043s] -- Set runtime path of "/mnt/emmc/cat_home/arm-platform/install/manipulator/lib/manipulator/arm_hardware_node" to ""
+[60.043s] -- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/lib/manipulator/master_arm_node
+[60.058s] -- Set runtime path of "/mnt/emmc/cat_home/arm-platform/install/manipulator/lib/manipulator/master_arm_node" to ""
+[60.058s] -- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/lib/manipulator/slave_arm_node
+[60.072s] -- Set runtime path of "/mnt/emmc/cat_home/arm-platform/install/manipulator/lib/manipulator/slave_arm_node" to ""
+[60.073s] -- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/include
+[60.073s] -- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator
+[60.074s] -- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/slave_arm_node.h
+[60.074s] -- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/arm
+[60.074s] -- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/arm/abs_arm.h
+[60.075s] -- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/arm/i_arm.h
+[60.075s] -- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/arm/a_l1_gamma.h
+[60.076s] -- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/arm/a_l1_beta.h
+[60.076s] -- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/arm/arm_factory.h
+[60.077s] -- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/arm_types.h
+[60.077s] -- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/bus
+[60.077s] -- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/bus/i_bus.h
+[60.078s] -- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/bus/abs_bus.h
+[60.078s] -- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/bus/serial_bus.h
+[60.079s] -- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/arm_hardware_node.h
+[60.079s] -- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/motor
+[60.079s] -- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/motor/dm_motor.h
+[60.080s] -- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/motor/abs_motor.h
+[60.080s] -- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/motor/i_motor.h
+[60.080s] -- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/master_arm_node.h
+[60.081s] -- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/gravity_compensation_pinocchio.h
+[60.081s] -- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/controller
+[60.082s] -- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/controller/dummy_controller.h
+[60.083s] -- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/controller/i_arm_controller.h
+[60.084s] -- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/protocol
+[60.085s] -- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/protocol/protocol_v1.h
+[60.085s] -- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/protocol/i_protocol.h
+[60.085s] -- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/protocol/abs_protocol.h
+[60.086s] -- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/protocol/protocol_factory.h
+[60.086s] -- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/gravity_compensation.h
+[60.087s] -- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/manipulator/
+[60.087s] -- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/manipulator//master_arm.launch.py
+[60.088s] -- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/manipulator//demo.launch.py
+[60.088s] -- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/manipulator//slave_arm.launch.py
+[60.089s] -- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/manipulator/environment/library_path.sh
+[60.089s] -- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/manipulator/environment/library_path.dsv
+[60.090s] -- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/ament_index/resource_index/package_run_dependencies/manipulator
+[60.090s] -- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/ament_index/resource_index/parent_prefix_path/manipulator
+[60.091s] -- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/manipulator/environment/ament_prefix_path.sh
+[60.091s] -- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/manipulator/environment/ament_prefix_path.dsv
+[60.091s] -- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/manipulator/environment/path.sh
+[60.092s] -- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/manipulator/environment/path.dsv
+[60.092s] -- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/manipulator/local_setup.bash
+[60.093s] -- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/manipulator/local_setup.sh
+[60.093s] -- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/manipulator/local_setup.zsh
+[60.094s] -- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/manipulator/local_setup.dsv
+[60.094s] -- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/manipulator/package.dsv
+[60.095s] -- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/ament_index/resource_index/packages/manipulator
+[60.095s] -- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/manipulator/cmake/export_manipulatorExport.cmake
+[60.096s] -- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/manipulator/cmake/export_manipulatorExport-noconfig.cmake
+[60.096s] -- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/manipulator/cmake/ament_cmake_export_targets-extras.cmake
+[60.096s] -- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/manipulator/cmake/ament_cmake_export_include_directories-extras.cmake
+[60.097s] -- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/manipulator/cmake/ament_cmake_export_dependencies-extras.cmake
+[60.097s] -- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/manipulator/cmake/manipulatorConfig.cmake
+[60.098s] -- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/manipulator/cmake/manipulatorConfig-version.cmake
+[60.098s] -- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/manipulator/package.xml
+[60.099s] Invoked command in '/mnt/emmc/cat_home/arm-platform/build/manipulator' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/humble /usr/bin/cmake --install /mnt/emmc/cat_home/arm-platform/build/manipulator

@@ -1,0 +1,241 @@
+[0.000000] (-) TimerEvent: {}
+[0.001045] (manipulator) JobQueued: {'identifier': 'manipulator', 'dependencies': OrderedDict()}
+[0.001152] (manipulator) JobStarted: {'identifier': 'manipulator'}
+[0.016796] (manipulator) JobProgress: {'identifier': 'manipulator', 'progress': 'cmake'}
+[0.017798] (manipulator) JobProgress: {'identifier': 'manipulator', 'progress': 'build'}
+[0.019025] (manipulator) Command: {'cmd': ['/usr/bin/cmake', '--build', '/mnt/emmc/cat_home/arm-platform/build/manipulator', '--', '-j8', '-l8'], 'cwd': '/mnt/emmc/cat_home/arm-platform/build/manipulator', 'env': OrderedDict([('LESSOPEN', '| /usr/bin/lesspipe %s'), ('USER', 'cat'), ('SSH_CLIENT', '192.168.50.128 59133 22'), ('XDG_SESSION_TYPE', 'tty'), ('GIT_ASKPASS', '/mnt/emmc/cat_home/.vscode-server/cli/servers/Stable-e7fb5e96c0730b9deb70b33781f98e2f35975036/server/extensions/git/dist/askpass.sh'), ('SHLVL', '1'), ('LD_LIBRARY_PATH', '/home/cat/ArmRemoteController/install/mqtt_comm/lib:/home/cat/ArmRemoteController/install/dummy_interface/lib:/home/cat/huaben_ws/install/manipulator/lib:/home/cat/huaben_ws/install/dummy_interface/lib:/home/cat/uav_ws/install/mavros_extras/lib:/home/cat/uav_ws/install/mavros/lib:/home/cat/uav_ws/install/mavros_msgs/lib:/home/cat/uav_ws/install/libmavconn/lib:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/aarch64-linux-gnu:/opt/ros/humble/lib'), ('BROWSER', '/mnt/emmc/cat_home/.vscode-server/cli/servers/Stable-e7fb5e96c0730b9deb70b33781f98e2f35975036/server/bin/helpers/browser.sh'), ('MOTD_SHOWN', 'pam'), ('HOME', '/home/cat'), ('MUTTER_DEBUG_ENABLE_ATOMIC_KMS', '0'), ('CYCLONEDDS_URI', 'file:///home/cat/.ros/cyclonedds.xml'), ('TERM_PROGRAM_VERSION', '1.114.0'), ('VSCODE_IPC_HOOK_CLI', '/run/user/1000/vscode-ipc-cfde7568-208f-4978-8114-168d019319eb.sock'), ('ROS_PYTHON_VERSION', '3'), ('VSCODE_GIT_ASKPASS_MAIN', '/mnt/emmc/cat_home/.vscode-server/cli/servers/Stable-e7fb5e96c0730b9deb70b33781f98e2f35975036/server/extensions/git/dist/askpass-main.js'), ('VSCODE_GIT_ASKPASS_NODE', '/mnt/emmc/cat_home/.vscode-server/cli/servers/Stable-e7fb5e96c0730b9deb70b33781f98e2f35975036/server/node'), ('VSCODE_PYTHON_AUTOACTIVATE_GUARD', '1'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('COLORTERM', 'truecolor'), ('COLCON_PREFIX_PATH', '/home/cat/huaben_ws/install:/home/cat/uav_ws/install:/home/cat/ArmRemoteController/install'), ('ROS_DISTRO', 'humble'), ('LOGNAME', 'cat'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('XDG_SESSION_CLASS', 'user'), ('TERM', 'xterm-256color'), ('XDG_SESSION_ID', '6'), ('ROS_LOCALHOST_ONLY', '0'), ('PATH', '/home/cat/.vscode-server/data/User/globalStorage/github.copilot-chat/debugCommand:/home/cat/.vscode-server/data/User/globalStorage/github.copilot-chat/copilotCli:/mnt/emmc/cat_home/.vscode-server/cli/servers/Stable-e7fb5e96c0730b9deb70b33781f98e2f35975036/server/bin/remote-cli:/opt/ros/humble/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('LANG', 'zh_CN.UTF-8'), ('RMW_IMPLEMENTATION', 'rmw_cyclonedds_cpp'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('VSCODE_GIT_IPC_HANDLE', '/run/user/1000/vscode-git-741534cd28.sock'), ('TERM_PROGRAM', 'vscode'), ('ROS_DOMAIN_ID', '6'), ('AMENT_PREFIX_PATH', '/home/cat/ArmRemoteController/install/uav_arm_controller:/home/cat/ArmRemoteController/install/servo_teleop:/home/cat/ArmRemoteController/install/mqtt_comm:/home/cat/ArmRemoteController/install/dummy_arm:/home/cat/ArmRemoteController/install/dummy_interface:/home/cat/ArmRemoteController/install/dummy_description:/home/cat/huaben_ws/install/manipulator:/home/cat/huaben_ws/install/dummy_interface:/home/cat/huaben_ws/install/dummy_arm:/home/cat/uav_ws/install/vrpn_listener:/home/cat/uav_ws/install/odin_ros_driver:/home/cat/uav_ws/install/mavros_extras:/home/cat/uav_ws/install/mavros_examples:/home/cat/uav_ws/install/mavros:/home/cat/uav_ws/install/mavros_msgs:/home/cat/uav_ws/install/libmavconn:/opt/ros/humble'), ('SHELL', '/bin/bash'), ('CLUTTER_PAINT', 'disable-dynamic-max-render-time'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('MUTTER_DEBUG_FORCE_KMS_MODE', 'simple'), ('VSCODE_GIT_ASKPASS_EXTRA_ARGS', ''), ('PWD', '/mnt/emmc/cat_home/arm-platform/build/manipulator'), ('SSH_CONNECTION', '192.168.50.128 59133 192.168.50.126 22'), ('XDG_DATA_DIRS', '/usr/share/gnome:/usr/local/share:/usr/share:/var/lib/snapd/desktop'), ('PYTHONPATH', '/home/cat/ArmRemoteController/install/dummy_interface/local/lib/python3.10/dist-packages:/home/cat/huaben_ws/install/dummy_interface/local/lib/python3.10/dist-packages:/home/cat/uav_ws/install/mavros_examples/local/lib/python3.10/dist-packages:/home/cat/uav_ws/install/mavros/local/lib/python3.10/dist-packages:/home/cat/uav_ws/install/mavros_msgs/local/lib/python3.10/dist-packages:/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages'), ('COLCON', '1'), ('CMAKE_PREFIX_PATH', '/home/cat/ArmRemoteController/install/uav_arm_controller:/home/cat/ArmRemoteController/install/servo_teleop:/home/cat/ArmRemoteController/install/mqtt_comm:/home/cat/ArmRemoteController/install/dummy_arm:/home/cat/ArmRemoteController/install/dummy_interface:/home/cat/ArmRemoteController/install/dummy_description:/home/cat/huaben_ws/install/manipulator:/home/cat/huaben_ws/install/dummy_interface:/home/cat/huaben_ws/install/dummy_arm:/home/cat/uav_ws/install/vrpn_listener:/home/cat/uav_ws/install/odin_ros_driver:/home/cat/uav_ws/install/mavros_extras:/home/cat/uav_ws/install/mavros_examples:/home/cat/uav_ws/install/mavros:/home/cat/uav_ws/install/mavros_msgs:/home/cat/uav_ws/install/libmavconn:/opt/ros/humble')]), 'shell': False}
+[0.099096] (-) TimerEvent: {}
+[0.161050] (manipulator) StdoutLine: {'line': b'[  9%] Built target gravity_compensation\n'}
+[0.178549] (manipulator) StdoutLine: {'line': b'[ 61%] Built target manipulator_core\n'}
+[0.199364] (-) TimerEvent: {}
+[0.203657] (manipulator) StdoutLine: {'line': b'[ 66%] \x1b[32mBuilding CXX object CMakeFiles/gravity_compensation_pinocchio.dir/src/gravity_compensation_pinocchio.cc.o\x1b[0m\n'}
+[0.283026] (manipulator) StdoutLine: {'line': b'[ 80%] Built target arm_hardware_node\n'}
+[0.283506] (manipulator) StdoutLine: {'line': b'[ 80%] \x1b[32mBuilding CXX object CMakeFiles/slave_arm_node.dir/src/slave_arm_node.cc.o\x1b[0m\n'}
+[0.299588] (-) TimerEvent: {}
+[0.400204] (-) TimerEvent: {}
+[0.500924] (-) TimerEvent: {}
+[0.601594] (-) TimerEvent: {}
+[0.702188] (-) TimerEvent: {}
+[0.802571] (-) TimerEvent: {}
+[0.827357] (manipulator) StderrLine: {'line': b'In file included from \x1b[01m\x1b[K/mnt/emmc/cat_home/arm-platform/include/manipulator/slave_arm_node.h:13\x1b[m\x1b[K,\n'}
+[0.827645] (manipulator) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/mnt/emmc/cat_home/arm-platform/src/slave_arm_node.cc:2\x1b[m\x1b[K:\n'}
+[0.827736] (manipulator) StderrLine: {'line': b'\x1b[01m\x1b[K/mnt/emmc/cat_home/arm-platform/include/manipulator/gravity_compensation_pinocchio.h:8:10:\x1b[m\x1b[K \x1b[01;31m\x1b[Kfatal error: \x1b[m\x1b[Kpinocchio/multibody/data.hpp: \xe6\xb2\xa1\xe6\x9c\x89\xe9\x82\xa3\xe4\xb8\xaa\xe6\x96\x87\xe4\xbb\xb6\xe6\x88\x96\xe7\x9b\xae\xe5\xbd\x95\n'}
+[0.827817] (manipulator) StderrLine: {'line': b'    8 | #include \x1b[01;31m\x1b[K<pinocchio/multibody/data.hpp>\x1b[m\x1b[K\n'}
+[0.827891] (manipulator) StderrLine: {'line': b'      |          \x1b[01;31m\x1b[K^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\x1b[m\x1b[K\n'}
+[0.827963] (manipulator) StderrLine: {'line': b'compilation terminated.\n'}
+[0.837153] (manipulator) StderrLine: {'line': b'gmake[2]: *** [CMakeFiles/slave_arm_node.dir/build.make:76\xef\xbc\x9aCMakeFiles/slave_arm_node.dir/src/slave_arm_node.cc.o] \xe9\x94\x99\xe8\xaf\xaf 1\n'}
+[0.837501] (manipulator) StderrLine: {'line': b'gmake[1]: *** [CMakeFiles/Makefile2:279\xef\xbc\x9aCMakeFiles/slave_arm_node.dir/all] \xe9\x94\x99\xe8\xaf\xaf 2\n'}
+[0.837686] (manipulator) StderrLine: {'line': b'gmake[1]: *** \xe6\xad\xa3\xe5\x9c\xa8\xe7\xad\x89\xe5\xbe\x85\xe6\x9c\xaa\xe5\xae\x8c\xe6\x88\x90\xe7\x9a\x84\xe4\xbb\xbb\xe5\x8a\xa1....\n'}
+[0.902679] (-) TimerEvent: {}
+[1.003109] (-) TimerEvent: {}
+[1.103802] (-) TimerEvent: {}
+[1.204464] (-) TimerEvent: {}
+[1.304908] (-) TimerEvent: {}
+[1.405519] (-) TimerEvent: {}
+[1.506195] (-) TimerEvent: {}
+[1.606815] (-) TimerEvent: {}
+[1.707474] (-) TimerEvent: {}
+[1.808157] (-) TimerEvent: {}
+[1.908883] (-) TimerEvent: {}
+[2.009564] (-) TimerEvent: {}
+[2.110238] (-) TimerEvent: {}
+[2.210934] (-) TimerEvent: {}
+[2.311603] (-) TimerEvent: {}
+[2.412206] (-) TimerEvent: {}
+[2.512805] (-) TimerEvent: {}
+[2.613467] (-) TimerEvent: {}
+[2.714130] (-) TimerEvent: {}
+[2.814806] (-) TimerEvent: {}
+[2.915405] (-) TimerEvent: {}
+[3.016071] (-) TimerEvent: {}
+[3.116757] (-) TimerEvent: {}
+[3.217490] (-) TimerEvent: {}
+[3.318194] (-) TimerEvent: {}
+[3.418791] (-) TimerEvent: {}
+[3.519227] (-) TimerEvent: {}
+[3.619949] (-) TimerEvent: {}
+[3.720685] (-) TimerEvent: {}
+[3.821410] (-) TimerEvent: {}
+[3.922098] (-) TimerEvent: {}
+[4.022822] (-) TimerEvent: {}
+[4.123506] (-) TimerEvent: {}
+[4.224180] (-) TimerEvent: {}
+[4.324935] (-) TimerEvent: {}
+[4.425662] (-) TimerEvent: {}
+[4.526374] (-) TimerEvent: {}
+[4.627074] (-) TimerEvent: {}
+[4.727806] (-) TimerEvent: {}
+[4.828461] (-) TimerEvent: {}
+[4.929202] (-) TimerEvent: {}
+[5.029930] (-) TimerEvent: {}
+[5.130651] (-) TimerEvent: {}
+[5.231364] (-) TimerEvent: {}
+[5.332078] (-) TimerEvent: {}
+[5.432811] (-) TimerEvent: {}
+[5.533524] (-) TimerEvent: {}
+[5.634217] (-) TimerEvent: {}
+[5.734849] (-) TimerEvent: {}
+[5.835569] (-) TimerEvent: {}
+[5.936300] (-) TimerEvent: {}
+[6.037068] (-) TimerEvent: {}
+[6.137796] (-) TimerEvent: {}
+[6.238203] (-) TimerEvent: {}
+[6.338574] (-) TimerEvent: {}
+[6.439091] (-) TimerEvent: {}
+[6.539789] (-) TimerEvent: {}
+[6.640506] (-) TimerEvent: {}
+[6.741213] (-) TimerEvent: {}
+[6.841950] (-) TimerEvent: {}
+[6.942658] (-) TimerEvent: {}
+[7.043358] (-) TimerEvent: {}
+[7.144068] (-) TimerEvent: {}
+[7.244823] (-) TimerEvent: {}
+[7.345556] (-) TimerEvent: {}
+[7.446280] (-) TimerEvent: {}
+[7.547003] (-) TimerEvent: {}
+[7.647742] (-) TimerEvent: {}
+[7.748483] (-) TimerEvent: {}
+[7.849218] (-) TimerEvent: {}
+[7.949867] (-) TimerEvent: {}
+[8.050580] (-) TimerEvent: {}
+[8.151285] (-) TimerEvent: {}
+[8.252009] (-) TimerEvent: {}
+[8.352752] (-) TimerEvent: {}
+[8.453497] (-) TimerEvent: {}
+[8.554241] (-) TimerEvent: {}
+[8.655000] (-) TimerEvent: {}
+[8.755719] (-) TimerEvent: {}
+[8.856433] (-) TimerEvent: {}
+[8.957154] (-) TimerEvent: {}
+[9.057895] (-) TimerEvent: {}
+[9.158628] (-) TimerEvent: {}
+[9.259372] (-) TimerEvent: {}
+[9.360074] (-) TimerEvent: {}
+[9.460778] (-) TimerEvent: {}
+[9.561507] (-) TimerEvent: {}
+[9.662157] (-) TimerEvent: {}
+[9.762795] (-) TimerEvent: {}
+[9.863526] (-) TimerEvent: {}
+[9.964278] (-) TimerEvent: {}
+[10.065052] (-) TimerEvent: {}
+[10.165765] (-) TimerEvent: {}
+[10.266466] (-) TimerEvent: {}
+[10.367188] (-) TimerEvent: {}
+[10.467937] (-) TimerEvent: {}
+[10.568602] (-) TimerEvent: {}
+[10.669350] (-) TimerEvent: {}
+[10.770079] (-) TimerEvent: {}
+[10.870818] (-) TimerEvent: {}
+[10.971586] (-) TimerEvent: {}
+[11.072313] (-) TimerEvent: {}
+[11.173034] (-) TimerEvent: {}
+[11.273738] (-) TimerEvent: {}
+[11.374372] (-) TimerEvent: {}
+[11.475128] (-) TimerEvent: {}
+[11.575789] (-) TimerEvent: {}
+[11.676595] (-) TimerEvent: {}
+[11.777487] (-) TimerEvent: {}
+[11.878235] (-) TimerEvent: {}
+[11.978980] (-) TimerEvent: {}
+[12.079716] (-) TimerEvent: {}
+[12.180430] (-) TimerEvent: {}
+[12.281156] (-) TimerEvent: {}
+[12.381894] (-) TimerEvent: {}
+[12.482624] (-) TimerEvent: {}
+[12.583256] (-) TimerEvent: {}
+[12.683989] (-) TimerEvent: {}
+[12.784746] (-) TimerEvent: {}
+[12.885486] (-) TimerEvent: {}
+[12.986226] (-) TimerEvent: {}
+[13.086988] (-) TimerEvent: {}
+[13.187733] (-) TimerEvent: {}
+[13.288513] (-) TimerEvent: {}
+[13.389249] (-) TimerEvent: {}
+[13.489967] (-) TimerEvent: {}
+[13.590678] (-) TimerEvent: {}
+[13.691292] (-) TimerEvent: {}
+[13.791977] (-) TimerEvent: {}
+[13.892690] (-) TimerEvent: {}
+[13.993413] (-) TimerEvent: {}
+[14.094126] (-) TimerEvent: {}
+[14.194893] (-) TimerEvent: {}
+[14.295609] (-) TimerEvent: {}
+[14.396321] (-) TimerEvent: {}
+[14.497045] (-) TimerEvent: {}
+[14.597778] (-) TimerEvent: {}
+[14.698543] (-) TimerEvent: {}
+[14.799288] (-) TimerEvent: {}
+[14.899939] (-) TimerEvent: {}
+[15.000591] (-) TimerEvent: {}
+[15.101322] (-) TimerEvent: {}
+[15.201990] (-) TimerEvent: {}
+[15.302703] (-) TimerEvent: {}
+[15.403398] (-) TimerEvent: {}
+[15.504125] (-) TimerEvent: {}
+[15.604849] (-) TimerEvent: {}
+[15.705569] (-) TimerEvent: {}
+[15.806298] (-) TimerEvent: {}
+[15.907018] (-) TimerEvent: {}
+[16.007750] (-) TimerEvent: {}
+[16.108495] (-) TimerEvent: {}
+[16.209131] (-) TimerEvent: {}
+[16.309846] (-) TimerEvent: {}
+[16.410525] (-) TimerEvent: {}
+[16.511216] (-) TimerEvent: {}
+[16.611895] (-) TimerEvent: {}
+[16.712617] (-) TimerEvent: {}
+[16.813365] (-) TimerEvent: {}
+[16.914127] (-) TimerEvent: {}
+[17.014866] (-) TimerEvent: {}
+[17.115596] (-) TimerEvent: {}
+[17.216341] (-) TimerEvent: {}
+[17.317068] (-) TimerEvent: {}
+[17.417773] (-) TimerEvent: {}
+[17.518512] (-) TimerEvent: {}
+[17.619152] (-) TimerEvent: {}
+[17.719750] (-) TimerEvent: {}
+[17.820432] (-) TimerEvent: {}
+[17.921117] (-) TimerEvent: {}
+[18.021780] (-) TimerEvent: {}
+[18.122368] (-) TimerEvent: {}
+[18.222792] (-) TimerEvent: {}
+[18.323228] (-) TimerEvent: {}
+[18.423720] (-) TimerEvent: {}
+[18.524400] (-) TimerEvent: {}
+[18.625098] (-) TimerEvent: {}
+[18.725790] (-) TimerEvent: {}
+[18.826460] (-) TimerEvent: {}
+[18.927141] (-) TimerEvent: {}
+[19.027811] (-) TimerEvent: {}
+[19.128405] (-) TimerEvent: {}
+[19.229092] (-) TimerEvent: {}
+[19.329764] (-) TimerEvent: {}
+[19.430419] (-) TimerEvent: {}
+[19.531117] (-) TimerEvent: {}
+[19.631755] (-) TimerEvent: {}
+[19.732353] (-) TimerEvent: {}
+[19.833007] (-) TimerEvent: {}
+[19.933666] (-) TimerEvent: {}
+[20.034331] (-) TimerEvent: {}
+[20.135015] (-) TimerEvent: {}
+[20.235618] (-) TimerEvent: {}
+[20.336308] (-) TimerEvent: {}
+[20.436964] (-) TimerEvent: {}
+[20.537630] (-) TimerEvent: {}
+[20.638314] (-) TimerEvent: {}
+[20.739027] (-) TimerEvent: {}
+[20.839663] (-) TimerEvent: {}
+[20.940358] (-) TimerEvent: {}
+[21.041060] (-) TimerEvent: {}
+[21.141704] (-) TimerEvent: {}
+[21.242325] (-) TimerEvent: {}
+[21.342909] (-) TimerEvent: {}
+[21.443325] (-) TimerEvent: {}
+[21.477110] (manipulator) StdoutLine: {'line': b'[ 85%] \x1b[32m\x1b[1mLinking CXX static library libgravity_compensation_pinocchio.a\x1b[0m\n'}
+[21.543564] (-) TimerEvent: {}
+[21.644141] (-) TimerEvent: {}
+[21.707796] (manipulator) StdoutLine: {'line': b'[ 85%] Built target gravity_compensation_pinocchio\n'}
+[21.709993] (manipulator) StderrLine: {'line': b'gmake: *** [Makefile:146\xef\xbc\x9aall] \xe9\x94\x99\xe8\xaf\xaf 2\n'}
+[21.713521] (manipulator) CommandEnded: {'returncode': 2}
+[21.727636] (manipulator) JobEnded: {'identifier': 'manipulator', 'rc': 2}
+[21.739104] (-) EventReactorShutdown: {}

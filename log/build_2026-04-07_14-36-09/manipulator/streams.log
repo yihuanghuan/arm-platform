@@ -1,0 +1,77 @@
+[0.022s] Invoking command in '/mnt/emmc/cat_home/arm-platform/build/manipulator': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/humble /usr/bin/cmake --build /mnt/emmc/cat_home/arm-platform/build/manipulator -- -j8 -l8
+[0.200s] [  9%] Built target gravity_compensation
+[0.230s] [ 14%] [32mBuilding CXX object CMakeFiles/gravity_compensation_pinocchio.dir/src/gravity_compensation_pinocchio.cc.o[0m
+[0.269s] [ 66%] Built target manipulator_core
+[0.350s] [ 76%] Built target arm_hardware_node
+[0.372s] [ 85%] Built target slave_arm_node
+[21.942s] [ 90%] [32m[1mLinking CXX static library libgravity_compensation_pinocchio.a[0m
+[22.176s] [ 90%] Built target gravity_compensation_pinocchio
+[22.295s] [ 95%] [32m[1mLinking CXX executable master_arm_node[0m
+[23.822s] [100%] Built target master_arm_node
+[23.841s] Invoked command in '/mnt/emmc/cat_home/arm-platform/build/manipulator' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/humble /usr/bin/cmake --build /mnt/emmc/cat_home/arm-platform/build/manipulator -- -j8 -l8
+[23.859s] Invoking command in '/mnt/emmc/cat_home/arm-platform/build/manipulator': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/humble /usr/bin/cmake --install /mnt/emmc/cat_home/arm-platform/build/manipulator
+[23.886s] -- Install configuration: ""
+[23.886s] -- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/lib/libmanipulator_core.a
+[23.887s] -- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/lib/libgravity_compensation.a
+[23.887s] -- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/lib/libgravity_compensation_pinocchio.a
+[23.900s] -- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/lib/manipulator/arm_hardware_node
+[23.901s] -- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/lib/manipulator/master_arm_node
+[23.914s] -- Set runtime path of "/mnt/emmc/cat_home/arm-platform/install/manipulator/lib/manipulator/master_arm_node" to ""
+[23.915s] -- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/lib/manipulator/slave_arm_node
+[23.915s] -- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/include
+[23.916s] -- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator
+[23.916s] -- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/slave_arm_node.h
+[23.917s] -- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/arm
+[23.917s] -- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/arm/abs_arm.h
+[23.917s] -- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/arm/i_arm.h
+[23.918s] -- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/arm/a_l1_gamma.h
+[23.918s] -- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/arm/a_l1_beta.h
+[23.919s] -- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/arm/arm_factory.h
+[23.919s] -- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/arm_types.h
+[23.919s] -- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/bus
+[23.920s] -- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/bus/i_bus.h
+[23.920s] -- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/bus/abs_bus.h
+[23.921s] -- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/bus/serial_bus.h
+[23.922s] -- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/arm_hardware_node.h
+[23.924s] -- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/motor
+[23.924s] -- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/motor/dm_motor.h
+[23.925s] -- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/motor/abs_motor.h
+[23.925s] -- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/motor/i_motor.h
+[23.926s] -- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/master_arm_node.h
+[23.926s] -- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/gravity_compensation_pinocchio.h
+[23.927s] -- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/controller
+[23.927s] -- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/controller/dummy_controller.h
+[23.928s] -- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/controller/i_arm_controller.h
+[23.928s] -- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/protocol
+[23.929s] -- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/protocol/protocol_v1.h
+[23.929s] -- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/protocol/i_protocol.h
+[23.931s] -- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/protocol/abs_protocol.h
+[23.931s] -- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/protocol/protocol_factory.h
+[23.932s] -- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/gravity_compensation.h
+[23.932s] -- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/manipulator/
+[23.933s] -- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/manipulator//master_arm.launch.py
+[23.933s] -- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/manipulator//demo.launch.py
+[23.934s] -- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/manipulator//slave_arm.launch.py
+[23.934s] -- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/manipulator/environment/library_path.sh
+[23.935s] -- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/manipulator/environment/library_path.dsv
+[23.935s] -- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/ament_index/resource_index/package_run_dependencies/manipulator
+[23.936s] -- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/ament_index/resource_index/parent_prefix_path/manipulator
+[23.937s] -- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/manipulator/environment/ament_prefix_path.sh
+[23.938s] -- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/manipulator/environment/ament_prefix_path.dsv
+[23.939s] -- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/manipulator/environment/path.sh
+[23.940s] -- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/manipulator/environment/path.dsv
+[23.941s] -- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/manipulator/local_setup.bash
+[23.943s] -- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/manipulator/local_setup.sh
+[23.944s] -- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/manipulator/local_setup.zsh
+[23.945s] -- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/manipulator/local_setup.dsv
+[23.947s] -- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/manipulator/package.dsv
+[23.947s] -- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/ament_index/resource_index/packages/manipulator
+[23.948s] -- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/manipulator/cmake/export_manipulatorExport.cmake
+[23.949s] -- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/manipulator/cmake/export_manipulatorExport-noconfig.cmake
+[23.950s] -- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/manipulator/cmake/ament_cmake_export_targets-extras.cmake
+[23.951s] -- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/manipulator/cmake/ament_cmake_export_include_directories-extras.cmake
+[23.951s] -- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/manipulator/cmake/ament_cmake_export_dependencies-extras.cmake
+[23.952s] -- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/manipulator/cmake/manipulatorConfig.cmake
+[23.953s] -- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/manipulator/cmake/manipulatorConfig-version.cmake
+[23.953s] -- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/manipulator/package.xml
+[23.954s] Invoked command in '/mnt/emmc/cat_home/arm-platform/build/manipulator' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/humble /usr/bin/cmake --install /mnt/emmc/cat_home/arm-platform/build/manipulator

@@ -1,0 +1,10 @@
+In file included from [01m[K/mnt/emmc/cat_home/arm-platform/include/manipulator/slave_arm_node.h:13[m[K,
+                 from [01m[K/mnt/emmc/cat_home/arm-platform/src/slave_arm_node.cc:2[m[K:
+[01m[K/mnt/emmc/cat_home/arm-platform/include/manipulator/gravity_compensation_pinocchio.h:7:10:[m[K [01;31m[Kfatal error: [m[Kpinocchio/multibody/model.hpp: 没有那个文件或目录
+    7 | #include [01;31m[K<pinocchio/multibody/model.hpp>[m[K
+      |          [01;31m[K^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[m[K
+compilation terminated.
+gmake[2]: *** [CMakeFiles/slave_arm_node.dir/build.make:76：CMakeFiles/slave_arm_node.dir/src/slave_arm_node.cc.o] 错误 1
+gmake[1]: *** [CMakeFiles/Makefile2:279：CMakeFiles/slave_arm_node.dir/all] 错误 2
+gmake[1]: *** 正在等待未完成的任务....
+gmake: *** [Makefile:146：all] 错误 2

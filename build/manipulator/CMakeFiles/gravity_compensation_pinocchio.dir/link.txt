@@ -1,0 +1,2 @@
+/usr/bin/ar qc libgravity_compensation_pinocchio.a CMakeFiles/gravity_compensation_pinocchio.dir/src/gravity_compensation_pinocchio.cc.o
+/usr/bin/ranlib libgravity_compensation_pinocchio.a

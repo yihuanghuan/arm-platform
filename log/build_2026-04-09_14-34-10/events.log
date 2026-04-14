@@ -1,0 +1,583 @@
+[0.000000] (-) TimerEvent: {}
+[0.000615] (manipulator) JobQueued: {'identifier': 'manipulator', 'dependencies': OrderedDict()}
+[0.000758] (manipulator) JobStarted: {'identifier': 'manipulator'}
+[0.019372] (manipulator) JobProgress: {'identifier': 'manipulator', 'progress': 'cmake'}
+[0.021834] (manipulator) JobProgress: {'identifier': 'manipulator', 'progress': 'build'}
+[0.022035] (manipulator) Command: {'cmd': ['/usr/bin/cmake', '--build', '/mnt/emmc/cat_home/arm-platform/build/manipulator', '--', '-j8', '-l8'], 'cwd': '/mnt/emmc/cat_home/arm-platform/build/manipulator', 'env': OrderedDict([('LESSOPEN', '| /usr/bin/lesspipe %s'), ('USER', 'cat'), ('SSH_CLIENT', '192.168.50.128 50466 22'), ('XDG_SESSION_TYPE', 'tty'), ('GIT_ASKPASS', '/mnt/emmc/cat_home/.vscode-server/cli/servers/Stable-e7fb5e96c0730b9deb70b33781f98e2f35975036/server/extensions/git/dist/askpass.sh'), ('SHLVL', '1'), ('LD_LIBRARY_PATH', '/home/cat/ArmRemoteController/install/mqtt_comm/lib:/home/cat/ArmRemoteController/install/dummy_interface/lib:/home/cat/huaben_ws/install/manipulator/lib:/home/cat/huaben_ws/install/dummy_interface/lib:/home/cat/uav_ws/install/mavros_extras/lib:/home/cat/uav_ws/install/mavros/lib:/home/cat/uav_ws/install/mavros_msgs/lib:/home/cat/uav_ws/install/libmavconn/lib:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/aarch64-linux-gnu:/opt/ros/humble/lib'), ('BROWSER', '/mnt/emmc/cat_home/.vscode-server/cli/servers/Stable-e7fb5e96c0730b9deb70b33781f98e2f35975036/server/bin/helpers/browser.sh'), ('MOTD_SHOWN', 'pam'), ('HOME', '/home/cat'), ('MUTTER_DEBUG_ENABLE_ATOMIC_KMS', '0'), ('CYCLONEDDS_URI', 'file:///home/cat/.ros/cyclonedds.xml'), ('TERM_PROGRAM_VERSION', '1.114.0'), ('VSCODE_IPC_HOOK_CLI', '/run/user/1000/vscode-ipc-8bb55d29-e4c1-4ede-bb93-690ba34e8e0f.sock'), ('ROS_PYTHON_VERSION', '3'), ('VSCODE_GIT_ASKPASS_MAIN', '/mnt/emmc/cat_home/.vscode-server/cli/servers/Stable-e7fb5e96c0730b9deb70b33781f98e2f35975036/server/extensions/git/dist/askpass-main.js'), ('VSCODE_GIT_ASKPASS_NODE', '/mnt/emmc/cat_home/.vscode-server/cli/servers/Stable-e7fb5e96c0730b9deb70b33781f98e2f35975036/server/node'), ('VSCODE_PYTHON_AUTOACTIVATE_GUARD', '1'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('COLORTERM', 'truecolor'), ('COLCON_PREFIX_PATH', '/home/cat/huaben_ws/install:/home/cat/uav_ws/install:/home/cat/ArmRemoteController/install'), ('ROS_DISTRO', 'humble'), ('LOGNAME', 'cat'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('XDG_SESSION_CLASS', 'user'), ('TERM', 'xterm-256color'), ('XDG_SESSION_ID', '7'), ('ROS_LOCALHOST_ONLY', '0'), ('PATH', '/home/cat/.vscode-server/data/User/globalStorage/github.copilot-chat/debugCommand:/home/cat/.vscode-server/data/User/globalStorage/github.copilot-chat/copilotCli:/mnt/emmc/cat_home/.vscode-server/cli/servers/Stable-e7fb5e96c0730b9deb70b33781f98e2f35975036/server/bin/remote-cli:/opt/ros/humble/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('LANG', 'zh_CN.UTF-8'), ('RMW_IMPLEMENTATION', 'rmw_cyclonedds_cpp'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('VSCODE_GIT_IPC_HANDLE', '/run/user/1000/vscode-git-741534cd28.sock'), ('TERM_PROGRAM', 'vscode'), ('ROS_DOMAIN_ID', '6'), ('AMENT_PREFIX_PATH', '/home/cat/ArmRemoteController/install/uav_arm_controller:/home/cat/ArmRemoteController/install/servo_teleop:/home/cat/ArmRemoteController/install/mqtt_comm:/home/cat/ArmRemoteController/install/dummy_arm:/home/cat/ArmRemoteController/install/dummy_interface:/home/cat/ArmRemoteController/install/dummy_description:/home/cat/huaben_ws/install/manipulator:/home/cat/huaben_ws/install/dummy_interface:/home/cat/huaben_ws/install/dummy_arm:/home/cat/uav_ws/install/vrpn_listener:/home/cat/uav_ws/install/odin_ros_driver:/home/cat/uav_ws/install/mavros_extras:/home/cat/uav_ws/install/mavros_examples:/home/cat/uav_ws/install/mavros:/home/cat/uav_ws/install/mavros_msgs:/home/cat/uav_ws/install/libmavconn:/opt/ros/humble'), ('SHELL', '/bin/bash'), ('CLUTTER_PAINT', 'disable-dynamic-max-render-time'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('MUTTER_DEBUG_FORCE_KMS_MODE', 'simple'), ('VSCODE_GIT_ASKPASS_EXTRA_ARGS', ''), ('PWD', '/mnt/emmc/cat_home/arm-platform/build/manipulator'), ('SSH_CONNECTION', '192.168.50.128 50466 192.168.50.126 22'), ('XDG_DATA_DIRS', '/usr/share/gnome:/usr/local/share:/usr/share:/var/lib/snapd/desktop'), ('PYTHONPATH', '/home/cat/ArmRemoteController/install/dummy_interface/local/lib/python3.10/dist-packages:/home/cat/huaben_ws/install/dummy_interface/local/lib/python3.10/dist-packages:/home/cat/uav_ws/install/mavros_examples/local/lib/python3.10/dist-packages:/home/cat/uav_ws/install/mavros/local/lib/python3.10/dist-packages:/home/cat/uav_ws/install/mavros_msgs/local/lib/python3.10/dist-packages:/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages'), ('COLCON', '1'), ('CMAKE_PREFIX_PATH', '/home/cat/ArmRemoteController/install/uav_arm_controller:/home/cat/ArmRemoteController/install/servo_teleop:/home/cat/ArmRemoteController/install/mqtt_comm:/home/cat/ArmRemoteController/install/dummy_arm:/home/cat/ArmRemoteController/install/dummy_interface:/home/cat/ArmRemoteController/install/dummy_description:/home/cat/huaben_ws/install/manipulator:/home/cat/huaben_ws/install/dummy_interface:/home/cat/huaben_ws/install/dummy_arm:/home/cat/uav_ws/install/vrpn_listener:/home/cat/uav_ws/install/odin_ros_driver:/home/cat/uav_ws/install/mavros_extras:/home/cat/uav_ws/install/mavros_examples:/home/cat/uav_ws/install/mavros:/home/cat/uav_ws/install/mavros_msgs:/home/cat/uav_ws/install/libmavconn:/opt/ros/humble')]), 'shell': False}
+[0.098559] (-) TimerEvent: {}
+[0.199844] (-) TimerEvent: {}
+[0.206615] (manipulator) StdoutLine: {'line': b'[  9%] Built target gravity_compensation\n'}
+[0.248437] (manipulator) StdoutLine: {'line': b'[ 61%] Built target manipulator_core\n'}
+[0.270784] (manipulator) StdoutLine: {'line': b'[ 71%] Built target gravity_compensation_pinocchio\n'}
+[0.300163] (-) TimerEvent: {}
+[0.338851] (manipulator) StdoutLine: {'line': b'[ 80%] Built target arm_hardware_node\n'}
+[0.393605] (manipulator) StdoutLine: {'line': b'[ 90%] Built target master_arm_node\n'}
+[0.398427] (manipulator) StdoutLine: {'line': b'[ 95%] \x1b[32mBuilding CXX object CMakeFiles/slave_arm_node.dir/src/slave_arm_node.cc.o\x1b[0m\n'}
+[0.400294] (-) TimerEvent: {}
+[0.500993] (-) TimerEvent: {}
+[0.602222] (-) TimerEvent: {}
+[0.703452] (-) TimerEvent: {}
+[0.804678] (-) TimerEvent: {}
+[0.905997] (-) TimerEvent: {}
+[1.007273] (-) TimerEvent: {}
+[1.108598] (-) TimerEvent: {}
+[1.209846] (-) TimerEvent: {}
+[1.311223] (-) TimerEvent: {}
+[1.412504] (-) TimerEvent: {}
+[1.513728] (-) TimerEvent: {}
+[1.615106] (-) TimerEvent: {}
+[1.716850] (-) TimerEvent: {}
+[1.818233] (-) TimerEvent: {}
+[1.919675] (-) TimerEvent: {}
+[2.020928] (-) TimerEvent: {}
+[2.122206] (-) TimerEvent: {}
+[2.223474] (-) TimerEvent: {}
+[2.324824] (-) TimerEvent: {}
+[2.426249] (-) TimerEvent: {}
+[2.527496] (-) TimerEvent: {}
+[2.628781] (-) TimerEvent: {}
+[2.730031] (-) TimerEvent: {}
+[2.831348] (-) TimerEvent: {}
+[2.932667] (-) TimerEvent: {}
+[3.033939] (-) TimerEvent: {}
+[3.135197] (-) TimerEvent: {}
+[3.236575] (-) TimerEvent: {}
+[3.337859] (-) TimerEvent: {}
+[3.439059] (-) TimerEvent: {}
+[3.540285] (-) TimerEvent: {}
+[3.641525] (-) TimerEvent: {}
+[3.742861] (-) TimerEvent: {}
+[3.844114] (-) TimerEvent: {}
+[3.945380] (-) TimerEvent: {}
+[4.046693] (-) TimerEvent: {}
+[4.147970] (-) TimerEvent: {}
+[4.249251] (-) TimerEvent: {}
+[4.350503] (-) TimerEvent: {}
+[4.451907] (-) TimerEvent: {}
+[4.553224] (-) TimerEvent: {}
+[4.654551] (-) TimerEvent: {}
+[4.755881] (-) TimerEvent: {}
+[4.857201] (-) TimerEvent: {}
+[4.958612] (-) TimerEvent: {}
+[5.060080] (-) TimerEvent: {}
+[5.161497] (-) TimerEvent: {}
+[5.262914] (-) TimerEvent: {}
+[5.364249] (-) TimerEvent: {}
+[5.465757] (-) TimerEvent: {}
+[5.567161] (-) TimerEvent: {}
+[5.668507] (-) TimerEvent: {}
+[5.769865] (-) TimerEvent: {}
+[5.871144] (-) TimerEvent: {}
+[5.972565] (-) TimerEvent: {}
+[6.073912] (-) TimerEvent: {}
+[6.175226] (-) TimerEvent: {}
+[6.276586] (-) TimerEvent: {}
+[6.377963] (-) TimerEvent: {}
+[6.479461] (-) TimerEvent: {}
+[6.580845] (-) TimerEvent: {}
+[6.682192] (-) TimerEvent: {}
+[6.783530] (-) TimerEvent: {}
+[6.884872] (-) TimerEvent: {}
+[6.986343] (-) TimerEvent: {}
+[7.087740] (-) TimerEvent: {}
+[7.189164] (-) TimerEvent: {}
+[7.290482] (-) TimerEvent: {}
+[7.391765] (-) TimerEvent: {}
+[7.493065] (-) TimerEvent: {}
+[7.594324] (-) TimerEvent: {}
+[7.695695] (-) TimerEvent: {}
+[7.797149] (-) TimerEvent: {}
+[7.898511] (-) TimerEvent: {}
+[7.999947] (-) TimerEvent: {}
+[8.101365] (-) TimerEvent: {}
+[8.202661] (-) TimerEvent: {}
+[8.304001] (-) TimerEvent: {}
+[8.405432] (-) TimerEvent: {}
+[8.506747] (-) TimerEvent: {}
+[8.608032] (-) TimerEvent: {}
+[8.709338] (-) TimerEvent: {}
+[8.810635] (-) TimerEvent: {}
+[8.911946] (-) TimerEvent: {}
+[9.013228] (-) TimerEvent: {}
+[9.114484] (-) TimerEvent: {}
+[9.215801] (-) TimerEvent: {}
+[9.317085] (-) TimerEvent: {}
+[9.418313] (-) TimerEvent: {}
+[9.519628] (-) TimerEvent: {}
+[9.620928] (-) TimerEvent: {}
+[9.722280] (-) TimerEvent: {}
+[9.823668] (-) TimerEvent: {}
+[9.924980] (-) TimerEvent: {}
+[10.026347] (-) TimerEvent: {}
+[10.127728] (-) TimerEvent: {}
+[10.229026] (-) TimerEvent: {}
+[10.330371] (-) TimerEvent: {}
+[10.431711] (-) TimerEvent: {}
+[10.533181] (-) TimerEvent: {}
+[10.634467] (-) TimerEvent: {}
+[10.735758] (-) TimerEvent: {}
+[10.837026] (-) TimerEvent: {}
+[10.938349] (-) TimerEvent: {}
+[11.039730] (-) TimerEvent: {}
+[11.141011] (-) TimerEvent: {}
+[11.242283] (-) TimerEvent: {}
+[11.343500] (-) TimerEvent: {}
+[11.444850] (-) TimerEvent: {}
+[11.546199] (-) TimerEvent: {}
+[11.647575] (-) TimerEvent: {}
+[11.748946] (-) TimerEvent: {}
+[11.850278] (-) TimerEvent: {}
+[11.951642] (-) TimerEvent: {}
+[12.053033] (-) TimerEvent: {}
+[12.154330] (-) TimerEvent: {}
+[12.255717] (-) TimerEvent: {}
+[12.357077] (-) TimerEvent: {}
+[12.458482] (-) TimerEvent: {}
+[12.559966] (-) TimerEvent: {}
+[12.661306] (-) TimerEvent: {}
+[12.762691] (-) TimerEvent: {}
+[12.863989] (-) TimerEvent: {}
+[12.965250] (-) TimerEvent: {}
+[13.066566] (-) TimerEvent: {}
+[13.167913] (-) TimerEvent: {}
+[13.269211] (-) TimerEvent: {}
+[13.370536] (-) TimerEvent: {}
+[13.471837] (-) TimerEvent: {}
+[13.543787] (manipulator) StderrLine: {'line': b'\x1b[01m\x1b[K/mnt/emmc/cat_home/arm-platform/src/slave_arm_node.cc:471:8:\x1b[m\x1b[K \x1b[01;31m\x1b[Kerror: \x1b[m\x1b[K\xe2\x80\x98\x1b[01m\x1b[KMotorCmd\x1b[m\x1b[K\xe2\x80\x99 in namespace \xe2\x80\x98\x1b[01m\x1b[Kmanipulator::arm\x1b[m\x1b[K\xe2\x80\x99 does not name a type\n'}
+[13.544843] (manipulator) StderrLine: {'line': b'  471 |   arm::\x1b[01;31m\x1b[KMotorCmd\x1b[m\x1b[K cmd_;\n'}
+[13.545265] (manipulator) StderrLine: {'line': b'      |        \x1b[01;31m\x1b[K^~~~~~~~\x1b[m\x1b[K\n'}
+[13.545744] (manipulator) StderrLine: {'line': b'\x1b[01m\x1b[K/mnt/emmc/cat_home/arm-platform/src/slave_arm_node.cc:472:8:\x1b[m\x1b[K \x1b[01;31m\x1b[Kerror: \x1b[m\x1b[K\xe2\x80\x98\x1b[01m\x1b[KMotorState\x1b[m\x1b[K\xe2\x80\x99 in namespace \xe2\x80\x98\x1b[01m\x1b[Kmanipulator::arm\x1b[m\x1b[K\xe2\x80\x99 does not name a type\n'}
+[13.546115] (manipulator) StderrLine: {'line': b'  472 |   arm::\x1b[01;31m\x1b[KMotorState\x1b[m\x1b[K arm_state_;\n'}
+[13.546475] (manipulator) StderrLine: {'line': b'      |        \x1b[01;31m\x1b[K^~~~~~~~~~\x1b[m\x1b[K\n'}
+[13.550282] (manipulator) StderrLine: {'line': b'\x1b[01m\x1b[K/mnt/emmc/cat_home/arm-platform/src/slave_arm_node.cc:\x1b[m\x1b[K In constructor \xe2\x80\x98\x1b[01m\x1b[Kmanipulator::SlaveArmNode::SlaveArmNode()\x1b[m\x1b[K\xe2\x80\x99:\n'}
+[13.550907] (manipulator) StderrLine: {'line': b'\x1b[01m\x1b[K/mnt/emmc/cat_home/arm-platform/src/slave_arm_node.cc:490:15:\x1b[m\x1b[K \x1b[01;35m\x1b[Kwarning: \x1b[m\x1b[K\xe2\x80\x98\x1b[01m\x1b[Kmanipulator::SlaveArmNode::ee_frame_name_\x1b[m\x1b[K\xe2\x80\x99 will be initialized after [\x1b[01;35m\x1b[K\x1b]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wreorder\x07-Wreorder\x1b]8;;\x07\x1b[m\x1b[K]\n'}
+[13.551288] (manipulator) StderrLine: {'line': b'  490 |   std::string \x1b[01;35m\x1b[Kee_frame_name_\x1b[m\x1b[K;\n'}
+[13.551653] (manipulator) StderrLine: {'line': b'      |               \x1b[01;35m\x1b[K^~~~~~~~~~~~~~\x1b[m\x1b[K\n'}
+[13.552046] (manipulator) StderrLine: {'line': b'\x1b[01m\x1b[K/mnt/emmc/cat_home/arm-platform/src/slave_arm_node.cc:477:8:\x1b[m\x1b[K \x1b[01;35m\x1b[Kwarning: \x1b[m\x1b[K  \xe2\x80\x98\x1b[01m\x1b[Kbool manipulator::SlaveArmNode::model_loaded_\x1b[m\x1b[K\xe2\x80\x99 [\x1b[01;35m\x1b[K\x1b]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wreorder\x07-Wreorder\x1b]8;;\x07\x1b[m\x1b[K]\n'}
+[13.552434] (manipulator) StderrLine: {'line': b'  477 |   bool \x1b[01;35m\x1b[Kmodel_loaded_\x1b[m\x1b[K;\n'}
+[13.552792] (manipulator) StderrLine: {'line': b'      |        \x1b[01;35m\x1b[K^~~~~~~~~~~~~\x1b[m\x1b[K\n'}
+[13.553149] (manipulator) StderrLine: {'line': b'\x1b[01m\x1b[K/mnt/emmc/cat_home/arm-platform/src/slave_arm_node.cc:43:3:\x1b[m\x1b[K \x1b[01;35m\x1b[Kwarning: \x1b[m\x1b[K  when initialized here [\x1b[01;35m\x1b[K\x1b]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wreorder\x07-Wreorder\x1b]8;;\x07\x1b[m\x1b[K]\n'}
+[13.553515] (manipulator) StderrLine: {'line': b'   43 |   \x1b[01;35m\x1b[KSlaveArmNode\x1b[m\x1b[K()\n'}
+[13.553873] (manipulator) StderrLine: {'line': b'      |   \x1b[01;35m\x1b[K^~~~~~~~~~~~\x1b[m\x1b[K\n'}
+[13.566790] (manipulator) StderrLine: {'line': b'\x1b[01m\x1b[K/mnt/emmc/cat_home/arm-platform/src/slave_arm_node.cc:111:32:\x1b[m\x1b[K \x1b[01;31m\x1b[Kerror: \x1b[m\x1b[K\xe2\x80\x98\x1b[01m\x1b[Kclass manipulator::GravityCompensation\x1b[m\x1b[K\xe2\x80\x99 has no member named \xe2\x80\x98\x1b[01m\x1b[KLoadModel\x1b[m\x1b[K\xe2\x80\x99\n'}
+[13.567735] (manipulator) StderrLine: {'line': b'  111 |     if (!gravity_compensation_.\x1b[01;31m\x1b[KLoadModel\x1b[m\x1b[K(urdf_path)) {\n'}
+[13.568357] (manipulator) StderrLine: {'line': b'      |                                \x1b[01;31m\x1b[K^~~~~~~~~\x1b[m\x1b[K\n'}
+[13.568759] (manipulator) StderrLine: {'line': b'\x1b[01m\x1b[K/mnt/emmc/cat_home/arm-platform/src/slave_arm_node.cc:121:36:\x1b[m\x1b[K \x1b[01;31m\x1b[Kerror: \x1b[m\x1b[Kno matching function for call to \xe2\x80\x98\x1b[01m\x1b[Kmanipulator::GravityCompensation::SetParams(double&, double&, double&, double&)\x1b[m\x1b[K\xe2\x80\x99\n'}
+[13.569143] (manipulator) StderrLine: {'line': b'  121 |     \x1b[01;31m\x1b[Kgravity_compensation_.SetParams(MAX_TORQUE, GRAVITY, FORCE_FEEDBACK_THRESHOLD, FORCE_FEEDBACK_GAIN)\x1b[m\x1b[K;\n'}
+[13.569505] (manipulator) StderrLine: {'line': b'      |     \x1b[01;31m\x1b[K~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\x1b[m\x1b[K\n'}
+[13.569918] (manipulator) StderrLine: {'line': b'In file included from \x1b[01m\x1b[K/mnt/emmc/cat_home/arm-platform/src/slave_arm_node.cc:21\x1b[m\x1b[K:\n'}
+[13.570275] (manipulator) StderrLine: {'line': b'\x1b[01m\x1b[K/mnt/emmc/cat_home/arm-platform/include/manipulator/gravity_compensation.h:32:8:\x1b[m\x1b[K \x1b[01;36m\x1b[Knote: \x1b[m\x1b[Kcandidate: \xe2\x80\x98\x1b[01m\x1b[Kvoid manipulator::GravityCompensation::SetParams(double, double, double, double, double, double, double)\x1b[m\x1b[K\xe2\x80\x99\n'}
+[13.570643] (manipulator) StderrLine: {'line': b'   32 |   void \x1b[01;36m\x1b[KSetParams\x1b[m\x1b[K(double G_GAIN_0, double G_GAIN_1, double G_GAIN_2,\n'}
+[13.571005] (manipulator) StderrLine: {'line': b'      |        \x1b[01;36m\x1b[K^~~~~~~~~\x1b[m\x1b[K\n'}
+[13.571362] (manipulator) StderrLine: {'line': b'\x1b[01m\x1b[K/mnt/emmc/cat_home/arm-platform/include/manipulator/gravity_compensation.h:32:8:\x1b[m\x1b[K \x1b[01;36m\x1b[Knote: \x1b[m\x1b[K  candidate expects 7 arguments, 4 provided\n'}
+[13.571768] (-) TimerEvent: {}
+[13.583033] (manipulator) StderrLine: {'line': b'\x1b[01m\x1b[K/mnt/emmc/cat_home/arm-platform/src/slave_arm_node.cc:146:11:\x1b[m\x1b[K \x1b[01;31m\x1b[Kerror: \x1b[m\x1b[K\xe2\x80\x98\x1b[01m\x1b[Kusing element_type = class manipulator::arm::IArm\x1b[m\x1b[K\xe2\x80\x99 {aka \xe2\x80\x98\x1b[01m\x1b[Kclass manipulator::arm::IArm\x1b[m\x1b[K\xe2\x80\x99} has no member named \xe2\x80\x98\x1b[01m\x1b[KInit\x1b[m\x1b[K\xe2\x80\x99\n'}
+[13.583992] (manipulator) StderrLine: {'line': b'  146 |     arm_->\x1b[01;31m\x1b[KInit\x1b[m\x1b[K(port, 921600);\n'}
+[13.584386] (manipulator) StderrLine: {'line': b'      |           \x1b[01;31m\x1b[K^~~~\x1b[m\x1b[K\n'}
+[13.607355] (manipulator) StderrLine: {'line': b'\x1b[01m\x1b[K/mnt/emmc/cat_home/arm-platform/src/slave_arm_node.cc:148:5:\x1b[m\x1b[K \x1b[01;31m\x1b[Kerror: \x1b[m\x1b[K\xe2\x80\x98\x1b[01m\x1b[Kcmd_\x1b[m\x1b[K\xe2\x80\x99 was not declared in this scope\n'}
+[13.608365] (manipulator) StderrLine: {'line': b'  148 |     \x1b[01;31m\x1b[Kcmd_\x1b[m\x1b[K.current.resize(7, 0.0);\n'}
+[13.608801] (manipulator) StderrLine: {'line': b'      |     \x1b[01;31m\x1b[K^~~~\x1b[m\x1b[K\n'}
+[13.672248] (-) TimerEvent: {}
+[13.686781] (manipulator) StderrLine: {'line': b'\x1b[01m\x1b[K/mnt/emmc/cat_home/arm-platform/src/slave_arm_node.cc:\x1b[m\x1b[K In member function \xe2\x80\x98\x1b[01m\x1b[Kvoid manipulator::SlaveArmNode::ControlLoop()\x1b[m\x1b[K\xe2\x80\x99:\n'}
+[13.687724] (manipulator) StderrLine: {'line': b'\x1b[01m\x1b[K/mnt/emmc/cat_home/arm-platform/src/slave_arm_node.cc:245:5:\x1b[m\x1b[K \x1b[01;31m\x1b[Kerror: \x1b[m\x1b[K\xe2\x80\x98\x1b[01m\x1b[Karm_state_\x1b[m\x1b[K\xe2\x80\x99 was not declared in this scope\n'}
+[13.688194] (manipulator) StderrLine: {'line': b'  245 |     \x1b[01;31m\x1b[Karm_state_\x1b[m\x1b[K = arm_->GetJointStates();\n'}
+[13.688556] (manipulator) StderrLine: {'line': b'      |     \x1b[01;31m\x1b[K^~~~~~~~~~\x1b[m\x1b[K\n'}
+[13.688967] (manipulator) StderrLine: {'line': b'\x1b[01m\x1b[K/mnt/emmc/cat_home/arm-platform/src/slave_arm_node.cc:245:24:\x1b[m\x1b[K \x1b[01;31m\x1b[Kerror: \x1b[m\x1b[K\xe2\x80\x98\x1b[01m\x1b[Kusing element_type = class manipulator::arm::IArm\x1b[m\x1b[K\xe2\x80\x99 {aka \xe2\x80\x98\x1b[01m\x1b[Kclass manipulator::arm::IArm\x1b[m\x1b[K\xe2\x80\x99} has no member named \xe2\x80\x98\x1b[01m\x1b[KGetJointStates\x1b[m\x1b[K\xe2\x80\x99; did you mean \xe2\x80\x98\x1b[01m\x1b[KUpdateJointStates\x1b[m\x1b[K\xe2\x80\x99?\n'}
+[13.689344] (manipulator) StderrLine: {'line': b'  245 |     arm_state_ = arm_->\x1b[01;31m\x1b[KGetJointStates\x1b[m\x1b[K();\n'}
+[13.689707] (manipulator) StderrLine: {'line': b'      |                        \x1b[01;31m\x1b[K^~~~~~~~~~~~~~\x1b[m\x1b[K\n'}
+[13.690066] (manipulator) StderrLine: {'line': b'      |                        \x1b[32m\x1b[KUpdateJointStates\x1b[m\x1b[K\n'}
+[13.713336] (manipulator) StderrLine: {'line': b'\x1b[01m\x1b[K/mnt/emmc/cat_home/arm-platform/src/slave_arm_node.cc:267:5:\x1b[m\x1b[K \x1b[01;31m\x1b[Kerror: \x1b[m\x1b[K\xe2\x80\x98\x1b[01m\x1b[Kcmd_\x1b[m\x1b[K\xe2\x80\x99 was not declared in this scope\n'}
+[13.714319] (manipulator) StderrLine: {'line': b'  267 |     \x1b[01;31m\x1b[Kcmd_\x1b[m\x1b[K.header.stamp = this->now();\n'}
+[13.714706] (manipulator) StderrLine: {'line': b'      |     \x1b[01;31m\x1b[K^~~~\x1b[m\x1b[K\n'}
+[13.745518] (manipulator) StderrLine: {'line': b'\x1b[01m\x1b[K/mnt/emmc/cat_home/arm-platform/src/slave_arm_node.cc:\x1b[m\x1b[K In member function \xe2\x80\x98\x1b[01m\x1b[Kvoid manipulator::SlaveArmNode::PublishJointState()\x1b[m\x1b[K\xe2\x80\x99:\n'}
+[13.746435] (manipulator) StderrLine: {'line': b'\x1b[01m\x1b[K/mnt/emmc/cat_home/arm-platform/src/slave_arm_node.cc:313:32:\x1b[m\x1b[K \x1b[01;31m\x1b[Kerror: \x1b[m\x1b[K\xe2\x80\x98\x1b[01m\x1b[Karm_state_\x1b[m\x1b[K\xe2\x80\x99 was not declared in this scope\n'}
+[13.746832] (manipulator) StderrLine: {'line': b'  313 |     joint_state_msg.position = \x1b[01;31m\x1b[Karm_state_\x1b[m\x1b[K.position;\n'}
+[13.747192] (manipulator) StderrLine: {'line': b'      |                                \x1b[01;31m\x1b[K^~~~~~~~~~\x1b[m\x1b[K\n'}
+[13.756746] (manipulator) StderrLine: {'line': b'In file included from \x1b[01m\x1b[K/opt/ros/humble/include/rclcpp/rclcpp/logging.hpp:24\x1b[m\x1b[K,\n'}
+[13.757616] (manipulator) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/opt/ros/humble/include/rclcpp/rclcpp/client.hpp:40\x1b[m\x1b[K,\n'}
+[13.758021] (manipulator) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/opt/ros/humble/include/rclcpp/rclcpp/callback_group.hpp:24\x1b[m\x1b[K,\n'}
+[13.758390] (manipulator) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/opt/ros/humble/include/rclcpp/rclcpp/any_executable.hpp:20\x1b[m\x1b[K,\n'}
+[13.758796] (manipulator) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/opt/ros/humble/include/rclcpp/rclcpp/memory_strategy.hpp:25\x1b[m\x1b[K,\n'}
+[13.759170] (manipulator) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/opt/ros/humble/include/rclcpp/rclcpp/memory_strategies.hpp:18\x1b[m\x1b[K,\n'}
+[13.759536] (manipulator) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/opt/ros/humble/include/rclcpp/rclcpp/executor_options.hpp:20\x1b[m\x1b[K,\n'}
+[13.759895] (manipulator) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/opt/ros/humble/include/rclcpp/rclcpp/executor.hpp:37\x1b[m\x1b[K,\n'}
+[13.760253] (manipulator) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/opt/ros/humble/include/rclcpp/rclcpp/executors/multi_threaded_executor.hpp:25\x1b[m\x1b[K,\n'}
+[13.760613] (manipulator) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/opt/ros/humble/include/rclcpp/rclcpp/executors.hpp:21\x1b[m\x1b[K,\n'}
+[13.760970] (manipulator) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/opt/ros/humble/include/rclcpp/rclcpp/rclcpp.hpp:155\x1b[m\x1b[K,\n'}
+[13.761325] (manipulator) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/mnt/emmc/cat_home/arm-platform/src/slave_arm_node.cc:15\x1b[m\x1b[K:\n'}
+[13.761682] (manipulator) StderrLine: {'line': b'\x1b[01m\x1b[K/mnt/emmc/cat_home/arm-platform/src/slave_arm_node.cc:\x1b[m\x1b[K In member function \xe2\x80\x98\x1b[01m\x1b[Kbool manipulator::SlaveArmNode::LoadPinocchioModel(const string&, const string&)\x1b[m\x1b[K\xe2\x80\x99:\n'}
+[13.762073] (manipulator) StderrLine: {'line': b'\x1b[01m\x1b[K/mnt/emmc/cat_home/arm-platform/src/slave_arm_node.cc:336:19:\x1b[m\x1b[K \x1b[01;35m\x1b[Kwarning: \x1b[m\x1b[Kformat \xe2\x80\x98\x1b[01m\x1b[K%u\x1b[m\x1b[K\xe2\x80\x99 expects argument of type \xe2\x80\x98\x1b[01m\x1b[Kunsigned int\x1b[m\x1b[K\xe2\x80\x99, but argument 8 has type \xe2\x80\x98\x1b[01m\x1b[Kpinocchio::FrameIndex\x1b[m\x1b[K\xe2\x80\x99 {aka \xe2\x80\x98\x1b[01m\x1b[Klong unsigned int\x1b[m\x1b[K\xe2\x80\x99} [\x1b[01;35m\x1b[K\x1b]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wformat=\x07-Wformat=\x1b]8;;\x07\x1b[m\x1b[K]\n'}
+[13.762545] (manipulator) StderrLine: {'line': b'  336 |                   \x1b[01;35m\x1b[K"Pinocchio model loaded. nq=%d, nv=%d, ee_frame=%s, frame_id=%u"\x1b[m\x1b[K,\n'}
+[13.762928] (manipulator) StderrLine: {'line': b'      |                   \x1b[01;35m\x1b[K^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\x1b[m\x1b[K\n'}
+[13.763288] (manipulator) StderrLine: {'line': b'......\n'}
+[13.763646] (manipulator) StderrLine: {'line': b'  340 |                   \x1b[32m\x1b[Kee_frame_id_\x1b[m\x1b[K);\n'}
+[13.764002] (manipulator) StderrLine: {'line': b'      |                   \x1b[32m\x1b[K~~~~~~~~~~~~\x1b[m\x1b[K\n'}
+[13.764358] (manipulator) StderrLine: {'line': b'      |                   \x1b[32m\x1b[K|\x1b[m\x1b[K\n'}
+[13.764718] (manipulator) StderrLine: {'line': b'      |                   \x1b[32m\x1b[Kpinocchio::FrameIndex {aka long unsigned int}\x1b[m\x1b[K\n'}
+[13.765076] (manipulator) StderrLine: {'line': b'\x1b[01m\x1b[K/mnt/emmc/cat_home/arm-platform/src/slave_arm_node.cc:336:81:\x1b[m\x1b[K \x1b[01;36m\x1b[Knote: \x1b[m\x1b[Kformat string is defined here\n'}
+[13.765486] (manipulator) StderrLine: {'line': b'  336 |                   "Pinocchio model loaded. nq=%d, nv=%d, ee_frame=%s, frame_id=\x1b[01;36m\x1b[K%u\x1b[m\x1b[K",\n'}
+[13.765859] (manipulator) StderrLine: {'line': b'      |                                                                                \x1b[01;36m\x1b[K~^\x1b[m\x1b[K\n'}
+[13.766217] (manipulator) StderrLine: {'line': b'      |                                                                                 \x1b[01;36m\x1b[K|\x1b[m\x1b[K\n'}
+[13.766609] (manipulator) StderrLine: {'line': b'      |                                                                                 \x1b[01;36m\x1b[Kunsigned int\x1b[m\x1b[K\n'}
+[13.766966] (manipulator) StderrLine: {'line': b'      |                                                                                \x1b[32m\x1b[K%lu\x1b[m\x1b[K\n'}
+[13.772576] (-) TimerEvent: {}
+[13.873720] (-) TimerEvent: {}
+[13.975078] (-) TimerEvent: {}
+[14.045458] (manipulator) StderrLine: {'line': b'In file included from \x1b[01m\x1b[K/opt/ros/humble/include/rclcpp/rclcpp/logging.hpp:24\x1b[m\x1b[K,\n'}
+[14.046388] (manipulator) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/opt/ros/humble/include/rclcpp/rclcpp/client.hpp:40\x1b[m\x1b[K,\n'}
+[14.046804] (manipulator) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/opt/ros/humble/include/rclcpp/rclcpp/callback_group.hpp:24\x1b[m\x1b[K,\n'}
+[14.047172] (manipulator) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/opt/ros/humble/include/rclcpp/rclcpp/any_executable.hpp:20\x1b[m\x1b[K,\n'}
+[14.047528] (manipulator) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/opt/ros/humble/include/rclcpp/rclcpp/memory_strategy.hpp:25\x1b[m\x1b[K,\n'}
+[14.047883] (manipulator) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/opt/ros/humble/include/rclcpp/rclcpp/memory_strategies.hpp:18\x1b[m\x1b[K,\n'}
+[14.048241] (manipulator) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/opt/ros/humble/include/rclcpp/rclcpp/executor_options.hpp:20\x1b[m\x1b[K,\n'}
+[14.048597] (manipulator) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/opt/ros/humble/include/rclcpp/rclcpp/executor.hpp:37\x1b[m\x1b[K,\n'}
+[14.048994] (manipulator) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/opt/ros/humble/include/rclcpp/rclcpp/executors/multi_threaded_executor.hpp:25\x1b[m\x1b[K,\n'}
+[14.049361] (manipulator) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/opt/ros/humble/include/rclcpp/rclcpp/executors.hpp:21\x1b[m\x1b[K,\n'}
+[14.049721] (manipulator) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/opt/ros/humble/include/rclcpp/rclcpp/rclcpp.hpp:155\x1b[m\x1b[K,\n'}
+[14.050077] (manipulator) StderrLine: {'line': b'                 from \x1b[01m\x1b[K/mnt/emmc/cat_home/arm-platform/src/slave_arm_node.cc:15\x1b[m\x1b[K:\n'}
+[14.050435] (manipulator) StderrLine: {'line': b'\x1b[01m\x1b[K/mnt/emmc/cat_home/arm-platform/src/slave_arm_node.cc:\x1b[m\x1b[K In member function \xe2\x80\x98\x1b[01m\x1b[Kvoid manipulator::SlaveArmNode::DebugInfoCallback()\x1b[m\x1b[K\xe2\x80\x99:\n'}
+[14.050857] (manipulator) StderrLine: {'line': b'\x1b[01m\x1b[K/mnt/emmc/cat_home/arm-platform/src/slave_arm_node.cc:436:17:\x1b[m\x1b[K \x1b[01;31m\x1b[Kerror: \x1b[m\x1b[K\xe2\x80\x98\x1b[01m\x1b[Karm_state_\x1b[m\x1b[K\xe2\x80\x99 was not declared in this scope\n'}
+[14.051226] (manipulator) StderrLine: {'line': b'  436 |                 \x1b[01;31m\x1b[Karm_state_\x1b[m\x1b[K.position[0], arm_state_.position[1], arm_state_.position[2],\n'}
+[14.051584] (manipulator) StderrLine: {'line': b'      |                 \x1b[01;31m\x1b[K^~~~~~~~~~\x1b[m\x1b[K\n'}
+[14.075643] (-) TimerEvent: {}
+[14.077259] (manipulator) StderrLine: {'line': b'\x1b[01m\x1b[K/mnt/emmc/cat_home/arm-platform/src/slave_arm_node.cc:441:17:\x1b[m\x1b[K \x1b[01;31m\x1b[Kerror: \x1b[m\x1b[K\xe2\x80\x98\x1b[01m\x1b[Karm_state_\x1b[m\x1b[K\xe2\x80\x99 was not declared in this scope\n'}
+[14.078034] (manipulator) StderrLine: {'line': b'  441 |                 \x1b[01;31m\x1b[Karm_state_\x1b[m\x1b[K.current[0], arm_state_.current[1], arm_state_.current[2],\n'}
+[14.078431] (manipulator) StderrLine: {'line': b'      |                 \x1b[01;31m\x1b[K^~~~~~~~~~\x1b[m\x1b[K\n'}
+[14.109146] (manipulator) StderrLine: {'line': b'\x1b[01m\x1b[K/mnt/emmc/cat_home/arm-platform/src/slave_arm_node.cc:447:16:\x1b[m\x1b[K \x1b[01;31m\x1b[Kerror: \x1b[m\x1b[K\xe2\x80\x98\x1b[01m\x1b[Karm_state_\x1b[m\x1b[K\xe2\x80\x99 was not declared in this scope\n'}
+[14.110078] (manipulator) StderrLine: {'line': b'  447 |         q[i] = \x1b[01;31m\x1b[Karm_state_\x1b[m\x1b[K.position[i];\n'}
+[14.110493] (manipulator) StderrLine: {'line': b'      |                \x1b[01;31m\x1b[K^~~~~~~~~~\x1b[m\x1b[K\n'}
+[14.175987] (-) TimerEvent: {}
+[14.277294] (-) TimerEvent: {}
+[14.378722] (-) TimerEvent: {}
+[14.480072] (-) TimerEvent: {}
+[14.581429] (-) TimerEvent: {}
+[14.682860] (-) TimerEvent: {}
+[14.784300] (-) TimerEvent: {}
+[14.885661] (-) TimerEvent: {}
+[14.986996] (-) TimerEvent: {}
+[15.088319] (-) TimerEvent: {}
+[15.189723] (-) TimerEvent: {}
+[15.291006] (-) TimerEvent: {}
+[15.392296] (-) TimerEvent: {}
+[15.493716] (-) TimerEvent: {}
+[15.595142] (-) TimerEvent: {}
+[15.696484] (-) TimerEvent: {}
+[15.797829] (-) TimerEvent: {}
+[15.899305] (-) TimerEvent: {}
+[16.000590] (-) TimerEvent: {}
+[16.101961] (-) TimerEvent: {}
+[16.203487] (-) TimerEvent: {}
+[16.304815] (-) TimerEvent: {}
+[16.406142] (-) TimerEvent: {}
+[16.507415] (-) TimerEvent: {}
+[16.608707] (-) TimerEvent: {}
+[16.710061] (-) TimerEvent: {}
+[16.811438] (-) TimerEvent: {}
+[16.912835] (-) TimerEvent: {}
+[17.014161] (-) TimerEvent: {}
+[17.115492] (-) TimerEvent: {}
+[17.216834] (-) TimerEvent: {}
+[17.318076] (-) TimerEvent: {}
+[17.419353] (-) TimerEvent: {}
+[17.520636] (-) TimerEvent: {}
+[17.621953] (-) TimerEvent: {}
+[17.723242] (-) TimerEvent: {}
+[17.824667] (-) TimerEvent: {}
+[17.926084] (-) TimerEvent: {}
+[18.027471] (-) TimerEvent: {}
+[18.128925] (-) TimerEvent: {}
+[18.230224] (-) TimerEvent: {}
+[18.331483] (-) TimerEvent: {}
+[18.432825] (-) TimerEvent: {}
+[18.534142] (-) TimerEvent: {}
+[18.635550] (-) TimerEvent: {}
+[18.736880] (-) TimerEvent: {}
+[18.838311] (-) TimerEvent: {}
+[18.939734] (-) TimerEvent: {}
+[19.041011] (-) TimerEvent: {}
+[19.142334] (-) TimerEvent: {}
+[19.243749] (-) TimerEvent: {}
+[19.345093] (-) TimerEvent: {}
+[19.446466] (-) TimerEvent: {}
+[19.547704] (-) TimerEvent: {}
+[19.648965] (-) TimerEvent: {}
+[19.750272] (-) TimerEvent: {}
+[19.851589] (-) TimerEvent: {}
+[19.952936] (-) TimerEvent: {}
+[20.054266] (-) TimerEvent: {}
+[20.155502] (-) TimerEvent: {}
+[20.256680] (-) TimerEvent: {}
+[20.357857] (-) TimerEvent: {}
+[20.459115] (-) TimerEvent: {}
+[20.560330] (-) TimerEvent: {}
+[20.661651] (-) TimerEvent: {}
+[20.762995] (-) TimerEvent: {}
+[20.864409] (-) TimerEvent: {}
+[20.965746] (-) TimerEvent: {}
+[21.067126] (-) TimerEvent: {}
+[21.168477] (-) TimerEvent: {}
+[21.269916] (-) TimerEvent: {}
+[21.371262] (-) TimerEvent: {}
+[21.472606] (-) TimerEvent: {}
+[21.573814] (-) TimerEvent: {}
+[21.675138] (-) TimerEvent: {}
+[21.776351] (-) TimerEvent: {}
+[21.877688] (-) TimerEvent: {}
+[21.979079] (-) TimerEvent: {}
+[22.080494] (-) TimerEvent: {}
+[22.181868] (-) TimerEvent: {}
+[22.283329] (-) TimerEvent: {}
+[22.384704] (-) TimerEvent: {}
+[22.485998] (-) TimerEvent: {}
+[22.587377] (-) TimerEvent: {}
+[22.688836] (-) TimerEvent: {}
+[22.790225] (-) TimerEvent: {}
+[22.891656] (-) TimerEvent: {}
+[22.993051] (-) TimerEvent: {}
+[23.094418] (-) TimerEvent: {}
+[23.195746] (-) TimerEvent: {}
+[23.297036] (-) TimerEvent: {}
+[23.398375] (-) TimerEvent: {}
+[23.499841] (-) TimerEvent: {}
+[23.601311] (-) TimerEvent: {}
+[23.702799] (-) TimerEvent: {}
+[23.804249] (-) TimerEvent: {}
+[23.905626] (-) TimerEvent: {}
+[24.006935] (-) TimerEvent: {}
+[24.108347] (-) TimerEvent: {}
+[24.209817] (-) TimerEvent: {}
+[24.311139] (-) TimerEvent: {}
+[24.412442] (-) TimerEvent: {}
+[24.513790] (-) TimerEvent: {}
+[24.615209] (-) TimerEvent: {}
+[24.716682] (-) TimerEvent: {}
+[24.817965] (-) TimerEvent: {}
+[24.919420] (-) TimerEvent: {}
+[25.020780] (-) TimerEvent: {}
+[25.122130] (-) TimerEvent: {}
+[25.223597] (-) TimerEvent: {}
+[25.324912] (-) TimerEvent: {}
+[25.426229] (-) TimerEvent: {}
+[25.527533] (-) TimerEvent: {}
+[25.628962] (-) TimerEvent: {}
+[25.730345] (-) TimerEvent: {}
+[25.831705] (-) TimerEvent: {}
+[25.932988] (-) TimerEvent: {}
+[26.034351] (-) TimerEvent: {}
+[26.135753] (-) TimerEvent: {}
+[26.237154] (-) TimerEvent: {}
+[26.338512] (-) TimerEvent: {}
+[26.439929] (-) TimerEvent: {}
+[26.541275] (-) TimerEvent: {}
+[26.642566] (-) TimerEvent: {}
+[26.743843] (-) TimerEvent: {}
+[26.845207] (-) TimerEvent: {}
+[26.946588] (-) TimerEvent: {}
+[27.047936] (-) TimerEvent: {}
+[27.149301] (-) TimerEvent: {}
+[27.250659] (-) TimerEvent: {}
+[27.352045] (-) TimerEvent: {}
+[27.453374] (-) TimerEvent: {}
+[27.554705] (-) TimerEvent: {}
+[27.656018] (-) TimerEvent: {}
+[27.757267] (-) TimerEvent: {}
+[27.858577] (-) TimerEvent: {}
+[27.959978] (-) TimerEvent: {}
+[28.061429] (-) TimerEvent: {}
+[28.162852] (-) TimerEvent: {}
+[28.264181] (-) TimerEvent: {}
+[28.365536] (-) TimerEvent: {}
+[28.466892] (-) TimerEvent: {}
+[28.568319] (-) TimerEvent: {}
+[28.669782] (-) TimerEvent: {}
+[28.771214] (-) TimerEvent: {}
+[28.872572] (-) TimerEvent: {}
+[28.974006] (-) TimerEvent: {}
+[29.075460] (-) TimerEvent: {}
+[29.176822] (-) TimerEvent: {}
+[29.278127] (-) TimerEvent: {}
+[29.379482] (-) TimerEvent: {}
+[29.480812] (-) TimerEvent: {}
+[29.582237] (-) TimerEvent: {}
+[29.683586] (-) TimerEvent: {}
+[29.785008] (-) TimerEvent: {}
+[29.886287] (-) TimerEvent: {}
+[29.987671] (-) TimerEvent: {}
+[30.089029] (-) TimerEvent: {}
+[30.190307] (-) TimerEvent: {}
+[30.291709] (-) TimerEvent: {}
+[30.393004] (-) TimerEvent: {}
+[30.494213] (-) TimerEvent: {}
+[30.595510] (-) TimerEvent: {}
+[30.696790] (-) TimerEvent: {}
+[30.798051] (-) TimerEvent: {}
+[30.899356] (-) TimerEvent: {}
+[31.000765] (-) TimerEvent: {}
+[31.102215] (-) TimerEvent: {}
+[31.203697] (-) TimerEvent: {}
+[31.304982] (-) TimerEvent: {}
+[31.406258] (-) TimerEvent: {}
+[31.507503] (-) TimerEvent: {}
+[31.608779] (-) TimerEvent: {}
+[31.710062] (-) TimerEvent: {}
+[31.811369] (-) TimerEvent: {}
+[31.912728] (-) TimerEvent: {}
+[32.014191] (-) TimerEvent: {}
+[32.115618] (-) TimerEvent: {}
+[32.217023] (-) TimerEvent: {}
+[32.318424] (-) TimerEvent: {}
+[32.419916] (-) TimerEvent: {}
+[32.521388] (-) TimerEvent: {}
+[32.622727] (-) TimerEvent: {}
+[32.723983] (-) TimerEvent: {}
+[32.825254] (-) TimerEvent: {}
+[32.926544] (-) TimerEvent: {}
+[33.027820] (-) TimerEvent: {}
+[33.129088] (-) TimerEvent: {}
+[33.230279] (-) TimerEvent: {}
+[33.331625] (-) TimerEvent: {}
+[33.433142] (-) TimerEvent: {}
+[33.534466] (-) TimerEvent: {}
+[33.635815] (-) TimerEvent: {}
+[33.737141] (-) TimerEvent: {}
+[33.838463] (-) TimerEvent: {}
+[33.939886] (-) TimerEvent: {}
+[34.041203] (-) TimerEvent: {}
+[34.142555] (-) TimerEvent: {}
+[34.243878] (-) TimerEvent: {}
+[34.345154] (-) TimerEvent: {}
+[34.446444] (-) TimerEvent: {}
+[34.547743] (-) TimerEvent: {}
+[34.649056] (-) TimerEvent: {}
+[34.750340] (-) TimerEvent: {}
+[34.851669] (-) TimerEvent: {}
+[34.953098] (-) TimerEvent: {}
+[35.054401] (-) TimerEvent: {}
+[35.155802] (-) TimerEvent: {}
+[35.257094] (-) TimerEvent: {}
+[35.358377] (-) TimerEvent: {}
+[35.459803] (-) TimerEvent: {}
+[35.561151] (-) TimerEvent: {}
+[35.662517] (-) TimerEvent: {}
+[35.763846] (-) TimerEvent: {}
+[35.865383] (-) TimerEvent: {}
+[35.966831] (-) TimerEvent: {}
+[36.068284] (-) TimerEvent: {}
+[36.169787] (-) TimerEvent: {}
+[36.271279] (-) TimerEvent: {}
+[36.372732] (-) TimerEvent: {}
+[36.474154] (-) TimerEvent: {}
+[36.575610] (-) TimerEvent: {}
+[36.676978] (-) TimerEvent: {}
+[36.778344] (-) TimerEvent: {}
+[36.879807] (-) TimerEvent: {}
+[36.981151] (-) TimerEvent: {}
+[37.082619] (-) TimerEvent: {}
+[37.184027] (-) TimerEvent: {}
+[37.285424] (-) TimerEvent: {}
+[37.386729] (-) TimerEvent: {}
+[37.488171] (-) TimerEvent: {}
+[37.589561] (-) TimerEvent: {}
+[37.690965] (-) TimerEvent: {}
+[37.792353] (-) TimerEvent: {}
+[37.893659] (-) TimerEvent: {}
+[37.994964] (-) TimerEvent: {}
+[38.096440] (-) TimerEvent: {}
+[38.197761] (-) TimerEvent: {}
+[38.299107] (-) TimerEvent: {}
+[38.400556] (-) TimerEvent: {}
+[38.502041] (-) TimerEvent: {}
+[38.603432] (-) TimerEvent: {}
+[38.704842] (-) TimerEvent: {}
+[38.806309] (-) TimerEvent: {}
+[38.907684] (-) TimerEvent: {}
+[39.009026] (-) TimerEvent: {}
+[39.110445] (-) TimerEvent: {}
+[39.211836] (-) TimerEvent: {}
+[39.313102] (-) TimerEvent: {}
+[39.414440] (-) TimerEvent: {}
+[39.515861] (-) TimerEvent: {}
+[39.617284] (-) TimerEvent: {}
+[39.718737] (-) TimerEvent: {}
+[39.820116] (-) TimerEvent: {}
+[39.921552] (-) TimerEvent: {}
+[40.022970] (-) TimerEvent: {}
+[40.124319] (-) TimerEvent: {}
+[40.225652] (-) TimerEvent: {}
+[40.326906] (-) TimerEvent: {}
+[40.428228] (-) TimerEvent: {}
+[40.529633] (-) TimerEvent: {}
+[40.630884] (-) TimerEvent: {}
+[40.732248] (-) TimerEvent: {}
+[40.833638] (-) TimerEvent: {}
+[40.935121] (-) TimerEvent: {}
+[41.036478] (-) TimerEvent: {}
+[41.137761] (-) TimerEvent: {}
+[41.239139] (-) TimerEvent: {}
+[41.340495] (-) TimerEvent: {}
+[41.441853] (-) TimerEvent: {}
+[41.543171] (-) TimerEvent: {}
+[41.644499] (-) TimerEvent: {}
+[41.745753] (-) TimerEvent: {}
+[41.847058] (-) TimerEvent: {}
+[41.948372] (-) TimerEvent: {}
+[42.049766] (-) TimerEvent: {}
+[42.151068] (-) TimerEvent: {}
+[42.252339] (-) TimerEvent: {}
+[42.353665] (-) TimerEvent: {}
+[42.455031] (-) TimerEvent: {}
+[42.556384] (-) TimerEvent: {}
+[42.657739] (-) TimerEvent: {}
+[42.759134] (-) TimerEvent: {}
+[42.860458] (-) TimerEvent: {}
+[42.961805] (-) TimerEvent: {}
+[43.063179] (-) TimerEvent: {}
+[43.164533] (-) TimerEvent: {}
+[43.265858] (-) TimerEvent: {}
+[43.367221] (-) TimerEvent: {}
+[43.468568] (-) TimerEvent: {}
+[43.569940] (-) TimerEvent: {}
+[43.671266] (-) TimerEvent: {}
+[43.772648] (-) TimerEvent: {}
+[43.873959] (-) TimerEvent: {}
+[43.975452] (-) TimerEvent: {}
+[44.076940] (-) TimerEvent: {}
+[44.178489] (-) TimerEvent: {}
+[44.279807] (-) TimerEvent: {}
+[44.381063] (-) TimerEvent: {}
+[44.482461] (-) TimerEvent: {}
+[44.583808] (-) TimerEvent: {}
+[44.685185] (-) TimerEvent: {}
+[44.786596] (-) TimerEvent: {}
+[44.888011] (-) TimerEvent: {}
+[44.989393] (-) TimerEvent: {}
+[45.090768] (-) TimerEvent: {}
+[45.192163] (-) TimerEvent: {}
+[45.293396] (-) TimerEvent: {}
+[45.394681] (-) TimerEvent: {}
+[45.495984] (-) TimerEvent: {}
+[45.597305] (-) TimerEvent: {}
+[45.698779] (-) TimerEvent: {}
+[45.800182] (-) TimerEvent: {}
+[45.901569] (-) TimerEvent: {}
+[46.002980] (-) TimerEvent: {}
+[46.104198] (-) TimerEvent: {}
+[46.205214] (-) TimerEvent: {}
+[46.306539] (-) TimerEvent: {}
+[46.407806] (-) TimerEvent: {}
+[46.509142] (-) TimerEvent: {}
+[46.610427] (-) TimerEvent: {}
+[46.711709] (-) TimerEvent: {}
+[46.813058] (-) TimerEvent: {}
+[46.914385] (-) TimerEvent: {}
+[47.015689] (-) TimerEvent: {}
+[47.117156] (-) TimerEvent: {}
+[47.218593] (-) TimerEvent: {}
+[47.320128] (-) TimerEvent: {}
+[47.415041] (manipulator) StderrLine: {'line': b'gmake[2]: *** [CMakeFiles/slave_arm_node.dir/build.make:76\xef\xbc\x9aCMakeFiles/slave_arm_node.dir/src/slave_arm_node.cc.o] \xe9\x94\x99\xe8\xaf\xaf 1\n'}
+[47.416260] (manipulator) StderrLine: {'line': b'gmake[1]: *** [CMakeFiles/Makefile2:279\xef\xbc\x9aCMakeFiles/slave_arm_node.dir/all] \xe9\x94\x99\xe8\xaf\xaf 2\n'}
+[47.416713] (manipulator) StderrLine: {'line': b'gmake: *** [Makefile:146\xef\xbc\x9aall] \xe9\x94\x99\xe8\xaf\xaf 2\n'}
+[47.420840] (manipulator) CommandEnded: {'returncode': 2}
+[47.424017] (-) TimerEvent: {}
+[47.439350] (manipulator) JobEnded: {'identifier': 'manipulator', 'rc': 2}
+[47.450174] (-) EventReactorShutdown: {}

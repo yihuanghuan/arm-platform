@@ -1,0 +1,822 @@
+[0.000000] (-) TimerEvent: {}
+[0.000351] (manipulator) JobQueued: {'identifier': 'manipulator', 'dependencies': OrderedDict()}
+[0.000450] (manipulator) JobStarted: {'identifier': 'manipulator'}
+[0.027585] (manipulator) JobProgress: {'identifier': 'manipulator', 'progress': 'cmake'}
+[0.028484] (manipulator) Command: {'cmd': ['/usr/bin/cmake', '/mnt/emmc/cat_home/arm-platform', '-DCMAKE_INSTALL_PREFIX=/mnt/emmc/cat_home/arm-platform/install/manipulator'], 'cwd': '/mnt/emmc/cat_home/arm-platform/build/manipulator', 'env': OrderedDict([('LESSOPEN', '| /usr/bin/lesspipe %s'), ('USER', 'cat'), ('SSH_CLIENT', '192.168.50.128 56942 22'), ('XDG_SESSION_TYPE', 'tty'), ('SHLVL', '1'), ('LD_LIBRARY_PATH', '/home/cat/ArmRemoteController/install/mqtt_comm/lib:/home/cat/ArmRemoteController/install/dummy_interface/lib:/home/cat/huaben_ws/install/manipulator/lib:/home/cat/huaben_ws/install/dummy_interface/lib:/home/cat/uav_ws/install/mavros_extras/lib:/home/cat/uav_ws/install/mavros/lib:/home/cat/uav_ws/install/mavros_msgs/lib:/home/cat/uav_ws/install/libmavconn/lib:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/aarch64-linux-gnu:/opt/ros/humble/lib'), ('MOTD_SHOWN', 'pam'), ('HOME', '/home/cat'), ('MUTTER_DEBUG_ENABLE_ATOMIC_KMS', '0'), ('CYCLONEDDS_URI', 'file:///home/cat/.ros/cyclonedds.xml'), ('OLDPWD', '/home/cat'), ('SSH_TTY', '/dev/pts/1'), ('ROS_PYTHON_VERSION', '3'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('COLCON_PREFIX_PATH', '/home/cat/huaben_ws/install:/home/cat/uav_ws/install:/home/cat/ArmRemoteController/install'), ('ROS_DISTRO', 'humble'), ('LOGNAME', 'cat'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('XDG_SESSION_CLASS', 'user'), ('TERM', 'xterm-256color'), ('XDG_SESSION_ID', '5'), ('ROS_LOCALHOST_ONLY', '0'), ('PATH', '/opt/ros/humble/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('LANG', 'zh_CN.UTF-8'), ('RMW_IMPLEMENTATION', 'rmw_cyclonedds_cpp'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('ROS_DOMAIN_ID', '6'), ('AMENT_PREFIX_PATH', '/home/cat/ArmRemoteController/install/uav_arm_controller:/home/cat/ArmRemoteController/install/servo_teleop:/home/cat/ArmRemoteController/install/mqtt_comm:/home/cat/ArmRemoteController/install/dummy_arm:/home/cat/ArmRemoteController/install/dummy_interface:/home/cat/ArmRemoteController/install/dummy_description:/home/cat/huaben_ws/install/manipulator:/home/cat/huaben_ws/install/dummy_interface:/home/cat/huaben_ws/install/dummy_arm:/home/cat/uav_ws/install/vrpn_listener:/home/cat/uav_ws/install/odin_ros_driver:/home/cat/uav_ws/install/mavros_extras:/home/cat/uav_ws/install/mavros_examples:/home/cat/uav_ws/install/mavros:/home/cat/uav_ws/install/mavros_msgs:/home/cat/uav_ws/install/libmavconn:/opt/ros/humble'), ('SHELL', '/bin/bash'), ('CLUTTER_PAINT', 'disable-dynamic-max-render-time'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('MUTTER_DEBUG_FORCE_KMS_MODE', 'simple'), ('PWD', '/mnt/emmc/cat_home/arm-platform/build/manipulator'), ('SSH_CONNECTION', '192.168.50.128 56942 192.168.50.126 22'), ('XDG_DATA_DIRS', '/usr/share/gnome:/usr/local/share:/usr/share:/var/lib/snapd/desktop'), ('PYTHONPATH', '/home/cat/ArmRemoteController/install/dummy_interface/local/lib/python3.10/dist-packages:/home/cat/huaben_ws/install/dummy_interface/local/lib/python3.10/dist-packages:/home/cat/uav_ws/install/mavros_examples/local/lib/python3.10/dist-packages:/home/cat/uav_ws/install/mavros/local/lib/python3.10/dist-packages:/home/cat/uav_ws/install/mavros_msgs/local/lib/python3.10/dist-packages:/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages'), ('COLCON', '1'), ('CMAKE_PREFIX_PATH', '/home/cat/ArmRemoteController/install/uav_arm_controller:/home/cat/ArmRemoteController/install/servo_teleop:/home/cat/ArmRemoteController/install/mqtt_comm:/home/cat/ArmRemoteController/install/dummy_arm:/home/cat/ArmRemoteController/install/dummy_interface:/home/cat/ArmRemoteController/install/dummy_description:/home/cat/huaben_ws/install/manipulator:/home/cat/huaben_ws/install/dummy_interface:/home/cat/huaben_ws/install/dummy_arm:/home/cat/uav_ws/install/vrpn_listener:/home/cat/uav_ws/install/odin_ros_driver:/home/cat/uav_ws/install/mavros_extras:/home/cat/uav_ws/install/mavros_examples:/home/cat/uav_ws/install/mavros:/home/cat/uav_ws/install/mavros_msgs:/home/cat/uav_ws/install/libmavconn:/opt/ros/humble')]), 'shell': False}
+[0.098326] (-) TimerEvent: {}
+[0.198918] (-) TimerEvent: {}
+[0.299509] (-) TimerEvent: {}
+[0.400191] (-) TimerEvent: {}
+[0.500877] (-) TimerEvent: {}
+[0.601539] (-) TimerEvent: {}
+[0.687527] (manipulator) StdoutLine: {'line': b'-- The C compiler identification is GNU 11.4.0\n'}
+[0.701720] (-) TimerEvent: {}
+[0.802322] (-) TimerEvent: {}
+[0.902900] (-) TimerEvent: {}
+[1.003518] (-) TimerEvent: {}
+[1.091052] (manipulator) StdoutLine: {'line': b'-- The CXX compiler identification is GNU 11.4.0\n'}
+[1.103629] (-) TimerEvent: {}
+[1.123231] (manipulator) StdoutLine: {'line': b'-- Detecting C compiler ABI info\n'}
+[1.203864] (-) TimerEvent: {}
+[1.304513] (-) TimerEvent: {}
+[1.378074] (manipulator) StdoutLine: {'line': b'-- Detecting C compiler ABI info - done\n'}
+[1.388456] (manipulator) StdoutLine: {'line': b'-- Check for working C compiler: /usr/bin/cc - skipped\n'}
+[1.391063] (manipulator) StdoutLine: {'line': b'-- Detecting C compile features\n'}
+[1.392925] (manipulator) StdoutLine: {'line': b'-- Detecting C compile features - done\n'}
+[1.399685] (manipulator) StdoutLine: {'line': b'-- Detecting CXX compiler ABI info\n'}
+[1.404628] (-) TimerEvent: {}
+[1.505136] (-) TimerEvent: {}
+[1.598587] (manipulator) StdoutLine: {'line': b'-- Detecting CXX compiler ABI info - done\n'}
+[1.605267] (-) TimerEvent: {}
+[1.609146] (manipulator) StdoutLine: {'line': b'-- Check for working CXX compiler: /usr/bin/c++ - skipped\n'}
+[1.609577] (manipulator) StdoutLine: {'line': b'-- Detecting CXX compile features\n'}
+[1.610243] (manipulator) StdoutLine: {'line': b'-- Detecting CXX compile features - done\n'}
+[1.638577] (manipulator) StdoutLine: {'line': b'-- Found ament_cmake: 1.3.12 (/opt/ros/humble/share/ament_cmake/cmake)\n'}
+[1.705532] (-) TimerEvent: {}
+[1.806153] (-) TimerEvent: {}
+[1.906754] (-) TimerEvent: {}
+[2.000901] (manipulator) StdoutLine: {'line': b'-- Found Python3: /usr/bin/python3 (found version "3.10.12") found components: Interpreter \n'}
+[2.006930] (-) TimerEvent: {}
+[2.107473] (-) TimerEvent: {}
+[2.208092] (-) TimerEvent: {}
+[2.239549] (manipulator) StdoutLine: {'line': b'-- Found rclcpp: 16.0.16 (/opt/ros/humble/share/rclcpp/cmake)\n'}
+[2.308314] (-) TimerEvent: {}
+[2.408959] (-) TimerEvent: {}
+[2.509594] (-) TimerEvent: {}
+[2.610183] (-) TimerEvent: {}
+[2.710749] (-) TimerEvent: {}
+[2.811292] (-) TimerEvent: {}
+[2.859825] (manipulator) StdoutLine: {'line': b'-- Found rosidl_generator_c: 3.1.7 (/opt/ros/humble/share/rosidl_generator_c/cmake)\n'}
+[2.876146] (manipulator) StdoutLine: {'line': b'-- Found rosidl_adapter: 3.1.7 (/opt/ros/humble/share/rosidl_adapter/cmake)\n'}
+[2.901876] (manipulator) StdoutLine: {'line': b'-- Found rosidl_generator_cpp: 3.1.7 (/opt/ros/humble/share/rosidl_generator_cpp/cmake)\n'}
+[2.911476] (-) TimerEvent: {}
+[2.944307] (manipulator) StdoutLine: {'line': b'-- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c\n'}
+[2.988495] (manipulator) StdoutLine: {'line': b'-- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp\n'}
+[3.011704] (-) TimerEvent: {}
+[3.112331] (-) TimerEvent: {}
+[3.113747] (manipulator) StdoutLine: {'line': b'-- Found rmw_implementation_cmake: 6.1.2 (/opt/ros/humble/share/rmw_implementation_cmake/cmake)\n'}
+[3.123496] (manipulator) StdoutLine: {'line': b'-- Found rmw_cyclonedds_cpp: 1.3.4 (/opt/ros/humble/share/rmw_cyclonedds_cpp/cmake)\n'}
+[3.195758] (manipulator) StdoutLine: {'line': b"-- Using RMW implementation 'rmw_cyclonedds_cpp' as default\n"}
+[3.212538] (-) TimerEvent: {}
+[3.232435] (manipulator) StdoutLine: {'line': b'-- Looking for pthread.h\n'}
+[3.312720] (-) TimerEvent: {}
+[3.413372] (-) TimerEvent: {}
+[3.457203] (manipulator) StdoutLine: {'line': b'-- Looking for pthread.h - found\n'}
+[3.457697] (manipulator) StdoutLine: {'line': b'-- Performing Test CMAKE_HAVE_LIBC_PTHREAD\n'}
+[3.513594] (-) TimerEvent: {}
+[3.614242] (-) TimerEvent: {}
+[3.672493] (manipulator) StdoutLine: {'line': b'-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success\n'}
+[3.673728] (manipulator) StdoutLine: {'line': b'-- Found Threads: TRUE  \n'}
+[3.714469] (-) TimerEvent: {}
+[3.811501] (manipulator) StdoutLine: {'line': b'-- Found sensor_msgs: 4.9.0 (/opt/ros/humble/share/sensor_msgs/cmake)\n'}
+[3.814654] (-) TimerEvent: {}
+[3.892615] (manipulator) StdoutLine: {'line': b'-- Found dummy_interface: 0.0.0 (/home/cat/ArmRemoteController/install/dummy_interface/share/dummy_interface/cmake)\n'}
+[3.914862] (-) TimerEvent: {}
+[3.926730] (manipulator) StdoutLine: {'line': b'-- Found serial: 1.2.1 (/usr/local/share/serial/cmake)\n'}
+[3.962444] (manipulator) StdoutLine: {'line': b'-- pinocchio_default FOUND. pinocchio_default at /opt/ros/humble/lib/aarch64-linux-gnu/libpinocchio_default.so\n'}
+[3.963028] (manipulator) StdoutLine: {'line': b'-- pinocchio_parsers FOUND. pinocchio_parsers at /opt/ros/humble/lib/aarch64-linux-gnu/libpinocchio_parsers.so\n'}
+[3.968012] (manipulator) StdoutLine: {'line': b'-- boost_filesystem FOUND. boost_filesystem at /lib/aarch64-linux-gnu/libboost_filesystem.so\n'}
+[4.015167] (-) TimerEvent: {}
+[4.115918] (-) TimerEvent: {}
+[4.151521] (manipulator) StdoutLine: {'line': b'-- Found Boost: /usr/include (found version "1.74.0") found components: filesystem serialization \n'}
+[4.162766] (manipulator) StdoutLine: {'line': b'-- eigenpy FOUND. eigenpy at /opt/ros/humble/lib/aarch64-linux-gnu/libeigenpy.so\n'}
+[4.216157] (-) TimerEvent: {}
+[4.221030] (manipulator) StdoutLine: {'line': b'-- Checking for NumPy\n'}
+[4.316297] (-) TimerEvent: {}
+[4.437600] (-) TimerEvent: {}
+[4.538735] (-) TimerEvent: {}
+[4.640015] (-) TimerEvent: {}
+[4.645531] (manipulator) StdoutLine: {'line': b'--   NUMPY_INCLUDE_DIRS=/usr/lib/python3/dist-packages/numpy/core/include\n'}
+[4.740218] (-) TimerEvent: {}
+[4.841585] (-) TimerEvent: {}
+[4.865538] (manipulator) StdoutLine: {'line': b'--   NUMPY_VERSION=1.21.5\n'}
+[4.941865] (-) TimerEvent: {}
+[5.042896] (-) TimerEvent: {}
+[5.144227] (-) TimerEvent: {}
+[5.245649] (-) TimerEvent: {}
+[5.346952] (-) TimerEvent: {}
+[5.389012] (manipulator) StdoutLine: {'line': b'-- Found Python3: /usr/bin/python3 (found version "3.10.12") found components: Interpreter Development.Module NumPy \n'}
+[5.390416] (manipulator) StdoutLine: {'line': b'-- PythonLibraryDirs: \n'}
+[5.391147] (manipulator) StdoutLine: {'line': b'-- PythonLibVersionString: 3.10.12\n'}
+[5.424190] (manipulator) StdoutLine: {'line': b'-- Python site lib: lib/python3.10/site-packages\n'}
+[5.425259] (manipulator) StdoutLine: {'line': b'-- Python include dirs: /usr/include/python3.10\n'}
+[5.447248] (-) TimerEvent: {}
+[5.496685] (manipulator) StdoutLine: {'line': b'-- Checking for NumPy\n'}
+[5.547474] (-) TimerEvent: {}
+[5.648628] (-) TimerEvent: {}
+[5.704267] (manipulator) StdoutLine: {'line': b'--   NUMPY_INCLUDE_DIRS=/usr/lib/python3/dist-packages/numpy/core/include\n'}
+[5.748870] (-) TimerEvent: {}
+[5.850033] (-) TimerEvent: {}
+[5.910840] (manipulator) StdoutLine: {'line': b'--   NUMPY_VERSION=1.21.5\n'}
+[5.911883] (manipulator) StdoutLine: {'line': b'-- NumPy include dir: /usr/lib/python3/dist-packages/numpy/core/include\n'}
+[5.918380] (manipulator) StderrLine: {'line': b'\x1b[33mCMake Warning at /usr/share/cmake-3.22/Modules/FindBoost.cmake:2201 (message):\n'}
+[5.919192] (manipulator) StderrLine: {'line': b'  No header defined for python310; skipping header check (note: header-only\n'}
+[5.919621] (manipulator) StderrLine: {'line': b'  libraries have no designated component)\n'}
+[5.920013] (manipulator) StderrLine: {'line': b'Call Stack (most recent call first):\n'}
+[5.920381] (manipulator) StderrLine: {'line': b'  /opt/ros/humble/lib/aarch64-linux-gnu/cmake/eigenpy/boost.cmake:148 (find_package)\n'}
+[5.920749] (manipulator) StderrLine: {'line': b'  /opt/ros/humble/lib/aarch64-linux-gnu/cmake/eigenpy/eigenpyConfig.cmake:149 (SEARCH_FOR_BOOST_PYTHON)\n'}
+[5.921157] (manipulator) StderrLine: {'line': b'  /usr/share/cmake-3.22/Modules/CMakeFindDependencyMacro.cmake:47 (find_package)\n'}
+[5.921505] (manipulator) StderrLine: {'line': b'  /opt/ros/humble/lib/aarch64-linux-gnu/cmake/pinocchio/pinocchioConfig.cmake:161 (find_dependency)\n'}
+[5.921898] (manipulator) StderrLine: {'line': b'  CMakeLists.txt:19 (find_package)\n'}
+[5.922243] (manipulator) StderrLine: {'line': b'\n'}
+[5.922584] (manipulator) StderrLine: {'line': b'\x1b[0m\n'}
+[5.925150] (manipulator) StdoutLine: {'line': b'-- Found Boost: /usr/include (found version "1.74.0") found components: python310 \n'}
+[5.950400] (-) TimerEvent: {}
+[6.051561] (-) TimerEvent: {}
+[6.152705] (-) TimerEvent: {}
+[6.253925] (-) TimerEvent: {}
+[6.355273] (-) TimerEvent: {}
+[6.456492] (-) TimerEvent: {}
+[6.557860] (-) TimerEvent: {}
+[6.659185] (-) TimerEvent: {}
+[6.661773] (manipulator) StdoutLine: {'line': b'-- Default C++ standard: 201703\n'}
+[6.662412] (manipulator) StdoutLine: {'line': b'-- Minimal C++ standard upgraded to 11\n'}
+[6.662770] (manipulator) StdoutLine: {'line': b'-- C++ standard sufficient: Minimal required 11, currently defined: 17\n'}
+[6.663116] (manipulator) StdoutLine: {'line': b'-- CMAKE_CXX_STANDARD was not set: automatically set to currently defined standard 17\n'}
+[6.669366] (manipulator) StdoutLine: {'line': b'-- hpp-fcl FOUND. hpp-fcl at /opt/ros/humble/lib/aarch64-linux-gnu/libhpp-fcl.so\n'}
+[6.689044] (manipulator) StdoutLine: {'line': b'-- Found Boost: /usr/include (found version "1.74.0") found components: chrono serialization filesystem \n'}
+[6.703320] (manipulator) StdoutLine: {'line': b'-- C++ standard sufficient: Minimal required 11, currently defined: 17\n'}
+[6.708382] (manipulator) StdoutLine: {'line': b'-- C++ standard sufficient: Minimal required 11, currently defined: 17\n'}
+[6.737525] (manipulator) StdoutLine: {'line': b'-- Found ament_lint_auto: 0.12.14 (/opt/ros/humble/share/ament_lint_auto/cmake)\n'}
+[6.759429] (-) TimerEvent: {}
+[6.860519] (-) TimerEvent: {}
+[6.920107] (manipulator) StdoutLine: {'line': b"-- Added test 'cppcheck' to perform static code analysis on C / C++ code\n"}
+[6.921111] (manipulator) StdoutLine: {'line': b'-- Configured cppcheck include dirs: $<BUILD_INTERFACE:/mnt/emmc/cat_home/arm-platform/include>\n'}
+[6.921525] (manipulator) StdoutLine: {'line': b'-- Configured cppcheck exclude dirs and/or files: \n'}
+[6.925028] (manipulator) StdoutLine: {'line': b"-- Added test 'flake8' to check Python code syntax and style conventions\n"}
+[6.929273] (manipulator) StdoutLine: {'line': b"-- Added test 'lint_cmake' to check CMake code style\n"}
+[6.932057] (manipulator) StdoutLine: {'line': b"-- Added test 'pep257' to check Python code against some of the docstring style conventions in PEP 257\n"}
+[6.944121] (manipulator) StdoutLine: {'line': b"-- Added test 'uncrustify' to check C / C++ code style\n"}
+[6.944553] (manipulator) StdoutLine: {'line': b'-- Configured uncrustify additional arguments: \n'}
+[6.948840] (manipulator) StdoutLine: {'line': b"-- Added test 'xmllint' to check XML markup files\n"}
+[6.953828] (manipulator) StdoutLine: {'line': b'-- Configuring done\n'}
+[6.960676] (-) TimerEvent: {}
+[7.009667] (manipulator) StdoutLine: {'line': b'-- Generating done\n'}
+[7.025447] (manipulator) StdoutLine: {'line': b'-- Build files have been written to: /mnt/emmc/cat_home/arm-platform/build/manipulator\n'}
+[7.056683] (manipulator) CommandEnded: {'returncode': 0}
+[7.058932] (manipulator) JobProgress: {'identifier': 'manipulator', 'progress': 'build'}
+[7.061337] (manipulator) Command: {'cmd': ['/usr/bin/cmake', '--build', '/mnt/emmc/cat_home/arm-platform/build/manipulator', '--', '-j8', '-l8'], 'cwd': '/mnt/emmc/cat_home/arm-platform/build/manipulator', 'env': OrderedDict([('LESSOPEN', '| /usr/bin/lesspipe %s'), ('USER', 'cat'), ('SSH_CLIENT', '192.168.50.128 56942 22'), ('XDG_SESSION_TYPE', 'tty'), ('SHLVL', '1'), ('LD_LIBRARY_PATH', '/home/cat/ArmRemoteController/install/mqtt_comm/lib:/home/cat/ArmRemoteController/install/dummy_interface/lib:/home/cat/huaben_ws/install/manipulator/lib:/home/cat/huaben_ws/install/dummy_interface/lib:/home/cat/uav_ws/install/mavros_extras/lib:/home/cat/uav_ws/install/mavros/lib:/home/cat/uav_ws/install/mavros_msgs/lib:/home/cat/uav_ws/install/libmavconn/lib:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/aarch64-linux-gnu:/opt/ros/humble/lib'), ('MOTD_SHOWN', 'pam'), ('HOME', '/home/cat'), ('MUTTER_DEBUG_ENABLE_ATOMIC_KMS', '0'), ('CYCLONEDDS_URI', 'file:///home/cat/.ros/cyclonedds.xml'), ('OLDPWD', '/home/cat'), ('SSH_TTY', '/dev/pts/1'), ('ROS_PYTHON_VERSION', '3'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('COLCON_PREFIX_PATH', '/home/cat/huaben_ws/install:/home/cat/uav_ws/install:/home/cat/ArmRemoteController/install'), ('ROS_DISTRO', 'humble'), ('LOGNAME', 'cat'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('XDG_SESSION_CLASS', 'user'), ('TERM', 'xterm-256color'), ('XDG_SESSION_ID', '5'), ('ROS_LOCALHOST_ONLY', '0'), ('PATH', '/opt/ros/humble/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('LANG', 'zh_CN.UTF-8'), ('RMW_IMPLEMENTATION', 'rmw_cyclonedds_cpp'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('ROS_DOMAIN_ID', '6'), ('AMENT_PREFIX_PATH', '/home/cat/ArmRemoteController/install/uav_arm_controller:/home/cat/ArmRemoteController/install/servo_teleop:/home/cat/ArmRemoteController/install/mqtt_comm:/home/cat/ArmRemoteController/install/dummy_arm:/home/cat/ArmRemoteController/install/dummy_interface:/home/cat/ArmRemoteController/install/dummy_description:/home/cat/huaben_ws/install/manipulator:/home/cat/huaben_ws/install/dummy_interface:/home/cat/huaben_ws/install/dummy_arm:/home/cat/uav_ws/install/vrpn_listener:/home/cat/uav_ws/install/odin_ros_driver:/home/cat/uav_ws/install/mavros_extras:/home/cat/uav_ws/install/mavros_examples:/home/cat/uav_ws/install/mavros:/home/cat/uav_ws/install/mavros_msgs:/home/cat/uav_ws/install/libmavconn:/opt/ros/humble'), ('SHELL', '/bin/bash'), ('CLUTTER_PAINT', 'disable-dynamic-max-render-time'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('MUTTER_DEBUG_FORCE_KMS_MODE', 'simple'), ('PWD', '/mnt/emmc/cat_home/arm-platform/build/manipulator'), ('SSH_CONNECTION', '192.168.50.128 56942 192.168.50.126 22'), ('XDG_DATA_DIRS', '/usr/share/gnome:/usr/local/share:/usr/share:/var/lib/snapd/desktop'), ('PYTHONPATH', '/home/cat/ArmRemoteController/install/dummy_interface/local/lib/python3.10/dist-packages:/home/cat/huaben_ws/install/dummy_interface/local/lib/python3.10/dist-packages:/home/cat/uav_ws/install/mavros_examples/local/lib/python3.10/dist-packages:/home/cat/uav_ws/install/mavros/local/lib/python3.10/dist-packages:/home/cat/uav_ws/install/mavros_msgs/local/lib/python3.10/dist-packages:/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages'), ('COLCON', '1'), ('CMAKE_PREFIX_PATH', '/home/cat/ArmRemoteController/install/uav_arm_controller:/home/cat/ArmRemoteController/install/servo_teleop:/home/cat/ArmRemoteController/install/mqtt_comm:/home/cat/ArmRemoteController/install/dummy_arm:/home/cat/ArmRemoteController/install/dummy_interface:/home/cat/ArmRemoteController/install/dummy_description:/home/cat/huaben_ws/install/manipulator:/home/cat/huaben_ws/install/dummy_interface:/home/cat/huaben_ws/install/dummy_arm:/home/cat/uav_ws/install/vrpn_listener:/home/cat/uav_ws/install/odin_ros_driver:/home/cat/uav_ws/install/mavros_extras:/home/cat/uav_ws/install/mavros_examples:/home/cat/uav_ws/install/mavros:/home/cat/uav_ws/install/mavros_msgs:/home/cat/uav_ws/install/libmavconn:/opt/ros/humble')]), 'shell': False}
+[7.063335] (-) TimerEvent: {}
+[7.164509] (-) TimerEvent: {}
+[7.196588] (manipulator) StdoutLine: {'line': b'[  4%] \x1b[32mBuilding CXX object CMakeFiles/gravity_compensation.dir/src/gravity_compensation.cc.o\x1b[0m\n'}
+[7.216900] (manipulator) StdoutLine: {'line': b'[ 14%] \x1b[32mBuilding CXX object CMakeFiles/manipulator_core.dir/src/bus/serial_bus.cc.o\x1b[0m\n'}
+[7.217491] (manipulator) StdoutLine: {'line': b'[ 14%] \x1b[32mBuilding CXX object CMakeFiles/manipulator_core.dir/src/arm/a_l1_gamma.cc.o\x1b[0m\n'}
+[7.217690] (manipulator) StdoutLine: {'line': b'[ 19%] \x1b[32mBuilding CXX object CMakeFiles/manipulator_core.dir/src/arm/arm_factory.cc.o\x1b[0m\n'}
+[7.220252] (manipulator) StdoutLine: {'line': b'[ 23%] \x1b[32mBuilding CXX object CMakeFiles/manipulator_core.dir/src/bus/abs_bus.cc.o\x1b[0m\n'}
+[7.231678] (manipulator) StdoutLine: {'line': b'[ 28%] \x1b[32mBuilding CXX object CMakeFiles/manipulator_core.dir/src/arm/a_l1_beta.cc.o\x1b[0m\n'}
+[7.233669] (manipulator) StdoutLine: {'line': b'[ 33%] \x1b[32mBuilding CXX object CMakeFiles/gravity_compensation_pinocchio.dir/src/gravity_compensation_pinocchio.cc.o\x1b[0m\n'}
+[7.235571] (manipulator) StdoutLine: {'line': b'[ 38%] \x1b[32mBuilding CXX object CMakeFiles/manipulator_core.dir/src/arm/abs_arm.cc.o\x1b[0m\n'}
+[7.264567] (-) TimerEvent: {}
+[7.364956] (-) TimerEvent: {}
+[7.465668] (-) TimerEvent: {}
+[7.566536] (-) TimerEvent: {}
+[7.617102] (manipulator) StderrLine: {'line': b'/mnt/emmc/cat_home/arm-platform/src/bus/abs_bus.cc: In instantiation of \xe2\x80\x98\x1b[01m\x1b[Kmanipulator::bus::AbsBus::Send()::<lambda(const auto:1&, auto:2&)> [with auto:1 = std::vector<unsigned char>; auto:2 = std::shared_ptr<manipulator::protocol::IProtocol>]\x1b[m\x1b[K\xe2\x80\x99:\n'}
+[7.617942] (manipulator) StderrLine: {'line': b'\x1b[01m\x1b[K/mnt/emmc/cat_home/arm-platform/include/manipulator/protocol/protocol_factory.h:20:8:\x1b[m\x1b[K   required from \xe2\x80\x98\x1b[01m\x1b[Kvoid manipulator::protocol::ProtocolFactory::IterateEach(F&&) [with F = manipulator::bus::AbsBus::Send()::<lambda(const auto:1&, auto:2&)>]\x1b[m\x1b[K\xe2\x80\x99\n'}
+[7.618505] (manipulator) StderrLine: {'line': b'\x1b[01m\x1b[K/mnt/emmc/cat_home/arm-platform/src/bus/abs_bus.cc:9:33:\x1b[m\x1b[K   required from here\n'}
+[7.619243] (manipulator) StderrLine: {'line': b'\x1b[01m\x1b[K/mnt/emmc/cat_home/arm-platform/src/bus/abs_bus.cc:9:53:\x1b[m\x1b[K \x1b[01;35m\x1b[Kwarning: \x1b[m\x1b[Kunused parameter \xe2\x80\x98\x1b[01m\x1b[Kname\x1b[m\x1b[K\xe2\x80\x99 [\x1b[01;35m\x1b[K\x1b]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-parameter\x07-Wunused-parameter\x1b]8;;\x07\x1b[m\x1b[K]\n'}
+[7.619752] (manipulator) StderrLine: {'line': b'    9 |   protocol_factory_->IterateEach([this](\x1b[01;35m\x1b[Kconst auto& name\x1b[m\x1b[K, auto& protocol) {\n'}
+[7.620266] (manipulator) StderrLine: {'line': b'      |                                         \x1b[01;35m\x1b[K~~~~~~~~~~~~^~~~\x1b[m\x1b[K\n'}
+[7.620860] (manipulator) StderrLine: {'line': b'/mnt/emmc/cat_home/arm-platform/src/bus/abs_bus.cc: In instantiation of \xe2\x80\x98\x1b[01m\x1b[Kmanipulator::bus::AbsBus::Read()::<lambda(const auto:3&, auto:4&)> [with auto:3 = std::vector<unsigned char>; auto:4 = std::shared_ptr<manipulator::protocol::IProtocol>]\x1b[m\x1b[K\xe2\x80\x99:\n'}
+[7.621379] (manipulator) StderrLine: {'line': b'\x1b[01m\x1b[K/mnt/emmc/cat_home/arm-platform/include/manipulator/protocol/protocol_factory.h:20:8:\x1b[m\x1b[K   required from \xe2\x80\x98\x1b[01m\x1b[Kvoid manipulator::protocol::ProtocolFactory::IterateEach(F&&) [with F = manipulator::bus::AbsBus::Read()::<lambda(const auto:3&, auto:4&)>]\x1b[m\x1b[K\xe2\x80\x99\n'}
+[7.621957] (manipulator) StderrLine: {'line': b'\x1b[01m\x1b[K/mnt/emmc/cat_home/arm-platform/src/bus/abs_bus.cc:19:33:\x1b[m\x1b[K   required from here\n'}
+[7.622444] (manipulator) StderrLine: {'line': b'\x1b[01m\x1b[K/mnt/emmc/cat_home/arm-platform/src/bus/abs_bus.cc:19:61:\x1b[m\x1b[K \x1b[01;35m\x1b[Kwarning: \x1b[m\x1b[Kunused parameter \xe2\x80\x98\x1b[01m\x1b[Kname\x1b[m\x1b[K\xe2\x80\x99 [\x1b[01;35m\x1b[K\x1b]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-parameter\x07-Wunused-parameter\x1b]8;;\x07\x1b[m\x1b[K]\n'}
+[7.622979] (manipulator) StderrLine: {'line': b'   19 |   protocol_factory_->IterateEach([this, &bytes](\x1b[01;35m\x1b[Kconst auto& name\x1b[m\x1b[K, auto& protocol) {\n'}
+[7.623419] (manipulator) StderrLine: {'line': b'      |                                                 \x1b[01;35m\x1b[K~~~~~~~~~~~~^~~~\x1b[m\x1b[K\n'}
+[7.666794] (-) TimerEvent: {}
+[7.742473] (manipulator) StdoutLine: {'line': b'[ 42%] \x1b[32mBuilding CXX object CMakeFiles/manipulator_core.dir/src/motor/dm_motor.cc.o\x1b[0m\n'}
+[7.767026] (-) TimerEvent: {}
+[7.867937] (-) TimerEvent: {}
+[7.969089] (-) TimerEvent: {}
+[8.070177] (-) TimerEvent: {}
+[8.169773] (manipulator) StderrLine: {'line': b'\x1b[01m\x1b[K/mnt/emmc/cat_home/arm-platform/src/arm/abs_arm.cc:\x1b[m\x1b[K In member function \xe2\x80\x98\x1b[01m\x1b[Kvirtual void manipulator::arm::AbsArm::Init(const string&, uint32_t)\x1b[m\x1b[K\xe2\x80\x99:\n'}
+[8.170144] (-) TimerEvent: {}
+[8.170311] (manipulator) StderrLine: {'line': b'\x1b[01m\x1b[K/mnt/emmc/cat_home/arm-platform/src/arm/abs_arm.cc:13:38:\x1b[m\x1b[K \x1b[01;35m\x1b[Kwarning: \x1b[m\x1b[Kunused parameter \xe2\x80\x98\x1b[01m\x1b[Kport\x1b[m\x1b[K\xe2\x80\x99 [\x1b[01;35m\x1b[K\x1b]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-parameter\x07-Wunused-parameter\x1b]8;;\x07\x1b[m\x1b[K]\n'}
+[8.170443] (manipulator) StderrLine: {'line': b'   13 | void AbsArm::Init(\x1b[01;35m\x1b[Kconst std::string& port\x1b[m\x1b[K, uint32_t baud) {\n'}
+[8.170520] (manipulator) StderrLine: {'line': b'      |                   \x1b[01;35m\x1b[K~~~~~~~~~~~~~~~~~~~^~~~\x1b[m\x1b[K\n'}
+[8.170592] (manipulator) StderrLine: {'line': b'\x1b[01m\x1b[K/mnt/emmc/cat_home/arm-platform/src/arm/abs_arm.cc:13:53:\x1b[m\x1b[K \x1b[01;35m\x1b[Kwarning: \x1b[m\x1b[Kunused parameter \xe2\x80\x98\x1b[01m\x1b[Kbaud\x1b[m\x1b[K\xe2\x80\x99 [\x1b[01;35m\x1b[K\x1b]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-parameter\x07-Wunused-parameter\x1b]8;;\x07\x1b[m\x1b[K]\n'}
+[8.170663] (manipulator) StderrLine: {'line': b'   13 | void AbsArm::Init(const std::string& port, \x1b[01;35m\x1b[Kuint32_t baud\x1b[m\x1b[K) {\n'}
+[8.170729] (manipulator) StderrLine: {'line': b'      |                                            \x1b[01;35m\x1b[K~~~~~~~~~^~~~\x1b[m\x1b[K\n'}
+[8.195644] (manipulator) StdoutLine: {'line': b'[ 47%] \x1b[32mBuilding CXX object CMakeFiles/manipulator_core.dir/src/protocol/abs_protocol.cc.o\x1b[0m\n'}
+[8.270297] (-) TimerEvent: {}
+[8.370817] (-) TimerEvent: {}
+[8.471886] (-) TimerEvent: {}
+[8.572876] (-) TimerEvent: {}
+[8.673867] (-) TimerEvent: {}
+[8.774873] (-) TimerEvent: {}
+[8.875944] (-) TimerEvent: {}
+[8.901805] (manipulator) StdoutLine: {'line': b'[ 52%] \x1b[32mBuilding CXX object CMakeFiles/manipulator_core.dir/src/protocol/protocol_factory.cc.o\x1b[0m\n'}
+[8.976166] (-) TimerEvent: {}
+[9.077172] (-) TimerEvent: {}
+[9.178136] (-) TimerEvent: {}
+[9.279109] (-) TimerEvent: {}
+[9.380043] (-) TimerEvent: {}
+[9.480987] (-) TimerEvent: {}
+[9.501016] (manipulator) StdoutLine: {'line': b'[ 57%] \x1b[32mBuilding CXX object CMakeFiles/manipulator_core.dir/src/protocol/protocol_v1.cc.o\x1b[0m\n'}
+[9.579193] (manipulator) StderrLine: {'line': b'\x1b[01m\x1b[K/mnt/emmc/cat_home/arm-platform/src/protocol/protocol_factory.cc:\x1b[m\x1b[K In member function \xe2\x80\x98\x1b[01m\x1b[Kmanipulator::protocol::IProtocol::SharedPtr manipulator::protocol::ProtocolFactory::GetProtocol(const string&, const std::vector<unsigned char>&)\x1b[m\x1b[K\xe2\x80\x99:\n'}
+[9.579535] (manipulator) StderrLine: {'line': b'\x1b[01m\x1b[K/mnt/emmc/cat_home/arm-platform/src/protocol/protocol_factory.cc:9:70:\x1b[m\x1b[K \x1b[01;35m\x1b[Kwarning: \x1b[m\x1b[Kunused parameter \xe2\x80\x98\x1b[01m\x1b[Kprotocol_name\x1b[m\x1b[K\xe2\x80\x99 [\x1b[01;35m\x1b[K\x1b]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-parameter\x07-Wunused-parameter\x1b]8;;\x07\x1b[m\x1b[K]\n'}
+[9.579634] (manipulator) StderrLine: {'line': b'    9 | otocol::SharedPtr ProtocolFactory::GetProtocol(\x1b[01;35m\x1b[Kconst std::string& protocol_name\x1b[m\x1b[K,\n'}
+[9.579710] (manipulator) StderrLine: {'line': b'      |                                                \x1b[01;35m\x1b[K~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~\x1b[m\x1b[K\n'}
+[9.579781] (manipulator) StderrLine: {'line': b'\n'}
+[9.581079] (-) TimerEvent: {}
+[9.681490] (-) TimerEvent: {}
+[9.782081] (-) TimerEvent: {}
+[9.883358] (-) TimerEvent: {}
+[9.984684] (-) TimerEvent: {}
+[10.085990] (-) TimerEvent: {}
+[10.187340] (-) TimerEvent: {}
+[10.288599] (-) TimerEvent: {}
+[10.389852] (-) TimerEvent: {}
+[10.491244] (-) TimerEvent: {}
+[10.592543] (-) TimerEvent: {}
+[10.693895] (-) TimerEvent: {}
+[10.795338] (-) TimerEvent: {}
+[10.896934] (-) TimerEvent: {}
+[10.998543] (-) TimerEvent: {}
+[11.100120] (-) TimerEvent: {}
+[11.201734] (-) TimerEvent: {}
+[11.303336] (-) TimerEvent: {}
+[11.404889] (-) TimerEvent: {}
+[11.506143] (-) TimerEvent: {}
+[11.607730] (-) TimerEvent: {}
+[11.709280] (-) TimerEvent: {}
+[11.810828] (-) TimerEvent: {}
+[11.912442] (-) TimerEvent: {}
+[12.013942] (-) TimerEvent: {}
+[12.115471] (-) TimerEvent: {}
+[12.217044] (-) TimerEvent: {}
+[12.318686] (-) TimerEvent: {}
+[12.420210] (-) TimerEvent: {}
+[12.421207] (manipulator) StderrLine: {'line': b'\x1b[01m\x1b[K/mnt/emmc/cat_home/arm-platform/src/gravity_compensation.cc:\x1b[m\x1b[K In member function \xe2\x80\x98\x1b[01m\x1b[Kstd::array<double, 7> manipulator::GravityCompensation::Compute(const std::array<double, 7>&)\x1b[m\x1b[K\xe2\x80\x99:\n'}
+[12.422064] (manipulator) StderrLine: {'line': b'\x1b[01m\x1b[K/mnt/emmc/cat_home/arm-platform/src/gravity_compensation.cc:77:10:\x1b[m\x1b[K \x1b[01;35m\x1b[Kwarning: \x1b[m\x1b[Kunused variable \xe2\x80\x98\x1b[01m\x1b[Kroll\x1b[m\x1b[K\xe2\x80\x99 [\x1b[01;35m\x1b[K\x1b]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-variable\x07-Wunused-variable\x1b]8;;\x07\x1b[m\x1b[K]\n'}
+[12.422693] (manipulator) StderrLine: {'line': b'   77 |   double \x1b[01;35m\x1b[Kroll\x1b[m\x1b[K = uav_pose_.y;\n'}
+[12.423234] (manipulator) StderrLine: {'line': b'      |          \x1b[01;35m\x1b[K^~~~\x1b[m\x1b[K\n'}
+[12.423767] (manipulator) StderrLine: {'line': b'\x1b[01m\x1b[K/mnt/emmc/cat_home/arm-platform/src/gravity_compensation.cc:78:10:\x1b[m\x1b[K \x1b[01;35m\x1b[Kwarning: \x1b[m\x1b[Kunused variable \xe2\x80\x98\x1b[01m\x1b[Kpitch\x1b[m\x1b[K\xe2\x80\x99 [\x1b[01;35m\x1b[K\x1b]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-variable\x07-Wunused-variable\x1b]8;;\x07\x1b[m\x1b[K]\n'}
+[12.424292] (manipulator) StderrLine: {'line': b'   78 |   double \x1b[01;35m\x1b[Kpitch\x1b[m\x1b[K = uav_pose_.z;\n'}
+[12.424796] (manipulator) StderrLine: {'line': b'      |          \x1b[01;35m\x1b[K^~~~~\x1b[m\x1b[K\n'}
+[12.520920] (-) TimerEvent: {}
+[12.625097] (-) TimerEvent: {}
+[12.732738] (-) TimerEvent: {}
+[12.833553] (-) TimerEvent: {}
+[12.934364] (-) TimerEvent: {}
+[13.035105] (-) TimerEvent: {}
+[13.135633] (-) TimerEvent: {}
+[13.236322] (-) TimerEvent: {}
+[13.336885] (-) TimerEvent: {}
+[13.393061] (manipulator) StderrLine: {'line': b'\x1b[01m\x1b[K/mnt/emmc/cat_home/arm-platform/src/protocol/protocol_v1.cc:\x1b[m\x1b[K In member function \xe2\x80\x98\x1b[01m\x1b[Kvoid manipulator::protocol::ProtocolV1::Check(manipulator::protocol::ProtocolV1::LinkFrame&)\x1b[m\x1b[K\xe2\x80\x99:\n'}
+[13.393757] (manipulator) StderrLine: {'line': b'\x1b[01m\x1b[K/mnt/emmc/cat_home/arm-platform/src/protocol/protocol_v1.cc:99:24:\x1b[m\x1b[K \x1b[01;35m\x1b[Kwarning: \x1b[m\x1b[Kcomparison of integer expressions of different signedness: \xe2\x80\x98\x1b[01m\x1b[Ksize_t\x1b[m\x1b[K\xe2\x80\x99 {aka \xe2\x80\x98\x1b[01m\x1b[Klong unsigned int\x1b[m\x1b[K\xe2\x80\x99} and \xe2\x80\x98\x1b[01m\x1b[Kint\x1b[m\x1b[K\xe2\x80\x99 [\x1b[01;35m\x1b[K\x1b]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wsign-compare\x07-Wsign-compare\x1b]8;;\x07\x1b[m\x1b[K]\n'}
+[13.394231] (manipulator) StderrLine: {'line': b'   99 |   for (size_t i = 0; \x1b[01;35m\x1b[Ki < 4 + f.dataLen\x1b[m\x1b[K; i++) {\n'}
+[13.394649] (manipulator) StderrLine: {'line': b'      |                      \x1b[01;35m\x1b[K~~^~~~~~~~~~~~~~~\x1b[m\x1b[K\n'}
+[13.437166] (-) TimerEvent: {}
+[13.538036] (-) TimerEvent: {}
+[13.638926] (-) TimerEvent: {}
+[13.739945] (-) TimerEvent: {}
+[13.840779] (-) TimerEvent: {}
+[13.941638] (-) TimerEvent: {}
+[14.042622] (-) TimerEvent: {}
+[14.143588] (-) TimerEvent: {}
+[14.244486] (-) TimerEvent: {}
+[14.345288] (-) TimerEvent: {}
+[14.393999] (manipulator) StdoutLine: {'line': b'[ 61%] \x1b[32m\x1b[1mLinking CXX static library libgravity_compensation.a\x1b[0m\n'}
+[14.445503] (-) TimerEvent: {}
+[14.546385] (-) TimerEvent: {}
+[14.554098] (manipulator) StdoutLine: {'line': b'[ 61%] Built target gravity_compensation\n'}
+[14.646565] (-) TimerEvent: {}
+[14.747289] (-) TimerEvent: {}
+[14.848042] (-) TimerEvent: {}
+[14.948818] (-) TimerEvent: {}
+[15.049588] (-) TimerEvent: {}
+[15.150604] (-) TimerEvent: {}
+[15.251395] (-) TimerEvent: {}
+[15.352160] (-) TimerEvent: {}
+[15.438077] (manipulator) StdoutLine: {'line': b'[ 66%] \x1b[32m\x1b[1mLinking CXX static library libmanipulator_core.a\x1b[0m\n'}
+[15.452327] (-) TimerEvent: {}
+[15.553068] (-) TimerEvent: {}
+[15.592746] (manipulator) StdoutLine: {'line': b'[ 66%] Built target manipulator_core\n'}
+[15.653306] (-) TimerEvent: {}
+[15.665152] (manipulator) StdoutLine: {'line': b'[ 71%] \x1b[32mBuilding CXX object CMakeFiles/slave_arm_node.dir/src/slave_arm_node.cc.o\x1b[0m\n'}
+[15.674067] (manipulator) StdoutLine: {'line': b'[ 76%] \x1b[32mBuilding CXX object CMakeFiles/arm_hardware_node.dir/src/arm_hardware_node.cc.o\x1b[0m\n'}
+[15.753543] (-) TimerEvent: {}
+[15.854265] (-) TimerEvent: {}
+[15.955018] (-) TimerEvent: {}
+[16.055715] (-) TimerEvent: {}
+[16.156451] (-) TimerEvent: {}
+[16.257298] (-) TimerEvent: {}
+[16.358225] (-) TimerEvent: {}
+[16.461809] (-) TimerEvent: {}
+[16.562650] (-) TimerEvent: {}
+[16.663502] (-) TimerEvent: {}
+[16.764370] (-) TimerEvent: {}
+[16.865130] (-) TimerEvent: {}
+[16.965943] (-) TimerEvent: {}
+[17.066862] (-) TimerEvent: {}
+[17.167779] (-) TimerEvent: {}
+[17.271814] (-) TimerEvent: {}
+[17.372643] (-) TimerEvent: {}
+[17.473447] (-) TimerEvent: {}
+[17.574374] (-) TimerEvent: {}
+[17.675240] (-) TimerEvent: {}
+[17.776064] (-) TimerEvent: {}
+[17.877027] (-) TimerEvent: {}
+[17.978043] (-) TimerEvent: {}
+[18.079056] (-) TimerEvent: {}
+[18.179964] (-) TimerEvent: {}
+[18.280795] (-) TimerEvent: {}
+[18.381595] (-) TimerEvent: {}
+[18.488475] (-) TimerEvent: {}
+[18.589431] (-) TimerEvent: {}
+[18.689994] (-) TimerEvent: {}
+[18.790774] (-) TimerEvent: {}
+[18.891518] (-) TimerEvent: {}
+[18.992253] (-) TimerEvent: {}
+[19.093079] (-) TimerEvent: {}
+[19.193949] (-) TimerEvent: {}
+[19.294846] (-) TimerEvent: {}
+[19.395639] (-) TimerEvent: {}
+[19.496790] (-) TimerEvent: {}
+[19.597624] (-) TimerEvent: {}
+[19.698381] (-) TimerEvent: {}
+[19.799416] (-) TimerEvent: {}
+[19.900348] (-) TimerEvent: {}
+[20.001112] (-) TimerEvent: {}
+[20.101926] (-) TimerEvent: {}
+[20.202741] (-) TimerEvent: {}
+[20.303610] (-) TimerEvent: {}
+[20.404441] (-) TimerEvent: {}
+[20.505268] (-) TimerEvent: {}
+[20.606109] (-) TimerEvent: {}
+[20.707064] (-) TimerEvent: {}
+[20.807947] (-) TimerEvent: {}
+[20.908733] (-) TimerEvent: {}
+[21.009555] (-) TimerEvent: {}
+[21.110469] (-) TimerEvent: {}
+[21.211334] (-) TimerEvent: {}
+[21.312148] (-) TimerEvent: {}
+[21.413010] (-) TimerEvent: {}
+[21.513778] (-) TimerEvent: {}
+[21.616212] (-) TimerEvent: {}
+[21.717156] (-) TimerEvent: {}
+[21.818168] (-) TimerEvent: {}
+[21.918983] (-) TimerEvent: {}
+[22.019477] (-) TimerEvent: {}
+[22.120445] (-) TimerEvent: {}
+[22.221301] (-) TimerEvent: {}
+[22.322164] (-) TimerEvent: {}
+[22.422985] (-) TimerEvent: {}
+[22.523800] (-) TimerEvent: {}
+[22.624702] (-) TimerEvent: {}
+[22.725589] (-) TimerEvent: {}
+[22.826417] (-) TimerEvent: {}
+[22.927446] (-) TimerEvent: {}
+[23.028531] (-) TimerEvent: {}
+[23.129289] (-) TimerEvent: {}
+[23.230312] (-) TimerEvent: {}
+[23.331116] (-) TimerEvent: {}
+[23.431902] (-) TimerEvent: {}
+[23.532704] (-) TimerEvent: {}
+[23.633644] (-) TimerEvent: {}
+[23.734577] (-) TimerEvent: {}
+[23.835383] (-) TimerEvent: {}
+[23.936219] (-) TimerEvent: {}
+[24.037138] (-) TimerEvent: {}
+[24.138095] (-) TimerEvent: {}
+[24.241891] (-) TimerEvent: {}
+[24.345157] (-) TimerEvent: {}
+[24.448527] (-) TimerEvent: {}
+[24.549417] (-) TimerEvent: {}
+[24.650358] (-) TimerEvent: {}
+[24.751473] (-) TimerEvent: {}
+[24.852350] (-) TimerEvent: {}
+[24.953146] (-) TimerEvent: {}
+[25.054120] (-) TimerEvent: {}
+[25.155047] (-) TimerEvent: {}
+[25.255819] (-) TimerEvent: {}
+[25.356642] (-) TimerEvent: {}
+[25.457548] (-) TimerEvent: {}
+[25.558422] (-) TimerEvent: {}
+[25.659189] (-) TimerEvent: {}
+[25.759973] (-) TimerEvent: {}
+[25.860869] (-) TimerEvent: {}
+[25.961751] (-) TimerEvent: {}
+[26.062488] (-) TimerEvent: {}
+[26.163275] (-) TimerEvent: {}
+[26.264070] (-) TimerEvent: {}
+[26.364974] (-) TimerEvent: {}
+[26.465778] (-) TimerEvent: {}
+[26.566597] (-) TimerEvent: {}
+[26.667484] (-) TimerEvent: {}
+[26.768388] (-) TimerEvent: {}
+[26.869181] (-) TimerEvent: {}
+[26.970013] (-) TimerEvent: {}
+[27.070892] (-) TimerEvent: {}
+[27.171782] (-) TimerEvent: {}
+[27.272597] (-) TimerEvent: {}
+[27.373773] (-) TimerEvent: {}
+[27.474758] (-) TimerEvent: {}
+[27.575561] (-) TimerEvent: {}
+[27.676345] (-) TimerEvent: {}
+[27.777256] (-) TimerEvent: {}
+[27.878197] (-) TimerEvent: {}
+[27.979084] (-) TimerEvent: {}
+[28.080030] (-) TimerEvent: {}
+[28.181040] (-) TimerEvent: {}
+[28.281844] (-) TimerEvent: {}
+[28.382642] (-) TimerEvent: {}
+[28.483473] (-) TimerEvent: {}
+[28.584159] (-) TimerEvent: {}
+[28.684648] (-) TimerEvent: {}
+[28.785496] (-) TimerEvent: {}
+[28.886284] (-) TimerEvent: {}
+[28.987051] (-) TimerEvent: {}
+[29.087972] (-) TimerEvent: {}
+[29.188765] (-) TimerEvent: {}
+[29.200773] (manipulator) StdoutLine: {'line': b'[ 80%] \x1b[32m\x1b[1mLinking CXX executable arm_hardware_node\x1b[0m\n'}
+[29.288992] (-) TimerEvent: {}
+[29.390473] (-) TimerEvent: {}
+[29.491469] (-) TimerEvent: {}
+[29.592276] (-) TimerEvent: {}
+[29.693264] (-) TimerEvent: {}
+[29.794113] (-) TimerEvent: {}
+[29.894867] (-) TimerEvent: {}
+[29.995708] (-) TimerEvent: {}
+[30.096595] (-) TimerEvent: {}
+[30.197487] (-) TimerEvent: {}
+[30.269263] (manipulator) StdoutLine: {'line': b'[ 80%] Built target arm_hardware_node\n'}
+[30.297770] (-) TimerEvent: {}
+[30.398717] (-) TimerEvent: {}
+[30.500009] (-) TimerEvent: {}
+[30.601421] (-) TimerEvent: {}
+[30.702513] (-) TimerEvent: {}
+[30.803274] (-) TimerEvent: {}
+[30.904224] (-) TimerEvent: {}
+[31.005185] (-) TimerEvent: {}
+[31.106142] (-) TimerEvent: {}
+[31.207294] (-) TimerEvent: {}
+[31.308750] (-) TimerEvent: {}
+[31.410114] (-) TimerEvent: {}
+[31.511265] (-) TimerEvent: {}
+[31.521409] (manipulator) StdoutLine: {'line': b'[ 85%] \x1b[32m\x1b[1mLinking CXX static library libgravity_compensation_pinocchio.a\x1b[0m\n'}
+[31.611690] (-) TimerEvent: {}
+[31.712742] (-) TimerEvent: {}
+[31.751016] (manipulator) StdoutLine: {'line': b'[ 85%] Built target gravity_compensation_pinocchio\n'}
+[31.799408] (manipulator) StdoutLine: {'line': b'[ 90%] \x1b[32mBuilding CXX object CMakeFiles/master_arm_node.dir/src/master_arm_node.cc.o\x1b[0m\n'}
+[31.812962] (-) TimerEvent: {}
+[31.914035] (-) TimerEvent: {}
+[32.015135] (-) TimerEvent: {}
+[32.116097] (-) TimerEvent: {}
+[32.216943] (-) TimerEvent: {}
+[32.317969] (-) TimerEvent: {}
+[32.418968] (-) TimerEvent: {}
+[32.519888] (-) TimerEvent: {}
+[32.620882] (-) TimerEvent: {}
+[32.721852] (-) TimerEvent: {}
+[32.822778] (-) TimerEvent: {}
+[32.923639] (-) TimerEvent: {}
+[33.024661] (-) TimerEvent: {}
+[33.125636] (-) TimerEvent: {}
+[33.226492] (-) TimerEvent: {}
+[33.327496] (-) TimerEvent: {}
+[33.428498] (-) TimerEvent: {}
+[33.529479] (-) TimerEvent: {}
+[33.630458] (-) TimerEvent: {}
+[33.731477] (-) TimerEvent: {}
+[33.832376] (-) TimerEvent: {}
+[33.933317] (-) TimerEvent: {}
+[34.034262] (-) TimerEvent: {}
+[34.135142] (-) TimerEvent: {}
+[34.236012] (-) TimerEvent: {}
+[34.336920] (-) TimerEvent: {}
+[34.437844] (-) TimerEvent: {}
+[34.538909] (-) TimerEvent: {}
+[34.639993] (-) TimerEvent: {}
+[34.741083] (-) TimerEvent: {}
+[34.842535] (-) TimerEvent: {}
+[34.943895] (-) TimerEvent: {}
+[35.044675] (-) TimerEvent: {}
+[35.145529] (-) TimerEvent: {}
+[35.246350] (-) TimerEvent: {}
+[35.347076] (-) TimerEvent: {}
+[35.379059] (manipulator) StdoutLine: {'line': b'[ 95%] \x1b[32m\x1b[1mLinking CXX executable slave_arm_node\x1b[0m\n'}
+[35.447377] (-) TimerEvent: {}
+[35.548338] (-) TimerEvent: {}
+[35.649422] (-) TimerEvent: {}
+[35.750303] (-) TimerEvent: {}
+[35.851337] (-) TimerEvent: {}
+[35.952339] (-) TimerEvent: {}
+[36.053286] (-) TimerEvent: {}
+[36.154223] (-) TimerEvent: {}
+[36.255098] (-) TimerEvent: {}
+[36.355925] (-) TimerEvent: {}
+[36.456824] (-) TimerEvent: {}
+[36.557666] (-) TimerEvent: {}
+[36.658472] (-) TimerEvent: {}
+[36.695672] (manipulator) StdoutLine: {'line': b'[ 95%] Built target slave_arm_node\n'}
+[36.758681] (-) TimerEvent: {}
+[36.859474] (-) TimerEvent: {}
+[36.960272] (-) TimerEvent: {}
+[37.061072] (-) TimerEvent: {}
+[37.161796] (-) TimerEvent: {}
+[37.262608] (-) TimerEvent: {}
+[37.363640] (-) TimerEvent: {}
+[37.464676] (-) TimerEvent: {}
+[37.565744] (-) TimerEvent: {}
+[37.666753] (-) TimerEvent: {}
+[37.767776] (-) TimerEvent: {}
+[37.868853] (-) TimerEvent: {}
+[37.969861] (-) TimerEvent: {}
+[38.070963] (-) TimerEvent: {}
+[38.172076] (-) TimerEvent: {}
+[38.273165] (-) TimerEvent: {}
+[38.374259] (-) TimerEvent: {}
+[38.475324] (-) TimerEvent: {}
+[38.576315] (-) TimerEvent: {}
+[38.677295] (-) TimerEvent: {}
+[38.778330] (-) TimerEvent: {}
+[38.879318] (-) TimerEvent: {}
+[38.980357] (-) TimerEvent: {}
+[39.081397] (-) TimerEvent: {}
+[39.182558] (-) TimerEvent: {}
+[39.283550] (-) TimerEvent: {}
+[39.384651] (-) TimerEvent: {}
+[39.486129] (-) TimerEvent: {}
+[39.587526] (-) TimerEvent: {}
+[39.688793] (-) TimerEvent: {}
+[39.790134] (-) TimerEvent: {}
+[39.891463] (-) TimerEvent: {}
+[39.992861] (-) TimerEvent: {}
+[40.094204] (-) TimerEvent: {}
+[40.195919] (-) TimerEvent: {}
+[40.297357] (-) TimerEvent: {}
+[40.398668] (-) TimerEvent: {}
+[40.499956] (-) TimerEvent: {}
+[40.601203] (-) TimerEvent: {}
+[40.702508] (-) TimerEvent: {}
+[40.803932] (-) TimerEvent: {}
+[40.905374] (-) TimerEvent: {}
+[41.006803] (-) TimerEvent: {}
+[41.108091] (-) TimerEvent: {}
+[41.209401] (-) TimerEvent: {}
+[41.310635] (-) TimerEvent: {}
+[41.411907] (-) TimerEvent: {}
+[41.513143] (-) TimerEvent: {}
+[41.614402] (-) TimerEvent: {}
+[41.715802] (-) TimerEvent: {}
+[41.817194] (-) TimerEvent: {}
+[41.918454] (-) TimerEvent: {}
+[42.019395] (-) TimerEvent: {}
+[42.120220] (-) TimerEvent: {}
+[42.221156] (-) TimerEvent: {}
+[42.322032] (-) TimerEvent: {}
+[42.422834] (-) TimerEvent: {}
+[42.523783] (-) TimerEvent: {}
+[42.625186] (-) TimerEvent: {}
+[42.726580] (-) TimerEvent: {}
+[42.827981] (-) TimerEvent: {}
+[42.929402] (-) TimerEvent: {}
+[43.030836] (-) TimerEvent: {}
+[43.132336] (-) TimerEvent: {}
+[43.233731] (-) TimerEvent: {}
+[43.335171] (-) TimerEvent: {}
+[43.436488] (-) TimerEvent: {}
+[43.537914] (-) TimerEvent: {}
+[43.639317] (-) TimerEvent: {}
+[43.740818] (-) TimerEvent: {}
+[43.842383] (-) TimerEvent: {}
+[43.932577] (manipulator) StderrLine: {'line': b'\x1b[01m\x1b[K/mnt/emmc/cat_home/arm-platform/src/master_arm_node.cc:\x1b[m\x1b[K In constructor \xe2\x80\x98\x1b[01m\x1b[Kmanipulator::MasterArmNode::MasterArmNode()\x1b[m\x1b[K\xe2\x80\x99:\n'}
+[43.933772] (manipulator) StderrLine: {'line': b'\x1b[01m\x1b[K/mnt/emmc/cat_home/arm-platform/src/master_arm_node.cc:72:8:\x1b[m\x1b[K \x1b[01;35m\x1b[Kwarning: \x1b[m\x1b[Kunused variable \xe2\x80\x98\x1b[01m\x1b[Kpublish_joint_state\x1b[m\x1b[K\xe2\x80\x99 [\x1b[01;35m\x1b[K\x1b]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-variable\x07-Wunused-variable\x1b]8;;\x07\x1b[m\x1b[K]\n'}
+[43.934382] (manipulator) StderrLine: {'line': b'   72 |   bool \x1b[01;35m\x1b[Kpublish_joint_state\x1b[m\x1b[K = this->get_parameter("publish_joint_state").as_bool();\n'}
+[43.934859] (manipulator) StderrLine: {'line': b'      |        \x1b[01;35m\x1b[K^~~~~~~~~~~~~~~~~~~\x1b[m\x1b[K\n'}
+[43.942604] (-) TimerEvent: {}
+[44.043784] (-) TimerEvent: {}
+[44.145282] (-) TimerEvent: {}
+[44.246654] (-) TimerEvent: {}
+[44.347685] (-) TimerEvent: {}
+[44.448481] (-) TimerEvent: {}
+[44.549224] (-) TimerEvent: {}
+[44.650167] (-) TimerEvent: {}
+[44.751564] (-) TimerEvent: {}
+[44.852985] (-) TimerEvent: {}
+[44.954423] (-) TimerEvent: {}
+[45.055828] (-) TimerEvent: {}
+[45.157167] (-) TimerEvent: {}
+[45.258643] (-) TimerEvent: {}
+[45.359473] (-) TimerEvent: {}
+[45.460243] (-) TimerEvent: {}
+[45.561044] (-) TimerEvent: {}
+[45.661790] (-) TimerEvent: {}
+[45.762639] (-) TimerEvent: {}
+[45.863385] (-) TimerEvent: {}
+[45.964156] (-) TimerEvent: {}
+[46.064925] (-) TimerEvent: {}
+[46.165557] (-) TimerEvent: {}
+[46.266510] (-) TimerEvent: {}
+[46.367273] (-) TimerEvent: {}
+[46.467814] (-) TimerEvent: {}
+[46.568732] (-) TimerEvent: {}
+[46.669539] (-) TimerEvent: {}
+[46.770447] (-) TimerEvent: {}
+[46.871437] (-) TimerEvent: {}
+[46.972316] (-) TimerEvent: {}
+[47.073176] (-) TimerEvent: {}
+[47.174077] (-) TimerEvent: {}
+[47.274989] (-) TimerEvent: {}
+[47.375849] (-) TimerEvent: {}
+[47.476777] (-) TimerEvent: {}
+[47.577859] (-) TimerEvent: {}
+[47.678751] (-) TimerEvent: {}
+[47.779607] (-) TimerEvent: {}
+[47.880498] (-) TimerEvent: {}
+[47.981566] (-) TimerEvent: {}
+[48.082532] (-) TimerEvent: {}
+[48.183521] (-) TimerEvent: {}
+[48.284502] (-) TimerEvent: {}
+[48.385489] (-) TimerEvent: {}
+[48.486552] (-) TimerEvent: {}
+[48.587565] (-) TimerEvent: {}
+[48.688521] (-) TimerEvent: {}
+[48.788998] (-) TimerEvent: {}
+[48.889703] (-) TimerEvent: {}
+[48.990837] (-) TimerEvent: {}
+[49.091978] (-) TimerEvent: {}
+[49.193048] (-) TimerEvent: {}
+[49.293954] (-) TimerEvent: {}
+[49.395024] (-) TimerEvent: {}
+[49.495973] (-) TimerEvent: {}
+[49.596756] (-) TimerEvent: {}
+[49.697583] (-) TimerEvent: {}
+[49.798385] (-) TimerEvent: {}
+[49.899281] (-) TimerEvent: {}
+[50.000147] (-) TimerEvent: {}
+[50.101038] (-) TimerEvent: {}
+[50.201929] (-) TimerEvent: {}
+[50.302816] (-) TimerEvent: {}
+[50.403798] (-) TimerEvent: {}
+[50.504816] (-) TimerEvent: {}
+[50.605740] (-) TimerEvent: {}
+[50.706546] (-) TimerEvent: {}
+[50.807284] (-) TimerEvent: {}
+[50.908110] (-) TimerEvent: {}
+[51.008985] (-) TimerEvent: {}
+[51.109814] (-) TimerEvent: {}
+[51.210633] (-) TimerEvent: {}
+[51.311447] (-) TimerEvent: {}
+[51.412267] (-) TimerEvent: {}
+[51.513088] (-) TimerEvent: {}
+[51.613944] (-) TimerEvent: {}
+[51.714775] (-) TimerEvent: {}
+[51.815640] (-) TimerEvent: {}
+[51.916385] (-) TimerEvent: {}
+[52.017220] (-) TimerEvent: {}
+[52.118066] (-) TimerEvent: {}
+[52.218896] (-) TimerEvent: {}
+[52.319651] (-) TimerEvent: {}
+[52.420616] (-) TimerEvent: {}
+[52.521518] (-) TimerEvent: {}
+[52.622352] (-) TimerEvent: {}
+[52.723239] (-) TimerEvent: {}
+[52.823909] (-) TimerEvent: {}
+[52.924508] (-) TimerEvent: {}
+[53.025365] (-) TimerEvent: {}
+[53.126184] (-) TimerEvent: {}
+[53.227027] (-) TimerEvent: {}
+[53.328039] (-) TimerEvent: {}
+[53.429452] (-) TimerEvent: {}
+[53.530648] (-) TimerEvent: {}
+[53.631366] (-) TimerEvent: {}
+[53.731941] (-) TimerEvent: {}
+[53.832462] (-) TimerEvent: {}
+[53.933240] (-) TimerEvent: {}
+[54.033953] (-) TimerEvent: {}
+[54.134678] (-) TimerEvent: {}
+[54.235389] (-) TimerEvent: {}
+[54.336013] (-) TimerEvent: {}
+[54.436687] (-) TimerEvent: {}
+[54.537630] (-) TimerEvent: {}
+[54.639055] (-) TimerEvent: {}
+[54.740345] (-) TimerEvent: {}
+[54.841674] (-) TimerEvent: {}
+[54.942993] (-) TimerEvent: {}
+[55.044429] (-) TimerEvent: {}
+[55.145761] (-) TimerEvent: {}
+[55.247067] (-) TimerEvent: {}
+[55.348465] (-) TimerEvent: {}
+[55.449905] (-) TimerEvent: {}
+[55.551339] (-) TimerEvent: {}
+[55.652661] (-) TimerEvent: {}
+[55.753932] (-) TimerEvent: {}
+[55.855259] (-) TimerEvent: {}
+[55.956620] (-) TimerEvent: {}
+[56.057978] (-) TimerEvent: {}
+[56.159293] (-) TimerEvent: {}
+[56.260644] (-) TimerEvent: {}
+[56.361995] (-) TimerEvent: {}
+[56.463326] (-) TimerEvent: {}
+[56.564612] (-) TimerEvent: {}
+[56.665990] (-) TimerEvent: {}
+[56.767280] (-) TimerEvent: {}
+[56.868640] (-) TimerEvent: {}
+[56.970103] (-) TimerEvent: {}
+[57.071355] (-) TimerEvent: {}
+[57.172255] (-) TimerEvent: {}
+[57.273226] (-) TimerEvent: {}
+[57.374508] (-) TimerEvent: {}
+[57.475732] (-) TimerEvent: {}
+[57.576937] (-) TimerEvent: {}
+[57.678215] (-) TimerEvent: {}
+[57.779575] (-) TimerEvent: {}
+[57.880876] (-) TimerEvent: {}
+[57.982265] (-) TimerEvent: {}
+[58.083527] (-) TimerEvent: {}
+[58.184427] (-) TimerEvent: {}
+[58.285228] (-) TimerEvent: {}
+[58.386186] (-) TimerEvent: {}
+[58.469288] (manipulator) StdoutLine: {'line': b'[100%] \x1b[32m\x1b[1mLinking CXX executable master_arm_node\x1b[0m\n'}
+[58.486414] (-) TimerEvent: {}
+[58.587475] (-) TimerEvent: {}
+[58.688731] (-) TimerEvent: {}
+[58.789938] (-) TimerEvent: {}
+[58.890972] (-) TimerEvent: {}
+[58.991992] (-) TimerEvent: {}
+[59.093192] (-) TimerEvent: {}
+[59.194095] (-) TimerEvent: {}
+[59.294874] (-) TimerEvent: {}
+[59.395854] (-) TimerEvent: {}
+[59.496726] (-) TimerEvent: {}
+[59.597563] (-) TimerEvent: {}
+[59.698426] (-) TimerEvent: {}
+[59.799275] (-) TimerEvent: {}
+[59.900058] (-) TimerEvent: {}
+[59.931130] (manipulator) StdoutLine: {'line': b'[100%] Built target master_arm_node\n'}
+[59.949884] (manipulator) CommandEnded: {'returncode': 0}
+[59.951843] (manipulator) JobProgress: {'identifier': 'manipulator', 'progress': 'install'}
+[59.982697] (manipulator) Command: {'cmd': ['/usr/bin/cmake', '--install', '/mnt/emmc/cat_home/arm-platform/build/manipulator'], 'cwd': '/mnt/emmc/cat_home/arm-platform/build/manipulator', 'env': OrderedDict([('LESSOPEN', '| /usr/bin/lesspipe %s'), ('USER', 'cat'), ('SSH_CLIENT', '192.168.50.128 56942 22'), ('XDG_SESSION_TYPE', 'tty'), ('SHLVL', '1'), ('LD_LIBRARY_PATH', '/home/cat/ArmRemoteController/install/mqtt_comm/lib:/home/cat/ArmRemoteController/install/dummy_interface/lib:/home/cat/huaben_ws/install/manipulator/lib:/home/cat/huaben_ws/install/dummy_interface/lib:/home/cat/uav_ws/install/mavros_extras/lib:/home/cat/uav_ws/install/mavros/lib:/home/cat/uav_ws/install/mavros_msgs/lib:/home/cat/uav_ws/install/libmavconn/lib:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/aarch64-linux-gnu:/opt/ros/humble/lib'), ('MOTD_SHOWN', 'pam'), ('HOME', '/home/cat'), ('MUTTER_DEBUG_ENABLE_ATOMIC_KMS', '0'), ('CYCLONEDDS_URI', 'file:///home/cat/.ros/cyclonedds.xml'), ('OLDPWD', '/home/cat'), ('SSH_TTY', '/dev/pts/1'), ('ROS_PYTHON_VERSION', '3'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('COLCON_PREFIX_PATH', '/home/cat/huaben_ws/install:/home/cat/uav_ws/install:/home/cat/ArmRemoteController/install'), ('ROS_DISTRO', 'humble'), ('LOGNAME', 'cat'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('XDG_SESSION_CLASS', 'user'), ('TERM', 'xterm-256color'), ('XDG_SESSION_ID', '5'), ('ROS_LOCALHOST_ONLY', '0'), ('PATH', '/opt/ros/humble/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('LANG', 'zh_CN.UTF-8'), ('RMW_IMPLEMENTATION', 'rmw_cyclonedds_cpp'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('ROS_DOMAIN_ID', '6'), ('AMENT_PREFIX_PATH', '/home/cat/ArmRemoteController/install/uav_arm_controller:/home/cat/ArmRemoteController/install/servo_teleop:/home/cat/ArmRemoteController/install/mqtt_comm:/home/cat/ArmRemoteController/install/dummy_arm:/home/cat/ArmRemoteController/install/dummy_interface:/home/cat/ArmRemoteController/install/dummy_description:/home/cat/huaben_ws/install/manipulator:/home/cat/huaben_ws/install/dummy_interface:/home/cat/huaben_ws/install/dummy_arm:/home/cat/uav_ws/install/vrpn_listener:/home/cat/uav_ws/install/odin_ros_driver:/home/cat/uav_ws/install/mavros_extras:/home/cat/uav_ws/install/mavros_examples:/home/cat/uav_ws/install/mavros:/home/cat/uav_ws/install/mavros_msgs:/home/cat/uav_ws/install/libmavconn:/opt/ros/humble'), ('SHELL', '/bin/bash'), ('CLUTTER_PAINT', 'disable-dynamic-max-render-time'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('MUTTER_DEBUG_FORCE_KMS_MODE', 'simple'), ('PWD', '/mnt/emmc/cat_home/arm-platform/build/manipulator'), ('SSH_CONNECTION', '192.168.50.128 56942 192.168.50.126 22'), ('XDG_DATA_DIRS', '/usr/share/gnome:/usr/local/share:/usr/share:/var/lib/snapd/desktop'), ('PYTHONPATH', '/home/cat/ArmRemoteController/install/dummy_interface/local/lib/python3.10/dist-packages:/home/cat/huaben_ws/install/dummy_interface/local/lib/python3.10/dist-packages:/home/cat/uav_ws/install/mavros_examples/local/lib/python3.10/dist-packages:/home/cat/uav_ws/install/mavros/local/lib/python3.10/dist-packages:/home/cat/uav_ws/install/mavros_msgs/local/lib/python3.10/dist-packages:/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages'), ('COLCON', '1'), ('CMAKE_PREFIX_PATH', '/home/cat/ArmRemoteController/install/uav_arm_controller:/home/cat/ArmRemoteController/install/servo_teleop:/home/cat/ArmRemoteController/install/mqtt_comm:/home/cat/ArmRemoteController/install/dummy_arm:/home/cat/ArmRemoteController/install/dummy_interface:/home/cat/ArmRemoteController/install/dummy_description:/home/cat/huaben_ws/install/manipulator:/home/cat/huaben_ws/install/dummy_interface:/home/cat/huaben_ws/install/dummy_arm:/home/cat/uav_ws/install/vrpn_listener:/home/cat/uav_ws/install/odin_ros_driver:/home/cat/uav_ws/install/mavros_extras:/home/cat/uav_ws/install/mavros_examples:/home/cat/uav_ws/install/mavros:/home/cat/uav_ws/install/mavros_msgs:/home/cat/uav_ws/install/libmavconn:/opt/ros/humble')]), 'shell': False}
+[60.000271] (-) TimerEvent: {}
+[60.010194] (manipulator) StdoutLine: {'line': b'-- Install configuration: ""\n'}
+[60.011067] (manipulator) StdoutLine: {'line': b'-- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/lib/libmanipulator_core.a\n'}
+[60.015615] (manipulator) StdoutLine: {'line': b'-- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/lib/libgravity_compensation.a\n'}
+[60.018904] (manipulator) StdoutLine: {'line': b'-- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/lib/libgravity_compensation_pinocchio.a\n'}
+[60.033931] (manipulator) StdoutLine: {'line': b'-- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/lib/manipulator/arm_hardware_node\n'}
+[60.042828] (manipulator) StdoutLine: {'line': b'-- Set runtime path of "/mnt/emmc/cat_home/arm-platform/install/manipulator/lib/manipulator/arm_hardware_node" to ""\n'}
+[60.043288] (manipulator) StdoutLine: {'line': b'-- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/lib/manipulator/master_arm_node\n'}
+[60.057652] (manipulator) StdoutLine: {'line': b'-- Set runtime path of "/mnt/emmc/cat_home/arm-platform/install/manipulator/lib/manipulator/master_arm_node" to ""\n'}
+[60.058585] (manipulator) StdoutLine: {'line': b'-- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/lib/manipulator/slave_arm_node\n'}
+[60.071835] (manipulator) StdoutLine: {'line': b'-- Set runtime path of "/mnt/emmc/cat_home/arm-platform/install/manipulator/lib/manipulator/slave_arm_node" to ""\n'}
+[60.072738] (manipulator) StdoutLine: {'line': b'-- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/include\n'}
+[60.073293] (manipulator) StdoutLine: {'line': b'-- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator\n'}
+[60.073724] (manipulator) StdoutLine: {'line': b'-- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/slave_arm_node.h\n'}
+[60.074178] (manipulator) StdoutLine: {'line': b'-- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/arm\n'}
+[60.074591] (manipulator) StdoutLine: {'line': b'-- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/arm/abs_arm.h\n'}
+[60.075046] (manipulator) StdoutLine: {'line': b'-- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/arm/i_arm.h\n'}
+[60.075470] (manipulator) StdoutLine: {'line': b'-- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/arm/a_l1_gamma.h\n'}
+[60.075870] (manipulator) StdoutLine: {'line': b'-- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/arm/a_l1_beta.h\n'}
+[60.076304] (manipulator) StdoutLine: {'line': b'-- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/arm/arm_factory.h\n'}
+[60.076703] (manipulator) StdoutLine: {'line': b'-- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/arm_types.h\n'}
+[60.077140] (manipulator) StdoutLine: {'line': b'-- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/bus\n'}
+[60.077540] (manipulator) StdoutLine: {'line': b'-- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/bus/i_bus.h\n'}
+[60.077935] (manipulator) StdoutLine: {'line': b'-- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/bus/abs_bus.h\n'}
+[60.078352] (manipulator) StdoutLine: {'line': b'-- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/bus/serial_bus.h\n'}
+[60.078763] (manipulator) StdoutLine: {'line': b'-- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/arm_hardware_node.h\n'}
+[60.079169] (manipulator) StdoutLine: {'line': b'-- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/motor\n'}
+[60.079573] (manipulator) StdoutLine: {'line': b'-- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/motor/dm_motor.h\n'}
+[60.079972] (manipulator) StdoutLine: {'line': b'-- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/motor/abs_motor.h\n'}
+[60.080350] (manipulator) StdoutLine: {'line': b'-- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/motor/i_motor.h\n'}
+[60.080716] (manipulator) StdoutLine: {'line': b'-- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/master_arm_node.h\n'}
+[60.081085] (manipulator) StdoutLine: {'line': b'-- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/gravity_compensation_pinocchio.h\n'}
+[60.081490] (manipulator) StdoutLine: {'line': b'-- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/controller\n'}
+[60.081889] (manipulator) StdoutLine: {'line': b'-- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/controller/dummy_controller.h\n'}
+[60.082264] (manipulator) StdoutLine: {'line': b'-- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/controller/i_arm_controller.h\n'}
+[60.083863] (manipulator) StdoutLine: {'line': b'-- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/protocol\n'}
+[60.084765] (manipulator) StdoutLine: {'line': b'-- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/protocol/protocol_v1.h\n'}
+[60.085325] (manipulator) StdoutLine: {'line': b'-- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/protocol/i_protocol.h\n'}
+[60.085703] (manipulator) StdoutLine: {'line': b'-- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/protocol/abs_protocol.h\n'}
+[60.086074] (manipulator) StdoutLine: {'line': b'-- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/protocol/protocol_factory.h\n'}
+[60.086446] (manipulator) StdoutLine: {'line': b'-- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/gravity_compensation.h\n'}
+[60.086815] (manipulator) StdoutLine: {'line': b'-- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/manipulator/\n'}
+[60.087187] (manipulator) StdoutLine: {'line': b'-- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/manipulator//master_arm.launch.py\n'}
+[60.087969] (manipulator) StdoutLine: {'line': b'-- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/manipulator//demo.launch.py\n'}
+[60.088623] (manipulator) StdoutLine: {'line': b'-- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/manipulator//slave_arm.launch.py\n'}
+[60.089082] (manipulator) StdoutLine: {'line': b'-- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/manipulator/environment/library_path.sh\n'}
+[60.089475] (manipulator) StdoutLine: {'line': b'-- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/manipulator/environment/library_path.dsv\n'}
+[60.089877] (manipulator) StdoutLine: {'line': b'-- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/ament_index/resource_index/package_run_dependencies/manipulator\n'}
+[60.090386] (manipulator) StdoutLine: {'line': b'-- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/ament_index/resource_index/parent_prefix_path/manipulator\n'}
+[60.090775] (manipulator) StdoutLine: {'line': b'-- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/manipulator/environment/ament_prefix_path.sh\n'}
+[60.091207] (manipulator) StdoutLine: {'line': b'-- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/manipulator/environment/ament_prefix_path.dsv\n'}
+[60.091624] (manipulator) StdoutLine: {'line': b'-- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/manipulator/environment/path.sh\n'}
+[60.092008] (manipulator) StdoutLine: {'line': b'-- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/manipulator/environment/path.dsv\n'}
+[60.092454] (manipulator) StdoutLine: {'line': b'-- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/manipulator/local_setup.bash\n'}
+[60.092848] (manipulator) StdoutLine: {'line': b'-- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/manipulator/local_setup.sh\n'}
+[60.093303] (manipulator) StdoutLine: {'line': b'-- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/manipulator/local_setup.zsh\n'}
+[60.093751] (manipulator) StdoutLine: {'line': b'-- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/manipulator/local_setup.dsv\n'}
+[60.094125] (manipulator) StdoutLine: {'line': b'-- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/manipulator/package.dsv\n'}
+[60.094891] (manipulator) StdoutLine: {'line': b'-- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/ament_index/resource_index/packages/manipulator\n'}
+[60.095369] (manipulator) StdoutLine: {'line': b'-- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/manipulator/cmake/export_manipulatorExport.cmake\n'}
+[60.095762] (manipulator) StdoutLine: {'line': b'-- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/manipulator/cmake/export_manipulatorExport-noconfig.cmake\n'}
+[60.096133] (manipulator) StdoutLine: {'line': b'-- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/manipulator/cmake/ament_cmake_export_targets-extras.cmake\n'}
+[60.096593] (manipulator) StdoutLine: {'line': b'-- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/manipulator/cmake/ament_cmake_export_include_directories-extras.cmake\n'}
+[60.096967] (manipulator) StdoutLine: {'line': b'-- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/manipulator/cmake/ament_cmake_export_dependencies-extras.cmake\n'}
+[60.097420] (manipulator) StdoutLine: {'line': b'-- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/manipulator/cmake/manipulatorConfig.cmake\n'}
+[60.097806] (manipulator) StdoutLine: {'line': b'-- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/manipulator/cmake/manipulatorConfig-version.cmake\n'}
+[60.098252] (manipulator) StdoutLine: {'line': b'-- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/manipulator/package.xml\n'}
+[60.098724] (manipulator) CommandEnded: {'returncode': 0}
+[60.100342] (-) TimerEvent: {}
+[60.127638] (manipulator) JobEnded: {'identifier': 'manipulator', 'rc': 0}
+[60.129946] (-) EventReactorShutdown: {}

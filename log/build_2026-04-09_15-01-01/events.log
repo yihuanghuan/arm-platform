@@ -1,0 +1,762 @@
+[0.000000] (-) TimerEvent: {}
+[0.000389] (manipulator) JobQueued: {'identifier': 'manipulator', 'dependencies': OrderedDict()}
+[0.001029] (manipulator) JobStarted: {'identifier': 'manipulator'}
+[0.017994] (manipulator) JobProgress: {'identifier': 'manipulator', 'progress': 'cmake'}
+[0.020154] (manipulator) JobProgress: {'identifier': 'manipulator', 'progress': 'build'}
+[0.020281] (manipulator) Command: {'cmd': ['/usr/bin/cmake', '--build', '/mnt/emmc/cat_home/arm-platform/build/manipulator', '--', '-j8', '-l8'], 'cwd': '/mnt/emmc/cat_home/arm-platform/build/manipulator', 'env': OrderedDict([('LESSOPEN', '| /usr/bin/lesspipe %s'), ('USER', 'cat'), ('SSH_CLIENT', '192.168.50.128 64062 22'), ('XDG_SESSION_TYPE', 'tty'), ('SHLVL', '1'), ('LD_LIBRARY_PATH', '/home/cat/arm-platform/install/manipulator/lib:/home/cat/ArmRemoteController/install/mqtt_comm/lib:/home/cat/ArmRemoteController/install/dummy_interface/lib:/home/cat/huaben_ws/install/manipulator/lib:/home/cat/huaben_ws/install/dummy_interface/lib:/home/cat/uav_ws/install/mavros_extras/lib:/home/cat/uav_ws/install/mavros/lib:/home/cat/uav_ws/install/mavros_msgs/lib:/home/cat/uav_ws/install/libmavconn/lib:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/aarch64-linux-gnu:/opt/ros/humble/lib'), ('MOTD_SHOWN', 'pam'), ('HOME', '/home/cat'), ('MUTTER_DEBUG_ENABLE_ATOMIC_KMS', '0'), ('CYCLONEDDS_URI', 'file:///home/cat/.ros/cyclonedds.xml'), ('OLDPWD', '/home/cat'), ('SSH_TTY', '/dev/pts/0'), ('ROS_PYTHON_VERSION', '3'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('COLCON_PREFIX_PATH', '/home/cat/arm-platform/install:/home/cat/huaben_ws/install:/home/cat/uav_ws/install:/home/cat/ArmRemoteController/install'), ('ROS_DISTRO', 'humble'), ('LOGNAME', 'cat'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('XDG_SESSION_CLASS', 'user'), ('TERM', 'xterm-256color'), ('XDG_SESSION_ID', '2'), ('ROS_LOCALHOST_ONLY', '0'), ('PATH', '/opt/ros/humble/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('LANG', 'zh_CN.UTF-8'), ('RMW_IMPLEMENTATION', 'rmw_cyclonedds_cpp'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('ROS_DOMAIN_ID', '6'), ('AMENT_PREFIX_PATH', '/home/cat/arm-platform/install/manipulator:/home/cat/ArmRemoteController/install/uav_arm_controller:/home/cat/ArmRemoteController/install/servo_teleop:/home/cat/ArmRemoteController/install/mqtt_comm:/home/cat/ArmRemoteController/install/dummy_arm:/home/cat/ArmRemoteController/install/dummy_interface:/home/cat/ArmRemoteController/install/dummy_description:/home/cat/huaben_ws/install/manipulator:/home/cat/huaben_ws/install/dummy_interface:/home/cat/huaben_ws/install/dummy_arm:/home/cat/uav_ws/install/vrpn_listener:/home/cat/uav_ws/install/odin_ros_driver:/home/cat/uav_ws/install/mavros_extras:/home/cat/uav_ws/install/mavros_examples:/home/cat/uav_ws/install/mavros:/home/cat/uav_ws/install/mavros_msgs:/home/cat/uav_ws/install/libmavconn:/opt/ros/humble'), ('SHELL', '/bin/bash'), ('CLUTTER_PAINT', 'disable-dynamic-max-render-time'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('MUTTER_DEBUG_FORCE_KMS_MODE', 'simple'), ('PWD', '/mnt/emmc/cat_home/arm-platform/build/manipulator'), ('SSH_CONNECTION', '192.168.50.128 64062 192.168.50.126 22'), ('XDG_DATA_DIRS', '/usr/share/gnome:/usr/local/share:/usr/share:/var/lib/snapd/desktop'), ('PYTHONPATH', '/home/cat/ArmRemoteController/install/dummy_interface/local/lib/python3.10/dist-packages:/home/cat/huaben_ws/install/dummy_interface/local/lib/python3.10/dist-packages:/home/cat/uav_ws/install/mavros_examples/local/lib/python3.10/dist-packages:/home/cat/uav_ws/install/mavros/local/lib/python3.10/dist-packages:/home/cat/uav_ws/install/mavros_msgs/local/lib/python3.10/dist-packages:/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages'), ('COLCON', '1'), ('CMAKE_PREFIX_PATH', '/home/cat/arm-platform/install/manipulator:/home/cat/ArmRemoteController/install/uav_arm_controller:/home/cat/ArmRemoteController/install/servo_teleop:/home/cat/ArmRemoteController/install/mqtt_comm:/home/cat/ArmRemoteController/install/dummy_arm:/home/cat/ArmRemoteController/install/dummy_interface:/home/cat/ArmRemoteController/install/dummy_description:/home/cat/huaben_ws/install/manipulator:/home/cat/huaben_ws/install/dummy_interface:/home/cat/huaben_ws/install/dummy_arm:/home/cat/uav_ws/install/vrpn_listener:/home/cat/uav_ws/install/odin_ros_driver:/home/cat/uav_ws/install/mavros_extras:/home/cat/uav_ws/install/mavros_examples:/home/cat/uav_ws/install/mavros:/home/cat/uav_ws/install/mavros_msgs:/home/cat/uav_ws/install/libmavconn:/opt/ros/humble')]), 'shell': False}
+[0.099381] (-) TimerEvent: {}
+[0.165658] (manipulator) StdoutLine: {'line': b'[  9%] Built target gravity_compensation\n'}
+[0.199619] (-) TimerEvent: {}
+[0.232175] (manipulator) StdoutLine: {'line': b'[ 19%] Built target gravity_compensation_pinocchio\n'}
+[0.236333] (manipulator) StdoutLine: {'line': b'[ 71%] Built target manipulator_core\n'}
+[0.300142] (-) TimerEvent: {}
+[0.331306] (manipulator) StdoutLine: {'line': b'[ 80%] Built target arm_hardware_node\n'}
+[0.335136] (manipulator) StdoutLine: {'line': b'[ 90%] Built target master_arm_node\n'}
+[0.360633] (manipulator) StdoutLine: {'line': b'[ 95%] \x1b[32mBuilding CXX object CMakeFiles/slave_arm_node.dir/src/slave_arm_node.cc.o\x1b[0m\n'}
+[0.400321] (-) TimerEvent: {}
+[0.501540] (-) TimerEvent: {}
+[0.602715] (-) TimerEvent: {}
+[0.703971] (-) TimerEvent: {}
+[0.805232] (-) TimerEvent: {}
+[0.906548] (-) TimerEvent: {}
+[1.007834] (-) TimerEvent: {}
+[1.109149] (-) TimerEvent: {}
+[1.210482] (-) TimerEvent: {}
+[1.311942] (-) TimerEvent: {}
+[1.413219] (-) TimerEvent: {}
+[1.514513] (-) TimerEvent: {}
+[1.615820] (-) TimerEvent: {}
+[1.717134] (-) TimerEvent: {}
+[1.818438] (-) TimerEvent: {}
+[1.919696] (-) TimerEvent: {}
+[2.021014] (-) TimerEvent: {}
+[2.122333] (-) TimerEvent: {}
+[2.223585] (-) TimerEvent: {}
+[2.324963] (-) TimerEvent: {}
+[2.426347] (-) TimerEvent: {}
+[2.527638] (-) TimerEvent: {}
+[2.628963] (-) TimerEvent: {}
+[2.730260] (-) TimerEvent: {}
+[2.831768] (-) TimerEvent: {}
+[2.933029] (-) TimerEvent: {}
+[3.034309] (-) TimerEvent: {}
+[3.135612] (-) TimerEvent: {}
+[3.236896] (-) TimerEvent: {}
+[3.338543] (-) TimerEvent: {}
+[3.440319] (-) TimerEvent: {}
+[3.541622] (-) TimerEvent: {}
+[3.642982] (-) TimerEvent: {}
+[3.744242] (-) TimerEvent: {}
+[3.845532] (-) TimerEvent: {}
+[3.946803] (-) TimerEvent: {}
+[4.048163] (-) TimerEvent: {}
+[4.149433] (-) TimerEvent: {}
+[4.250744] (-) TimerEvent: {}
+[4.352100] (-) TimerEvent: {}
+[4.453419] (-) TimerEvent: {}
+[4.554837] (-) TimerEvent: {}
+[4.656173] (-) TimerEvent: {}
+[4.757507] (-) TimerEvent: {}
+[4.858942] (-) TimerEvent: {}
+[4.960255] (-) TimerEvent: {}
+[5.061591] (-) TimerEvent: {}
+[5.163045] (-) TimerEvent: {}
+[5.264479] (-) TimerEvent: {}
+[5.365975] (-) TimerEvent: {}
+[5.467723] (-) TimerEvent: {}
+[5.569103] (-) TimerEvent: {}
+[5.670448] (-) TimerEvent: {}
+[5.771812] (-) TimerEvent: {}
+[5.873150] (-) TimerEvent: {}
+[5.974573] (-) TimerEvent: {}
+[6.076030] (-) TimerEvent: {}
+[6.177418] (-) TimerEvent: {}
+[6.278825] (-) TimerEvent: {}
+[6.380270] (-) TimerEvent: {}
+[6.481782] (-) TimerEvent: {}
+[6.583192] (-) TimerEvent: {}
+[6.684598] (-) TimerEvent: {}
+[6.786043] (-) TimerEvent: {}
+[6.887373] (-) TimerEvent: {}
+[6.988852] (-) TimerEvent: {}
+[7.090179] (-) TimerEvent: {}
+[7.191619] (-) TimerEvent: {}
+[7.292873] (-) TimerEvent: {}
+[7.394206] (-) TimerEvent: {}
+[7.495520] (-) TimerEvent: {}
+[7.596820] (-) TimerEvent: {}
+[7.698350] (-) TimerEvent: {}
+[7.799656] (-) TimerEvent: {}
+[7.901011] (-) TimerEvent: {}
+[8.002485] (-) TimerEvent: {}
+[8.103942] (-) TimerEvent: {}
+[8.205368] (-) TimerEvent: {}
+[8.306799] (-) TimerEvent: {}
+[8.408052] (-) TimerEvent: {}
+[8.509384] (-) TimerEvent: {}
+[8.610731] (-) TimerEvent: {}
+[8.712079] (-) TimerEvent: {}
+[8.813384] (-) TimerEvent: {}
+[8.914668] (-) TimerEvent: {}
+[9.016159] (-) TimerEvent: {}
+[9.117955] (-) TimerEvent: {}
+[9.219211] (-) TimerEvent: {}
+[9.320468] (-) TimerEvent: {}
+[9.421742] (-) TimerEvent: {}
+[9.523017] (-) TimerEvent: {}
+[9.624318] (-) TimerEvent: {}
+[9.725608] (-) TimerEvent: {}
+[9.826884] (-) TimerEvent: {}
+[9.928415] (-) TimerEvent: {}
+[10.029984] (-) TimerEvent: {}
+[10.131383] (-) TimerEvent: {}
+[10.232649] (-) TimerEvent: {}
+[10.333978] (-) TimerEvent: {}
+[10.435350] (-) TimerEvent: {}
+[10.536727] (-) TimerEvent: {}
+[10.638398] (-) TimerEvent: {}
+[10.739810] (-) TimerEvent: {}
+[10.841210] (-) TimerEvent: {}
+[10.942615] (-) TimerEvent: {}
+[11.044014] (-) TimerEvent: {}
+[11.145371] (-) TimerEvent: {}
+[11.246782] (-) TimerEvent: {}
+[11.348263] (-) TimerEvent: {}
+[11.449702] (-) TimerEvent: {}
+[11.551274] (-) TimerEvent: {}
+[11.652775] (-) TimerEvent: {}
+[11.754058] (-) TimerEvent: {}
+[11.855468] (-) TimerEvent: {}
+[11.956939] (-) TimerEvent: {}
+[12.058350] (-) TimerEvent: {}
+[12.159767] (-) TimerEvent: {}
+[12.261242] (-) TimerEvent: {}
+[12.362794] (-) TimerEvent: {}
+[12.464554] (-) TimerEvent: {}
+[12.566060] (-) TimerEvent: {}
+[12.667516] (-) TimerEvent: {}
+[12.769260] (-) TimerEvent: {}
+[12.870701] (-) TimerEvent: {}
+[12.972006] (-) TimerEvent: {}
+[13.073395] (-) TimerEvent: {}
+[13.174853] (-) TimerEvent: {}
+[13.276157] (-) TimerEvent: {}
+[13.377576] (-) TimerEvent: {}
+[13.478887] (-) TimerEvent: {}
+[13.580297] (-) TimerEvent: {}
+[13.681769] (-) TimerEvent: {}
+[13.783205] (-) TimerEvent: {}
+[13.884687] (-) TimerEvent: {}
+[13.985994] (-) TimerEvent: {}
+[14.087394] (-) TimerEvent: {}
+[14.188728] (-) TimerEvent: {}
+[14.290005] (-) TimerEvent: {}
+[14.391292] (-) TimerEvent: {}
+[14.492617] (-) TimerEvent: {}
+[14.593924] (-) TimerEvent: {}
+[14.695270] (-) TimerEvent: {}
+[14.796597] (-) TimerEvent: {}
+[14.897924] (-) TimerEvent: {}
+[14.999184] (-) TimerEvent: {}
+[15.100375] (-) TimerEvent: {}
+[15.201661] (-) TimerEvent: {}
+[15.303041] (-) TimerEvent: {}
+[15.404394] (-) TimerEvent: {}
+[15.505761] (-) TimerEvent: {}
+[15.607129] (-) TimerEvent: {}
+[15.708631] (-) TimerEvent: {}
+[15.810302] (-) TimerEvent: {}
+[15.911890] (-) TimerEvent: {}
+[16.013296] (-) TimerEvent: {}
+[16.114693] (-) TimerEvent: {}
+[16.216133] (-) TimerEvent: {}
+[16.317562] (-) TimerEvent: {}
+[16.419117] (-) TimerEvent: {}
+[16.520469] (-) TimerEvent: {}
+[16.621806] (-) TimerEvent: {}
+[16.723147] (-) TimerEvent: {}
+[16.824458] (-) TimerEvent: {}
+[16.925725] (-) TimerEvent: {}
+[17.027045] (-) TimerEvent: {}
+[17.128414] (-) TimerEvent: {}
+[17.229698] (-) TimerEvent: {}
+[17.330957] (-) TimerEvent: {}
+[17.432309] (-) TimerEvent: {}
+[17.533995] (-) TimerEvent: {}
+[17.635303] (-) TimerEvent: {}
+[17.736824] (-) TimerEvent: {}
+[17.838178] (-) TimerEvent: {}
+[17.939625] (-) TimerEvent: {}
+[18.040964] (-) TimerEvent: {}
+[18.142415] (-) TimerEvent: {}
+[18.243767] (-) TimerEvent: {}
+[18.345226] (-) TimerEvent: {}
+[18.446566] (-) TimerEvent: {}
+[18.548015] (-) TimerEvent: {}
+[18.649452] (-) TimerEvent: {}
+[18.750821] (-) TimerEvent: {}
+[18.852189] (-) TimerEvent: {}
+[18.953579] (-) TimerEvent: {}
+[19.054974] (-) TimerEvent: {}
+[19.156490] (-) TimerEvent: {}
+[19.257960] (-) TimerEvent: {}
+[19.359586] (-) TimerEvent: {}
+[19.460955] (-) TimerEvent: {}
+[19.562339] (-) TimerEvent: {}
+[19.663676] (-) TimerEvent: {}
+[19.765127] (-) TimerEvent: {}
+[19.866623] (-) TimerEvent: {}
+[19.968143] (-) TimerEvent: {}
+[20.069598] (-) TimerEvent: {}
+[20.171019] (-) TimerEvent: {}
+[20.272387] (-) TimerEvent: {}
+[20.373813] (-) TimerEvent: {}
+[20.475256] (-) TimerEvent: {}
+[20.576696] (-) TimerEvent: {}
+[20.678047] (-) TimerEvent: {}
+[20.779776] (-) TimerEvent: {}
+[20.881209] (-) TimerEvent: {}
+[20.982673] (-) TimerEvent: {}
+[21.084177] (-) TimerEvent: {}
+[21.185641] (-) TimerEvent: {}
+[21.286956] (-) TimerEvent: {}
+[21.388617] (-) TimerEvent: {}
+[21.490061] (-) TimerEvent: {}
+[21.591578] (-) TimerEvent: {}
+[21.693027] (-) TimerEvent: {}
+[21.794407] (-) TimerEvent: {}
+[21.895873] (-) TimerEvent: {}
+[21.997326] (-) TimerEvent: {}
+[22.098787] (-) TimerEvent: {}
+[22.200193] (-) TimerEvent: {}
+[22.301607] (-) TimerEvent: {}
+[22.403016] (-) TimerEvent: {}
+[22.504442] (-) TimerEvent: {}
+[22.605856] (-) TimerEvent: {}
+[22.707195] (-) TimerEvent: {}
+[22.808641] (-) TimerEvent: {}
+[22.910074] (-) TimerEvent: {}
+[23.011578] (-) TimerEvent: {}
+[23.112956] (-) TimerEvent: {}
+[23.214381] (-) TimerEvent: {}
+[23.315848] (-) TimerEvent: {}
+[23.417274] (-) TimerEvent: {}
+[23.518755] (-) TimerEvent: {}
+[23.620251] (-) TimerEvent: {}
+[23.721747] (-) TimerEvent: {}
+[23.823216] (-) TimerEvent: {}
+[23.924708] (-) TimerEvent: {}
+[24.026229] (-) TimerEvent: {}
+[24.127705] (-) TimerEvent: {}
+[24.229070] (-) TimerEvent: {}
+[24.330418] (-) TimerEvent: {}
+[24.431827] (-) TimerEvent: {}
+[24.533136] (-) TimerEvent: {}
+[24.634504] (-) TimerEvent: {}
+[24.736010] (-) TimerEvent: {}
+[24.837422] (-) TimerEvent: {}
+[24.938696] (-) TimerEvent: {}
+[25.040076] (-) TimerEvent: {}
+[25.141554] (-) TimerEvent: {}
+[25.242825] (-) TimerEvent: {}
+[25.344150] (-) TimerEvent: {}
+[25.445407] (-) TimerEvent: {}
+[25.546766] (-) TimerEvent: {}
+[25.648082] (-) TimerEvent: {}
+[25.749515] (-) TimerEvent: {}
+[25.850850] (-) TimerEvent: {}
+[25.952099] (-) TimerEvent: {}
+[26.053385] (-) TimerEvent: {}
+[26.154844] (-) TimerEvent: {}
+[26.256781] (-) TimerEvent: {}
+[26.358334] (-) TimerEvent: {}
+[26.459898] (-) TimerEvent: {}
+[26.561346] (-) TimerEvent: {}
+[26.662780] (-) TimerEvent: {}
+[26.764226] (-) TimerEvent: {}
+[26.865640] (-) TimerEvent: {}
+[26.967063] (-) TimerEvent: {}
+[27.068436] (-) TimerEvent: {}
+[27.169840] (-) TimerEvent: {}
+[27.271304] (-) TimerEvent: {}
+[27.372777] (-) TimerEvent: {}
+[27.474112] (-) TimerEvent: {}
+[27.575512] (-) TimerEvent: {}
+[27.676963] (-) TimerEvent: {}
+[27.778444] (-) TimerEvent: {}
+[27.879830] (-) TimerEvent: {}
+[27.981267] (-) TimerEvent: {}
+[28.082664] (-) TimerEvent: {}
+[28.184092] (-) TimerEvent: {}
+[28.285393] (-) TimerEvent: {}
+[28.386810] (-) TimerEvent: {}
+[28.488246] (-) TimerEvent: {}
+[28.589687] (-) TimerEvent: {}
+[28.691080] (-) TimerEvent: {}
+[28.792438] (-) TimerEvent: {}
+[28.893907] (-) TimerEvent: {}
+[28.995429] (-) TimerEvent: {}
+[29.096781] (-) TimerEvent: {}
+[29.198245] (-) TimerEvent: {}
+[29.299712] (-) TimerEvent: {}
+[29.401190] (-) TimerEvent: {}
+[29.502667] (-) TimerEvent: {}
+[29.604095] (-) TimerEvent: {}
+[29.705639] (-) TimerEvent: {}
+[29.807127] (-) TimerEvent: {}
+[29.908562] (-) TimerEvent: {}
+[30.010022] (-) TimerEvent: {}
+[30.111542] (-) TimerEvent: {}
+[30.213466] (-) TimerEvent: {}
+[30.314992] (-) TimerEvent: {}
+[30.416373] (-) TimerEvent: {}
+[30.517770] (-) TimerEvent: {}
+[30.619140] (-) TimerEvent: {}
+[30.720476] (-) TimerEvent: {}
+[30.821810] (-) TimerEvent: {}
+[30.923399] (-) TimerEvent: {}
+[31.024851] (-) TimerEvent: {}
+[31.126407] (-) TimerEvent: {}
+[31.227964] (-) TimerEvent: {}
+[31.329434] (-) TimerEvent: {}
+[31.430874] (-) TimerEvent: {}
+[31.532178] (-) TimerEvent: {}
+[31.633626] (-) TimerEvent: {}
+[31.735058] (-) TimerEvent: {}
+[31.836442] (-) TimerEvent: {}
+[31.937960] (-) TimerEvent: {}
+[32.039333] (-) TimerEvent: {}
+[32.140862] (-) TimerEvent: {}
+[32.242174] (-) TimerEvent: {}
+[32.343429] (-) TimerEvent: {}
+[32.444710] (-) TimerEvent: {}
+[32.546032] (-) TimerEvent: {}
+[32.647345] (-) TimerEvent: {}
+[32.748682] (-) TimerEvent: {}
+[32.849974] (-) TimerEvent: {}
+[32.951321] (-) TimerEvent: {}
+[33.052794] (-) TimerEvent: {}
+[33.154271] (-) TimerEvent: {}
+[33.255665] (-) TimerEvent: {}
+[33.356999] (-) TimerEvent: {}
+[33.458357] (-) TimerEvent: {}
+[33.559702] (-) TimerEvent: {}
+[33.661033] (-) TimerEvent: {}
+[33.762401] (-) TimerEvent: {}
+[33.863724] (-) TimerEvent: {}
+[33.965011] (-) TimerEvent: {}
+[34.066290] (-) TimerEvent: {}
+[34.167710] (-) TimerEvent: {}
+[34.268981] (-) TimerEvent: {}
+[34.370425] (-) TimerEvent: {}
+[34.471755] (-) TimerEvent: {}
+[34.573089] (-) TimerEvent: {}
+[34.674355] (-) TimerEvent: {}
+[34.775811] (-) TimerEvent: {}
+[34.877205] (-) TimerEvent: {}
+[34.978521] (-) TimerEvent: {}
+[35.079863] (-) TimerEvent: {}
+[35.181353] (-) TimerEvent: {}
+[35.282759] (-) TimerEvent: {}
+[35.384229] (-) TimerEvent: {}
+[35.485543] (-) TimerEvent: {}
+[35.586881] (-) TimerEvent: {}
+[35.688330] (-) TimerEvent: {}
+[35.789657] (-) TimerEvent: {}
+[35.891319] (-) TimerEvent: {}
+[35.992685] (-) TimerEvent: {}
+[36.093965] (-) TimerEvent: {}
+[36.195455] (-) TimerEvent: {}
+[36.296761] (-) TimerEvent: {}
+[36.398283] (-) TimerEvent: {}
+[36.499576] (-) TimerEvent: {}
+[36.600927] (-) TimerEvent: {}
+[36.702302] (-) TimerEvent: {}
+[36.803912] (-) TimerEvent: {}
+[36.905350] (-) TimerEvent: {}
+[37.007176] (-) TimerEvent: {}
+[37.108620] (-) TimerEvent: {}
+[37.210053] (-) TimerEvent: {}
+[37.311488] (-) TimerEvent: {}
+[37.412931] (-) TimerEvent: {}
+[37.514269] (-) TimerEvent: {}
+[37.615732] (-) TimerEvent: {}
+[37.717128] (-) TimerEvent: {}
+[37.818481] (-) TimerEvent: {}
+[37.919896] (-) TimerEvent: {}
+[38.021347] (-) TimerEvent: {}
+[38.122780] (-) TimerEvent: {}
+[38.224112] (-) TimerEvent: {}
+[38.325741] (-) TimerEvent: {}
+[38.427138] (-) TimerEvent: {}
+[38.528415] (-) TimerEvent: {}
+[38.629772] (-) TimerEvent: {}
+[38.731203] (-) TimerEvent: {}
+[38.832562] (-) TimerEvent: {}
+[38.933909] (-) TimerEvent: {}
+[39.035336] (-) TimerEvent: {}
+[39.136851] (-) TimerEvent: {}
+[39.238207] (-) TimerEvent: {}
+[39.339465] (-) TimerEvent: {}
+[39.440897] (-) TimerEvent: {}
+[39.542214] (-) TimerEvent: {}
+[39.643497] (-) TimerEvent: {}
+[39.744921] (-) TimerEvent: {}
+[39.846360] (-) TimerEvent: {}
+[39.947739] (-) TimerEvent: {}
+[40.049245] (-) TimerEvent: {}
+[40.150660] (-) TimerEvent: {}
+[40.252076] (-) TimerEvent: {}
+[40.353413] (-) TimerEvent: {}
+[40.454741] (-) TimerEvent: {}
+[40.556202] (-) TimerEvent: {}
+[40.657654] (-) TimerEvent: {}
+[40.758913] (-) TimerEvent: {}
+[40.860216] (-) TimerEvent: {}
+[40.961631] (-) TimerEvent: {}
+[41.063111] (-) TimerEvent: {}
+[41.164537] (-) TimerEvent: {}
+[41.265926] (-) TimerEvent: {}
+[41.367325] (-) TimerEvent: {}
+[41.468800] (-) TimerEvent: {}
+[41.570147] (-) TimerEvent: {}
+[41.671628] (-) TimerEvent: {}
+[41.772922] (-) TimerEvent: {}
+[41.874326] (-) TimerEvent: {}
+[41.975696] (-) TimerEvent: {}
+[42.077170] (-) TimerEvent: {}
+[42.178722] (-) TimerEvent: {}
+[42.280122] (-) TimerEvent: {}
+[42.381669] (-) TimerEvent: {}
+[42.483022] (-) TimerEvent: {}
+[42.584710] (-) TimerEvent: {}
+[42.686074] (-) TimerEvent: {}
+[42.787576] (-) TimerEvent: {}
+[42.888975] (-) TimerEvent: {}
+[42.990416] (-) TimerEvent: {}
+[43.091802] (-) TimerEvent: {}
+[43.193533] (-) TimerEvent: {}
+[43.294947] (-) TimerEvent: {}
+[43.396384] (-) TimerEvent: {}
+[43.497767] (-) TimerEvent: {}
+[43.599304] (-) TimerEvent: {}
+[43.700785] (-) TimerEvent: {}
+[43.802260] (-) TimerEvent: {}
+[43.903739] (-) TimerEvent: {}
+[44.005113] (-) TimerEvent: {}
+[44.106380] (-) TimerEvent: {}
+[44.207995] (-) TimerEvent: {}
+[44.309471] (-) TimerEvent: {}
+[44.410866] (-) TimerEvent: {}
+[44.512337] (-) TimerEvent: {}
+[44.613773] (-) TimerEvent: {}
+[44.715186] (-) TimerEvent: {}
+[44.816611] (-) TimerEvent: {}
+[44.918043] (-) TimerEvent: {}
+[45.019542] (-) TimerEvent: {}
+[45.120880] (-) TimerEvent: {}
+[45.222303] (-) TimerEvent: {}
+[45.323634] (-) TimerEvent: {}
+[45.425086] (-) TimerEvent: {}
+[45.526407] (-) TimerEvent: {}
+[45.627853] (-) TimerEvent: {}
+[45.729254] (-) TimerEvent: {}
+[45.830609] (-) TimerEvent: {}
+[45.931910] (-) TimerEvent: {}
+[46.033355] (-) TimerEvent: {}
+[46.134837] (-) TimerEvent: {}
+[46.236200] (-) TimerEvent: {}
+[46.337605] (-) TimerEvent: {}
+[46.439091] (-) TimerEvent: {}
+[46.540466] (-) TimerEvent: {}
+[46.641906] (-) TimerEvent: {}
+[46.743255] (-) TimerEvent: {}
+[46.844662] (-) TimerEvent: {}
+[46.945932] (-) TimerEvent: {}
+[47.047185] (-) TimerEvent: {}
+[47.148565] (-) TimerEvent: {}
+[47.249887] (-) TimerEvent: {}
+[47.351385] (-) TimerEvent: {}
+[47.452834] (-) TimerEvent: {}
+[47.554471] (-) TimerEvent: {}
+[47.655933] (-) TimerEvent: {}
+[47.757239] (-) TimerEvent: {}
+[47.858725] (-) TimerEvent: {}
+[47.960225] (-) TimerEvent: {}
+[48.061599] (-) TimerEvent: {}
+[48.162935] (-) TimerEvent: {}
+[48.264332] (-) TimerEvent: {}
+[48.365754] (-) TimerEvent: {}
+[48.467050] (-) TimerEvent: {}
+[48.568377] (-) TimerEvent: {}
+[48.669749] (-) TimerEvent: {}
+[48.771186] (-) TimerEvent: {}
+[48.872613] (-) TimerEvent: {}
+[48.974050] (-) TimerEvent: {}
+[49.075487] (-) TimerEvent: {}
+[49.176833] (-) TimerEvent: {}
+[49.278267] (-) TimerEvent: {}
+[49.379687] (-) TimerEvent: {}
+[49.481102] (-) TimerEvent: {}
+[49.582538] (-) TimerEvent: {}
+[49.683903] (-) TimerEvent: {}
+[49.785355] (-) TimerEvent: {}
+[49.886811] (-) TimerEvent: {}
+[49.988337] (-) TimerEvent: {}
+[50.090092] (-) TimerEvent: {}
+[50.191657] (-) TimerEvent: {}
+[50.293099] (-) TimerEvent: {}
+[50.394492] (-) TimerEvent: {}
+[50.495934] (-) TimerEvent: {}
+[50.597262] (-) TimerEvent: {}
+[50.698647] (-) TimerEvent: {}
+[50.800020] (-) TimerEvent: {}
+[50.901393] (-) TimerEvent: {}
+[51.002707] (-) TimerEvent: {}
+[51.104069] (-) TimerEvent: {}
+[51.205390] (-) TimerEvent: {}
+[51.306766] (-) TimerEvent: {}
+[51.408237] (-) TimerEvent: {}
+[51.509587] (-) TimerEvent: {}
+[51.610921] (-) TimerEvent: {}
+[51.712339] (-) TimerEvent: {}
+[51.813716] (-) TimerEvent: {}
+[51.915098] (-) TimerEvent: {}
+[52.016500] (-) TimerEvent: {}
+[52.117904] (-) TimerEvent: {}
+[52.219268] (-) TimerEvent: {}
+[52.320615] (-) TimerEvent: {}
+[52.421985] (-) TimerEvent: {}
+[52.523395] (-) TimerEvent: {}
+[52.624873] (-) TimerEvent: {}
+[52.726235] (-) TimerEvent: {}
+[52.827605] (-) TimerEvent: {}
+[52.928952] (-) TimerEvent: {}
+[53.030473] (-) TimerEvent: {}
+[53.131942] (-) TimerEvent: {}
+[53.233516] (-) TimerEvent: {}
+[53.334869] (-) TimerEvent: {}
+[53.436142] (-) TimerEvent: {}
+[53.536924] (-) TimerEvent: {}
+[53.637704] (-) TimerEvent: {}
+[53.738662] (-) TimerEvent: {}
+[53.839928] (-) TimerEvent: {}
+[53.941201] (-) TimerEvent: {}
+[54.042568] (-) TimerEvent: {}
+[54.143952] (-) TimerEvent: {}
+[54.245327] (-) TimerEvent: {}
+[54.346696] (-) TimerEvent: {}
+[54.448018] (-) TimerEvent: {}
+[54.549358] (-) TimerEvent: {}
+[54.650631] (-) TimerEvent: {}
+[54.752152] (-) TimerEvent: {}
+[54.853736] (-) TimerEvent: {}
+[54.955289] (-) TimerEvent: {}
+[55.056923] (-) TimerEvent: {}
+[55.158340] (-) TimerEvent: {}
+[55.259686] (-) TimerEvent: {}
+[55.361002] (-) TimerEvent: {}
+[55.462376] (-) TimerEvent: {}
+[55.563841] (-) TimerEvent: {}
+[55.665280] (-) TimerEvent: {}
+[55.766713] (-) TimerEvent: {}
+[55.868448] (-) TimerEvent: {}
+[55.970477] (-) TimerEvent: {}
+[56.071873] (-) TimerEvent: {}
+[56.173387] (-) TimerEvent: {}
+[56.274650] (-) TimerEvent: {}
+[56.375588] (-) TimerEvent: {}
+[56.476386] (-) TimerEvent: {}
+[56.577448] (-) TimerEvent: {}
+[56.678861] (-) TimerEvent: {}
+[56.780295] (-) TimerEvent: {}
+[56.881585] (-) TimerEvent: {}
+[56.982756] (-) TimerEvent: {}
+[57.084063] (-) TimerEvent: {}
+[57.185351] (-) TimerEvent: {}
+[57.286518] (-) TimerEvent: {}
+[57.387767] (-) TimerEvent: {}
+[57.489361] (-) TimerEvent: {}
+[57.590713] (-) TimerEvent: {}
+[57.692286] (-) TimerEvent: {}
+[57.793576] (-) TimerEvent: {}
+[57.894970] (-) TimerEvent: {}
+[57.996479] (-) TimerEvent: {}
+[58.097870] (-) TimerEvent: {}
+[58.199281] (-) TimerEvent: {}
+[58.300542] (-) TimerEvent: {}
+[58.401844] (-) TimerEvent: {}
+[58.503102] (-) TimerEvent: {}
+[58.604454] (-) TimerEvent: {}
+[58.705841] (-) TimerEvent: {}
+[58.807176] (-) TimerEvent: {}
+[58.908515] (-) TimerEvent: {}
+[59.009890] (-) TimerEvent: {}
+[59.111232] (-) TimerEvent: {}
+[59.212599] (-) TimerEvent: {}
+[59.313828] (-) TimerEvent: {}
+[59.415147] (-) TimerEvent: {}
+[59.516490] (-) TimerEvent: {}
+[59.618020] (-) TimerEvent: {}
+[59.719358] (-) TimerEvent: {}
+[59.820672] (-) TimerEvent: {}
+[59.922003] (-) TimerEvent: {}
+[60.023380] (-) TimerEvent: {}
+[60.124686] (-) TimerEvent: {}
+[60.225988] (-) TimerEvent: {}
+[60.327221] (-) TimerEvent: {}
+[60.428565] (-) TimerEvent: {}
+[60.529883] (-) TimerEvent: {}
+[60.631237] (-) TimerEvent: {}
+[60.732570] (-) TimerEvent: {}
+[60.833854] (-) TimerEvent: {}
+[60.935135] (-) TimerEvent: {}
+[61.036484] (-) TimerEvent: {}
+[61.137784] (-) TimerEvent: {}
+[61.239100] (-) TimerEvent: {}
+[61.340398] (-) TimerEvent: {}
+[61.441783] (-) TimerEvent: {}
+[61.543074] (-) TimerEvent: {}
+[61.644440] (-) TimerEvent: {}
+[61.745788] (-) TimerEvent: {}
+[61.847128] (-) TimerEvent: {}
+[61.948433] (-) TimerEvent: {}
+[62.049739] (-) TimerEvent: {}
+[62.151035] (-) TimerEvent: {}
+[62.252359] (-) TimerEvent: {}
+[62.353662] (-) TimerEvent: {}
+[62.454991] (-) TimerEvent: {}
+[62.556307] (-) TimerEvent: {}
+[62.657772] (-) TimerEvent: {}
+[62.759085] (-) TimerEvent: {}
+[62.860453] (-) TimerEvent: {}
+[62.961832] (-) TimerEvent: {}
+[63.063197] (-) TimerEvent: {}
+[63.164575] (-) TimerEvent: {}
+[63.265918] (-) TimerEvent: {}
+[63.367206] (-) TimerEvent: {}
+[63.468524] (-) TimerEvent: {}
+[63.569833] (-) TimerEvent: {}
+[63.671157] (-) TimerEvent: {}
+[63.772519] (-) TimerEvent: {}
+[63.873828] (-) TimerEvent: {}
+[63.975191] (-) TimerEvent: {}
+[64.076529] (-) TimerEvent: {}
+[64.177733] (-) TimerEvent: {}
+[64.279028] (-) TimerEvent: {}
+[64.380267] (-) TimerEvent: {}
+[64.481584] (-) TimerEvent: {}
+[64.582921] (-) TimerEvent: {}
+[64.684268] (-) TimerEvent: {}
+[64.785676] (-) TimerEvent: {}
+[64.886981] (-) TimerEvent: {}
+[64.988318] (-) TimerEvent: {}
+[65.089620] (-) TimerEvent: {}
+[65.190906] (-) TimerEvent: {}
+[65.292338] (-) TimerEvent: {}
+[65.393628] (-) TimerEvent: {}
+[65.494917] (-) TimerEvent: {}
+[65.596320] (-) TimerEvent: {}
+[65.698015] (-) TimerEvent: {}
+[65.799849] (-) TimerEvent: {}
+[65.901266] (-) TimerEvent: {}
+[66.002652] (-) TimerEvent: {}
+[66.104185] (-) TimerEvent: {}
+[66.205701] (-) TimerEvent: {}
+[66.307464] (-) TimerEvent: {}
+[66.409228] (-) TimerEvent: {}
+[66.510537] (-) TimerEvent: {}
+[66.609039] (manipulator) StdoutLine: {'line': b'[100%] \x1b[32m\x1b[1mLinking CXX executable slave_arm_node\x1b[0m\n'}
+[66.610617] (-) TimerEvent: {}
+[66.711704] (-) TimerEvent: {}
+[66.813152] (-) TimerEvent: {}
+[66.914502] (-) TimerEvent: {}
+[67.015509] (-) TimerEvent: {}
+[67.116454] (-) TimerEvent: {}
+[67.217559] (-) TimerEvent: {}
+[67.318765] (-) TimerEvent: {}
+[67.420212] (-) TimerEvent: {}
+[67.521050] (-) TimerEvent: {}
+[67.621848] (-) TimerEvent: {}
+[67.722800] (-) TimerEvent: {}
+[67.824180] (-) TimerEvent: {}
+[67.925572] (-) TimerEvent: {}
+[68.027084] (-) TimerEvent: {}
+[68.128440] (-) TimerEvent: {}
+[68.230162] (-) TimerEvent: {}
+[68.331878] (-) TimerEvent: {}
+[68.432886] (-) TimerEvent: {}
+[68.534247] (-) TimerEvent: {}
+[68.580974] (manipulator) StdoutLine: {'line': b'[100%] Built target slave_arm_node\n'}
+[68.618667] (manipulator) CommandEnded: {'returncode': 0}
+[68.621395] (manipulator) JobProgress: {'identifier': 'manipulator', 'progress': 'install'}
+[68.634516] (-) TimerEvent: {}
+[68.638040] (manipulator) Command: {'cmd': ['/usr/bin/cmake', '--install', '/mnt/emmc/cat_home/arm-platform/build/manipulator'], 'cwd': '/mnt/emmc/cat_home/arm-platform/build/manipulator', 'env': OrderedDict([('LESSOPEN', '| /usr/bin/lesspipe %s'), ('USER', 'cat'), ('SSH_CLIENT', '192.168.50.128 64062 22'), ('XDG_SESSION_TYPE', 'tty'), ('SHLVL', '1'), ('LD_LIBRARY_PATH', '/home/cat/arm-platform/install/manipulator/lib:/home/cat/ArmRemoteController/install/mqtt_comm/lib:/home/cat/ArmRemoteController/install/dummy_interface/lib:/home/cat/huaben_ws/install/manipulator/lib:/home/cat/huaben_ws/install/dummy_interface/lib:/home/cat/uav_ws/install/mavros_extras/lib:/home/cat/uav_ws/install/mavros/lib:/home/cat/uav_ws/install/mavros_msgs/lib:/home/cat/uav_ws/install/libmavconn/lib:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/aarch64-linux-gnu:/opt/ros/humble/lib'), ('MOTD_SHOWN', 'pam'), ('HOME', '/home/cat'), ('MUTTER_DEBUG_ENABLE_ATOMIC_KMS', '0'), ('CYCLONEDDS_URI', 'file:///home/cat/.ros/cyclonedds.xml'), ('OLDPWD', '/home/cat'), ('SSH_TTY', '/dev/pts/0'), ('ROS_PYTHON_VERSION', '3'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('COLCON_PREFIX_PATH', '/home/cat/arm-platform/install:/home/cat/huaben_ws/install:/home/cat/uav_ws/install:/home/cat/ArmRemoteController/install'), ('ROS_DISTRO', 'humble'), ('LOGNAME', 'cat'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('XDG_SESSION_CLASS', 'user'), ('TERM', 'xterm-256color'), ('XDG_SESSION_ID', '2'), ('ROS_LOCALHOST_ONLY', '0'), ('PATH', '/opt/ros/humble/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('LANG', 'zh_CN.UTF-8'), ('RMW_IMPLEMENTATION', 'rmw_cyclonedds_cpp'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('ROS_DOMAIN_ID', '6'), ('AMENT_PREFIX_PATH', '/home/cat/arm-platform/install/manipulator:/home/cat/ArmRemoteController/install/uav_arm_controller:/home/cat/ArmRemoteController/install/servo_teleop:/home/cat/ArmRemoteController/install/mqtt_comm:/home/cat/ArmRemoteController/install/dummy_arm:/home/cat/ArmRemoteController/install/dummy_interface:/home/cat/ArmRemoteController/install/dummy_description:/home/cat/huaben_ws/install/manipulator:/home/cat/huaben_ws/install/dummy_interface:/home/cat/huaben_ws/install/dummy_arm:/home/cat/uav_ws/install/vrpn_listener:/home/cat/uav_ws/install/odin_ros_driver:/home/cat/uav_ws/install/mavros_extras:/home/cat/uav_ws/install/mavros_examples:/home/cat/uav_ws/install/mavros:/home/cat/uav_ws/install/mavros_msgs:/home/cat/uav_ws/install/libmavconn:/opt/ros/humble'), ('SHELL', '/bin/bash'), ('CLUTTER_PAINT', 'disable-dynamic-max-render-time'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('MUTTER_DEBUG_FORCE_KMS_MODE', 'simple'), ('PWD', '/mnt/emmc/cat_home/arm-platform/build/manipulator'), ('SSH_CONNECTION', '192.168.50.128 64062 192.168.50.126 22'), ('XDG_DATA_DIRS', '/usr/share/gnome:/usr/local/share:/usr/share:/var/lib/snapd/desktop'), ('PYTHONPATH', '/home/cat/ArmRemoteController/install/dummy_interface/local/lib/python3.10/dist-packages:/home/cat/huaben_ws/install/dummy_interface/local/lib/python3.10/dist-packages:/home/cat/uav_ws/install/mavros_examples/local/lib/python3.10/dist-packages:/home/cat/uav_ws/install/mavros/local/lib/python3.10/dist-packages:/home/cat/uav_ws/install/mavros_msgs/local/lib/python3.10/dist-packages:/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages'), ('COLCON', '1'), ('CMAKE_PREFIX_PATH', '/home/cat/arm-platform/install/manipulator:/home/cat/ArmRemoteController/install/uav_arm_controller:/home/cat/ArmRemoteController/install/servo_teleop:/home/cat/ArmRemoteController/install/mqtt_comm:/home/cat/ArmRemoteController/install/dummy_arm:/home/cat/ArmRemoteController/install/dummy_interface:/home/cat/ArmRemoteController/install/dummy_description:/home/cat/huaben_ws/install/manipulator:/home/cat/huaben_ws/install/dummy_interface:/home/cat/huaben_ws/install/dummy_arm:/home/cat/uav_ws/install/vrpn_listener:/home/cat/uav_ws/install/odin_ros_driver:/home/cat/uav_ws/install/mavros_extras:/home/cat/uav_ws/install/mavros_examples:/home/cat/uav_ws/install/mavros:/home/cat/uav_ws/install/mavros_msgs:/home/cat/uav_ws/install/libmavconn:/opt/ros/humble')]), 'shell': False}
+[68.669250] (manipulator) StdoutLine: {'line': b'-- Install configuration: ""\n'}
+[68.670220] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/lib/libmanipulator_core.a\n'}
+[68.670614] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/lib/libgravity_compensation.a\n'}
+[68.670981] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/lib/libgravity_compensation_pinocchio.a\n'}
+[68.671349] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/lib/manipulator/arm_hardware_node\n'}
+[68.671755] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/lib/manipulator/master_arm_node\n'}
+[68.672126] (manipulator) StdoutLine: {'line': b'-- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/lib/manipulator/slave_arm_node\n'}
+[68.691612] (manipulator) StdoutLine: {'line': b'-- Set runtime path of "/mnt/emmc/cat_home/arm-platform/install/manipulator/lib/manipulator/slave_arm_node" to ""\n'}
+[68.692460] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/include\n'}
+[68.693134] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator\n'}
+[68.693581] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/slave_arm_node.h\n'}
+[68.693989] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/arm\n'}
+[68.694382] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/arm/abs_arm.h\n'}
+[68.694748] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/arm/i_arm.h\n'}
+[68.695164] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/arm/a_l1_gamma.h\n'}
+[68.695534] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/arm/a_l1_beta.h\n'}
+[68.695899] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/arm/arm_factory.h\n'}
+[68.696264] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/arm_types.h\n'}
+[68.696633] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/bus\n'}
+[68.697590] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/bus/i_bus.h\n'}
+[68.698321] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/bus/abs_bus.h\n'}
+[68.699802] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/bus/serial_bus.h\n'}
+[68.700734] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/arm_hardware_node.h\n'}
+[68.701323] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/motor\n'}
+[68.701766] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/motor/dm_motor.h\n'}
+[68.702170] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/motor/abs_motor.h\n'}
+[68.702711] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/motor/i_motor.h\n'}
+[68.703252] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/master_arm_node.h\n'}
+[68.704000] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/gravity_compensation_pinocchio.h\n'}
+[68.704523] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/controller\n'}
+[68.705079] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/controller/dummy_controller.h\n'}
+[68.705735] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/controller/i_arm_controller.h\n'}
+[68.706238] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/protocol\n'}
+[68.706812] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/protocol/protocol_v1.h\n'}
+[68.708198] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/protocol/i_protocol.h\n'}
+[68.708668] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/protocol/abs_protocol.h\n'}
+[68.709077] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/protocol/protocol_factory.h\n'}
+[68.709589] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/include/manipulator/gravity_compensation.h\n'}
+[68.709994] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/manipulator/\n'}
+[68.710505] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/manipulator//master_arm.launch.py\n'}
+[68.710944] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/manipulator//demo.launch.py\n'}
+[68.711350] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/manipulator//slave_arm.launch.py\n'}
+[68.711795] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/manipulator/environment/library_path.sh\n'}
+[68.712195] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/manipulator/environment/library_path.dsv\n'}
+[68.712604] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/ament_index/resource_index/package_run_dependencies/manipulator\n'}
+[68.713687] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/ament_index/resource_index/parent_prefix_path/manipulator\n'}
+[68.714826] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/manipulator/environment/ament_prefix_path.sh\n'}
+[68.715733] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/manipulator/environment/ament_prefix_path.dsv\n'}
+[68.716335] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/manipulator/environment/path.sh\n'}
+[68.717317] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/manipulator/environment/path.dsv\n'}
+[68.718368] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/manipulator/local_setup.bash\n'}
+[68.721408] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/manipulator/local_setup.sh\n'}
+[68.721889] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/manipulator/local_setup.zsh\n'}
+[68.722937] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/manipulator/local_setup.dsv\n'}
+[68.724170] (manipulator) StdoutLine: {'line': b'-- Installing: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/manipulator/package.dsv\n'}
+[68.724819] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/ament_index/resource_index/packages/manipulator\n'}
+[68.726086] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/manipulator/cmake/export_manipulatorExport.cmake\n'}
+[68.727106] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/manipulator/cmake/export_manipulatorExport-noconfig.cmake\n'}
+[68.727908] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/manipulator/cmake/ament_cmake_export_targets-extras.cmake\n'}
+[68.729627] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/manipulator/cmake/ament_cmake_export_include_directories-extras.cmake\n'}
+[68.730044] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/manipulator/cmake/ament_cmake_export_dependencies-extras.cmake\n'}
+[68.730466] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/manipulator/cmake/manipulatorConfig.cmake\n'}
+[68.730932] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/manipulator/cmake/manipulatorConfig-version.cmake\n'}
+[68.731384] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /mnt/emmc/cat_home/arm-platform/install/manipulator/share/manipulator/package.xml\n'}
+[68.731950] (manipulator) CommandEnded: {'returncode': 0}
+[68.734670] (-) TimerEvent: {}
+[68.741294] (manipulator) JobEnded: {'identifier': 'manipulator', 'rc': 0}
+[68.743312] (-) EventReactorShutdown: {}

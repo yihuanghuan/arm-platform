@@ -1,0 +1,17 @@
+[01m[K/mnt/emmc/cat_home/arm-platform/src/slave_arm_node.cc:[m[K In constructor ‘[01m[Kmanipulator::SlaveArmNode::SlaveArmNode()[m[K’:
+[01m[K/mnt/emmc/cat_home/arm-platform/src/slave_arm_node.cc:258:34:[m[K [01;31m[Kerror: [m[Kno matching function for call to ‘[01m[Kmanipulator::GravityCompensationPinocchio::SetParams(const double&, const double&, const double&, const double&, const double&, const double&, const double&)[m[K’
+  258 |   [01;31m[Kgravity_compensation_.SetParams([m[K
+      |   [01;31m[K~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^[m[K
+  259 | [01;31m[K      G_GAIN_0, G_GAIN_1, G_GAIN_2,[m[K
+      |       [01;31m[K~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[m[K
+  260 | [01;31m[K      G_GAIN_3, G_GAIN_4, G_GAIN_5, G_GAIN_6)[m[K;
+      |       [01;31m[K~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[m[K
+In file included from [01m[K/mnt/emmc/cat_home/arm-platform/include/manipulator/slave_arm_node.h:13[m[K,
+                 from [01m[K/mnt/emmc/cat_home/arm-platform/src/slave_arm_node.cc:1[m[K:
+[01m[K/mnt/emmc/cat_home/arm-platform/include/manipulator/gravity_compensation_pinocchio.h:19:8:[m[K [01;36m[Knote: [m[Kcandidate: ‘[01m[Kvoid manipulator::GravityCompensationPinocchio::SetParams(double, double, double, double)[m[K’
+   19 |   void [01;36m[KSetParams[m[K(double MAX_TORQUE, double GRAVITY, double FORCE_FEEDBACK_THRESHOLD, double FORCE_FEEDBACK_GAIN);
+      |        [01;36m[K^~~~~~~~~[m[K
+[01m[K/mnt/emmc/cat_home/arm-platform/include/manipulator/gravity_compensation_pinocchio.h:19:8:[m[K [01;36m[Knote: [m[K  candidate expects 4 arguments, 7 provided
+gmake[2]: *** [CMakeFiles/slave_arm_node.dir/build.make:76：CMakeFiles/slave_arm_node.dir/src/slave_arm_node.cc.o] 错误 1
+gmake[1]: *** [CMakeFiles/Makefile2:279：CMakeFiles/slave_arm_node.dir/all] 错误 2
+gmake: *** [Makefile:146：all] 错误 2
