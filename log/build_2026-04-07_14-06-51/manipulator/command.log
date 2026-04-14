@@ -1,6 +1,0 @@
-Invoking command in '/mnt/emmc/cat_home/arm-platform/build/manipulator': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/humble /usr/bin/cmake /mnt/emmc/cat_home/arm-platform -DCMAKE_INSTALL_PREFIX=/mnt/emmc/cat_home/arm-platform/install/manipulator
-Invoked command in '/mnt/emmc/cat_home/arm-platform/build/manipulator' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/humble /usr/bin/cmake /mnt/emmc/cat_home/arm-platform -DCMAKE_INSTALL_PREFIX=/mnt/emmc/cat_home/arm-platform/install/manipulator
-Invoking command in '/mnt/emmc/cat_home/arm-platform/build/manipulator': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/humble /usr/bin/cmake --build /mnt/emmc/cat_home/arm-platform/build/manipulator -- -j8 -l8
-Invoked command in '/mnt/emmc/cat_home/arm-platform/build/manipulator' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/humble /usr/bin/cmake --build /mnt/emmc/cat_home/arm-platform/build/manipulator -- -j8 -l8
-Invoking command in '/mnt/emmc/cat_home/arm-platform/build/manipulator': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/humble /usr/bin/cmake --install /mnt/emmc/cat_home/arm-platform/build/manipulator
-Invoked command in '/mnt/emmc/cat_home/arm-platform/build/manipulator' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/humble /usr/bin/cmake --install /mnt/emmc/cat_home/arm-platform/build/manipulator

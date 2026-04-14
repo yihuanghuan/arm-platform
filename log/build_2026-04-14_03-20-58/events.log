@@ -1,0 +1,220 @@
+[0.000000] (-) TimerEvent: {}
+[0.000153] (manipulator) JobQueued: {'identifier': 'manipulator', 'dependencies': OrderedDict()}
+[0.000402] (manipulator) JobStarted: {'identifier': 'manipulator'}
+[0.006327] (manipulator) JobProgress: {'identifier': 'manipulator', 'progress': 'cmake'}
+[0.007043] (manipulator) JobProgress: {'identifier': 'manipulator', 'progress': 'build'}
+[0.007906] (manipulator) Command: {'cmd': ['/usr/bin/cmake', '--build', '/home/crz/arm-platform/build/manipulator', '--', '-j20', '-l20'], 'cwd': '/home/crz/arm-platform/build/manipulator', 'env': OrderedDict([('GJS_DEBUG_TOPICS', 'JS ERROR;JS LOG'), ('LESSOPEN', '| /usr/bin/lesspipe %s'), ('USER', 'crz'), ('XDG_SESSION_TYPE', 'wayland'), ('SHLVL', '1'), ('LD_LIBRARY_PATH', '/home/crz/arm-platform/install/manipulator/lib:/home/crz/dummy-interface/install/dummy_interface/lib:/usr/lib/x86_64-linux-gnu/gazebo-11/plugins:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib'), ('HOME', '/home/crz'), ('OLDPWD', '/home/crz'), ('DESKTOP_SESSION', 'ubuntu'), ('GIO_LAUNCHED_DESKTOP_FILE', '/usr/share/applications/terminator.desktop'), ('ROS_PYTHON_VERSION', '3'), ('GNOME_SHELL_SESSION_MODE', 'ubuntu'), ('GTK_MODULES', 'gail:atk-bridge'), ('MANAGERPID', '1152'), ('SYSTEMD_EXEC_PID', '1355'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('COLORTERM', 'truecolor'), ('TERMINATOR_DBUS_NAME', 'net.tenshu.Terminator25ef4b219e3b005583550f2b0f9f990c3'), ('GIO_LAUNCHED_DESKTOP_FILE_PID', '12764'), ('IM_CONFIG_PHASE', '1'), ('WAYLAND_DISPLAY', 'wayland-0'), ('COLCON_PREFIX_PATH', '/home/crz/arm-platform/install:/home/crz/dummy-interface/install'), ('ROS_DISTRO', 'humble'), ('LOGNAME', 'crz'), ('JOURNAL_STREAM', '8:17709'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('XDG_SESSION_CLASS', 'user'), ('USERNAME', 'crz'), ('TERM', 'xterm-256color'), ('GNOME_DESKTOP_SESSION_ID', 'this-is-deprecated'), ('ROS_LOCALHOST_ONLY', '0'), ('PATH', '/opt/ros/humble/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/snap/bin'), ('SESSION_MANAGER', 'local/crz:@/tmp/.ICE-unix/1306,unix/crz:/tmp/.ICE-unix/1306'), ('INVOCATION_ID', 'd5125875a21b4bd3b003c2b35319833a'), ('XDG_MENU_PREFIX', 'gnome-'), ('GNOME_SETUP_DISPLAY', ':1'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('DISPLAY', ':0'), ('TERMINATOR_DBUS_PATH', '/net/tenshu/Terminator2'), ('LD_PRELOAD', ''), ('LANG', 'en_US.UTF-8'), ('XDG_CURRENT_DESKTOP', 'ubuntu:GNOME'), ('IBUS_DISABLE_SNOOPER', '1'), ('XMODIFIERS', '@im=ibus'), ('XDG_SESSION_DESKTOP', 'ubuntu'), ('XAUTHORITY', '/run/user/1000/.mutter-Xwaylandauth.OXSLN3'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('SSH_AGENT_LAUNCHER', 'gnome-keyring'), ('SSH_AUTH_SOCK', '/run/user/1000/keyring/ssh'), ('ROS_DOMAIN_ID', '12'), ('AMENT_PREFIX_PATH', '/home/crz/arm-platform/install/manipulator:/home/crz/dummy-interface/install/dummy_interface:/opt/ros/humble'), ('SHELL', '/bin/bash'), ('TERMINATOR_UUID', 'urn:uuid:4de3e4de-153e-42ab-8b64-61702aff14cb'), ('QT_ACCESSIBILITY', '1'), ('GDMSESSION', 'ubuntu'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('GJS_DEBUG_OUTPUT', 'stderr'), ('QT_IM_MODULE', 'ibus'), ('PWD', '/home/crz/arm-platform/build/manipulator'), ('XDG_CONFIG_DIRS', '/etc/xdg/xdg-ubuntu:/etc/xdg'), ('XDG_DATA_DIRS', '/usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('PYTHONPATH', '/home/crz/dummy-interface/install/dummy_interface/local/lib/python3.10/dist-packages:/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages'), ('COLCON', '1'), ('VTE_VERSION', '6800'), ('CMAKE_PREFIX_PATH', '/home/crz/arm-platform/install/manipulator:/home/crz/dummy-interface/install/dummy_interface:/opt/ros/humble')]), 'shell': False}
+[0.068310] (manipulator) StdoutLine: {'line': b'[  9%] Built target gravity_compensation\n'}
+[0.072944] (manipulator) StdoutLine: {'line': b'[ 61%] Built target manipulator_core\n'}
+[0.078129] (manipulator) StdoutLine: {'line': b'[ 71%] Built target gravity_compensation_pinocchio\n'}
+[0.098332] (manipulator) StdoutLine: {'line': b'[ 80%] Built target arm_hardware_node\n'}
+[0.099800] (-) TimerEvent: {}
+[0.115641] (manipulator) StdoutLine: {'line': b'[ 90%] \x1b[32mBuilding CXX object CMakeFiles/master_arm_node.dir/src/master_arm_node.cc.o\x1b[0m\n'}
+[0.115843] (manipulator) StdoutLine: {'line': b'[ 90%] \x1b[32mBuilding CXX object CMakeFiles/slave_arm_node.dir/src/slave_arm_node.cc.o\x1b[0m\n'}
+[0.200015] (-) TimerEvent: {}
+[0.300289] (-) TimerEvent: {}
+[0.400607] (-) TimerEvent: {}
+[0.501000] (-) TimerEvent: {}
+[0.601278] (-) TimerEvent: {}
+[0.701684] (-) TimerEvent: {}
+[0.802072] (-) TimerEvent: {}
+[0.902361] (-) TimerEvent: {}
+[1.002671] (-) TimerEvent: {}
+[1.103053] (-) TimerEvent: {}
+[1.203331] (-) TimerEvent: {}
+[1.303628] (-) TimerEvent: {}
+[1.403939] (-) TimerEvent: {}
+[1.504227] (-) TimerEvent: {}
+[1.604537] (-) TimerEvent: {}
+[1.704838] (-) TimerEvent: {}
+[1.805157] (-) TimerEvent: {}
+[1.905464] (-) TimerEvent: {}
+[2.005849] (-) TimerEvent: {}
+[2.106193] (-) TimerEvent: {}
+[2.206490] (-) TimerEvent: {}
+[2.306830] (-) TimerEvent: {}
+[2.407165] (-) TimerEvent: {}
+[2.507475] (-) TimerEvent: {}
+[2.607767] (-) TimerEvent: {}
+[2.708178] (-) TimerEvent: {}
+[2.808483] (-) TimerEvent: {}
+[2.908764] (-) TimerEvent: {}
+[3.009161] (-) TimerEvent: {}
+[3.109553] (-) TimerEvent: {}
+[3.209957] (-) TimerEvent: {}
+[3.310275] (-) TimerEvent: {}
+[3.410602] (-) TimerEvent: {}
+[3.511047] (-) TimerEvent: {}
+[3.611438] (-) TimerEvent: {}
+[3.711810] (-) TimerEvent: {}
+[3.812123] (-) TimerEvent: {}
+[3.912469] (-) TimerEvent: {}
+[4.012874] (-) TimerEvent: {}
+[4.113234] (-) TimerEvent: {}
+[4.213583] (-) TimerEvent: {}
+[4.313907] (-) TimerEvent: {}
+[4.414272] (-) TimerEvent: {}
+[4.514655] (-) TimerEvent: {}
+[4.615026] (-) TimerEvent: {}
+[4.715473] (-) TimerEvent: {}
+[4.816001] (-) TimerEvent: {}
+[4.916364] (-) TimerEvent: {}
+[5.016826] (-) TimerEvent: {}
+[5.117192] (-) TimerEvent: {}
+[5.217552] (-) TimerEvent: {}
+[5.317937] (-) TimerEvent: {}
+[5.328678] (manipulator) StderrLine: {'line': b'\x1b[01m\x1b[K/home/crz/arm-platform/src/slave_arm_node.cc:\x1b[m\x1b[K In constructor \xe2\x80\x98\x1b[01m\x1b[Kmanipulator::SlaveArmNode::SlaveArmNode()\x1b[m\x1b[K\xe2\x80\x99:\n'}
+[5.328911] (manipulator) StderrLine: {'line': b'\x1b[01m\x1b[K/home/crz/arm-platform/src/slave_arm_node.cc:72:8:\x1b[m\x1b[K \x1b[01;35m\x1b[Kwarning: \x1b[m\x1b[Kunused variable \xe2\x80\x98\x1b[01m\x1b[Kpublish_joint_state\x1b[m\x1b[K\xe2\x80\x99 [\x1b[01;35m\x1b[K\x1b]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-variable\x07-Wunused-variable\x1b]8;;\x07\x1b[m\x1b[K]\n'}
+[5.329030] (manipulator) StderrLine: {'line': b'   72 |   bool \x1b[01;35m\x1b[Kpublish_joint_state\x1b[m\x1b[K = this->get_parameter("publish_joint_state").as_bool();\n'}
+[5.329132] (manipulator) StderrLine: {'line': b'      |        \x1b[01;35m\x1b[K^~~~~~~~~~~~~~~~~~~\x1b[m\x1b[K\n'}
+[5.381263] (manipulator) StderrLine: {'line': b'\x1b[01m\x1b[K/home/crz/arm-platform/src/master_arm_node.cc:\x1b[m\x1b[K In constructor \xe2\x80\x98\x1b[01m\x1b[Kmanipulator::MasterArmNode::MasterArmNode()\x1b[m\x1b[K\xe2\x80\x99:\n'}
+[5.381605] (manipulator) StderrLine: {'line': b'\x1b[01m\x1b[K/home/crz/arm-platform/src/master_arm_node.cc:72:8:\x1b[m\x1b[K \x1b[01;35m\x1b[Kwarning: \x1b[m\x1b[Kunused variable \xe2\x80\x98\x1b[01m\x1b[Kpublish_joint_state\x1b[m\x1b[K\xe2\x80\x99 [\x1b[01;35m\x1b[K\x1b]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-variable\x07-Wunused-variable\x1b]8;;\x07\x1b[m\x1b[K]\n'}
+[5.381709] (manipulator) StderrLine: {'line': b'   72 |   bool \x1b[01;35m\x1b[Kpublish_joint_state\x1b[m\x1b[K = this->get_parameter("publish_joint_state").as_bool();\n'}
+[5.381801] (manipulator) StderrLine: {'line': b'      |        \x1b[01;35m\x1b[K^~~~~~~~~~~~~~~~~~~\x1b[m\x1b[K\n'}
+[5.418097] (-) TimerEvent: {}
+[5.518540] (-) TimerEvent: {}
+[5.618969] (-) TimerEvent: {}
+[5.719307] (-) TimerEvent: {}
+[5.819680] (-) TimerEvent: {}
+[5.920176] (-) TimerEvent: {}
+[6.020568] (-) TimerEvent: {}
+[6.121012] (-) TimerEvent: {}
+[6.221373] (-) TimerEvent: {}
+[6.321693] (-) TimerEvent: {}
+[6.422001] (-) TimerEvent: {}
+[6.522280] (-) TimerEvent: {}
+[6.622594] (-) TimerEvent: {}
+[6.722999] (-) TimerEvent: {}
+[6.823296] (-) TimerEvent: {}
+[6.923618] (-) TimerEvent: {}
+[7.023968] (-) TimerEvent: {}
+[7.124262] (-) TimerEvent: {}
+[7.224583] (-) TimerEvent: {}
+[7.324978] (-) TimerEvent: {}
+[7.425384] (-) TimerEvent: {}
+[7.525780] (-) TimerEvent: {}
+[7.626199] (-) TimerEvent: {}
+[7.726487] (-) TimerEvent: {}
+[7.826782] (-) TimerEvent: {}
+[7.927185] (-) TimerEvent: {}
+[8.027469] (-) TimerEvent: {}
+[8.127860] (-) TimerEvent: {}
+[8.228229] (-) TimerEvent: {}
+[8.328607] (-) TimerEvent: {}
+[8.429090] (-) TimerEvent: {}
+[8.529497] (-) TimerEvent: {}
+[8.629965] (-) TimerEvent: {}
+[8.730328] (-) TimerEvent: {}
+[8.830794] (-) TimerEvent: {}
+[8.931259] (-) TimerEvent: {}
+[9.031671] (-) TimerEvent: {}
+[9.132091] (-) TimerEvent: {}
+[9.232443] (-) TimerEvent: {}
+[9.332908] (-) TimerEvent: {}
+[9.433292] (-) TimerEvent: {}
+[9.533657] (-) TimerEvent: {}
+[9.633984] (-) TimerEvent: {}
+[9.734573] (-) TimerEvent: {}
+[9.834959] (-) TimerEvent: {}
+[9.935230] (-) TimerEvent: {}
+[10.035532] (-) TimerEvent: {}
+[10.135982] (-) TimerEvent: {}
+[10.236310] (-) TimerEvent: {}
+[10.336640] (-) TimerEvent: {}
+[10.436969] (-) TimerEvent: {}
+[10.537300] (-) TimerEvent: {}
+[10.637619] (-) TimerEvent: {}
+[10.738012] (-) TimerEvent: {}
+[10.838291] (-) TimerEvent: {}
+[10.938553] (-) TimerEvent: {}
+[11.038853] (-) TimerEvent: {}
+[11.139169] (-) TimerEvent: {}
+[11.239437] (-) TimerEvent: {}
+[11.339810] (-) TimerEvent: {}
+[11.440190] (-) TimerEvent: {}
+[11.540494] (-) TimerEvent: {}
+[11.640885] (-) TimerEvent: {}
+[11.741180] (-) TimerEvent: {}
+[11.841492] (-) TimerEvent: {}
+[11.941900] (-) TimerEvent: {}
+[11.949337] (manipulator) StdoutLine: {'line': b'[ 95%] \x1b[32m\x1b[1mLinking CXX executable slave_arm_node\x1b[0m\n'}
+[11.999260] (manipulator) StdoutLine: {'line': b'[100%] \x1b[32m\x1b[1mLinking CXX executable master_arm_node\x1b[0m\n'}
+[12.042140] (-) TimerEvent: {}
+[12.142469] (-) TimerEvent: {}
+[12.242806] (-) TimerEvent: {}
+[12.343151] (-) TimerEvent: {}
+[12.443528] (-) TimerEvent: {}
+[12.501525] (manipulator) StdoutLine: {'line': b'[100%] Built target slave_arm_node\n'}
+[12.543753] (-) TimerEvent: {}
+[12.560288] (manipulator) StdoutLine: {'line': b'[100%] Built target master_arm_node\n'}
+[12.574477] (manipulator) CommandEnded: {'returncode': 0}
+[12.576424] (manipulator) JobProgress: {'identifier': 'manipulator', 'progress': 'install'}
+[12.588615] (manipulator) Command: {'cmd': ['/usr/bin/cmake', '--install', '/home/crz/arm-platform/build/manipulator'], 'cwd': '/home/crz/arm-platform/build/manipulator', 'env': OrderedDict([('GJS_DEBUG_TOPICS', 'JS ERROR;JS LOG'), ('LESSOPEN', '| /usr/bin/lesspipe %s'), ('USER', 'crz'), ('XDG_SESSION_TYPE', 'wayland'), ('SHLVL', '1'), ('LD_LIBRARY_PATH', '/home/crz/arm-platform/install/manipulator/lib:/home/crz/dummy-interface/install/dummy_interface/lib:/usr/lib/x86_64-linux-gnu/gazebo-11/plugins:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib'), ('HOME', '/home/crz'), ('OLDPWD', '/home/crz'), ('DESKTOP_SESSION', 'ubuntu'), ('GIO_LAUNCHED_DESKTOP_FILE', '/usr/share/applications/terminator.desktop'), ('ROS_PYTHON_VERSION', '3'), ('GNOME_SHELL_SESSION_MODE', 'ubuntu'), ('GTK_MODULES', 'gail:atk-bridge'), ('MANAGERPID', '1152'), ('SYSTEMD_EXEC_PID', '1355'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('COLORTERM', 'truecolor'), ('TERMINATOR_DBUS_NAME', 'net.tenshu.Terminator25ef4b219e3b005583550f2b0f9f990c3'), ('GIO_LAUNCHED_DESKTOP_FILE_PID', '12764'), ('IM_CONFIG_PHASE', '1'), ('WAYLAND_DISPLAY', 'wayland-0'), ('COLCON_PREFIX_PATH', '/home/crz/arm-platform/install:/home/crz/dummy-interface/install'), ('ROS_DISTRO', 'humble'), ('LOGNAME', 'crz'), ('JOURNAL_STREAM', '8:17709'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('XDG_SESSION_CLASS', 'user'), ('USERNAME', 'crz'), ('TERM', 'xterm-256color'), ('GNOME_DESKTOP_SESSION_ID', 'this-is-deprecated'), ('ROS_LOCALHOST_ONLY', '0'), ('PATH', '/opt/ros/humble/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/snap/bin'), ('SESSION_MANAGER', 'local/crz:@/tmp/.ICE-unix/1306,unix/crz:/tmp/.ICE-unix/1306'), ('INVOCATION_ID', 'd5125875a21b4bd3b003c2b35319833a'), ('XDG_MENU_PREFIX', 'gnome-'), ('GNOME_SETUP_DISPLAY', ':1'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('DISPLAY', ':0'), ('TERMINATOR_DBUS_PATH', '/net/tenshu/Terminator2'), ('LD_PRELOAD', ''), ('LANG', 'en_US.UTF-8'), ('XDG_CURRENT_DESKTOP', 'ubuntu:GNOME'), ('IBUS_DISABLE_SNOOPER', '1'), ('XMODIFIERS', '@im=ibus'), ('XDG_SESSION_DESKTOP', 'ubuntu'), ('XAUTHORITY', '/run/user/1000/.mutter-Xwaylandauth.OXSLN3'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('SSH_AGENT_LAUNCHER', 'gnome-keyring'), ('SSH_AUTH_SOCK', '/run/user/1000/keyring/ssh'), ('ROS_DOMAIN_ID', '12'), ('AMENT_PREFIX_PATH', '/home/crz/arm-platform/install/manipulator:/home/crz/dummy-interface/install/dummy_interface:/opt/ros/humble'), ('SHELL', '/bin/bash'), ('TERMINATOR_UUID', 'urn:uuid:4de3e4de-153e-42ab-8b64-61702aff14cb'), ('QT_ACCESSIBILITY', '1'), ('GDMSESSION', 'ubuntu'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('GJS_DEBUG_OUTPUT', 'stderr'), ('QT_IM_MODULE', 'ibus'), ('PWD', '/home/crz/arm-platform/build/manipulator'), ('XDG_CONFIG_DIRS', '/etc/xdg/xdg-ubuntu:/etc/xdg'), ('XDG_DATA_DIRS', '/usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('PYTHONPATH', '/home/crz/dummy-interface/install/dummy_interface/local/lib/python3.10/dist-packages:/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages'), ('COLCON', '1'), ('VTE_VERSION', '6800'), ('CMAKE_PREFIX_PATH', '/home/crz/arm-platform/install/manipulator:/home/crz/dummy-interface/install/dummy_interface:/opt/ros/humble')]), 'shell': False}
+[12.594234] (manipulator) StdoutLine: {'line': b'-- Install configuration: ""\n'}
+[12.594453] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /home/crz/arm-platform/install/manipulator/lib/libmanipulator_core.a\n'}
+[12.594504] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /home/crz/arm-platform/install/manipulator/lib/libgravity_compensation.a\n'}
+[12.594539] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /home/crz/arm-platform/install/manipulator/lib/libgravity_compensation_pinocchio.a\n'}
+[12.594704] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /home/crz/arm-platform/install/manipulator/lib/manipulator/arm_hardware_node\n'}
+[12.594776] (manipulator) StdoutLine: {'line': b'-- Installing: /home/crz/arm-platform/install/manipulator/lib/manipulator/master_arm_node\n'}
+[12.598698] (manipulator) StdoutLine: {'line': b'-- Set runtime path of "/home/crz/arm-platform/install/manipulator/lib/manipulator/master_arm_node" to ""\n'}
+[12.598879] (manipulator) StdoutLine: {'line': b'-- Installing: /home/crz/arm-platform/install/manipulator/lib/manipulator/slave_arm_node\n'}
+[12.602845] (manipulator) StdoutLine: {'line': b'-- Set runtime path of "/home/crz/arm-platform/install/manipulator/lib/manipulator/slave_arm_node" to ""\n'}
+[12.602989] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /home/crz/arm-platform/install/manipulator/include\n'}
+[12.603034] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /home/crz/arm-platform/install/manipulator/include/manipulator\n'}
+[12.603067] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /home/crz/arm-platform/install/manipulator/include/manipulator/controller\n'}
+[12.603097] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /home/crz/arm-platform/install/manipulator/include/manipulator/controller/dummy_controller.h\n'}
+[12.603168] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /home/crz/arm-platform/install/manipulator/include/manipulator/controller/i_arm_controller.h\n'}
+[12.603200] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /home/crz/arm-platform/install/manipulator/include/manipulator/arm_types.h\n'}
+[12.603259] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /home/crz/arm-platform/install/manipulator/include/manipulator/arm\n'}
+[12.603290] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /home/crz/arm-platform/install/manipulator/include/manipulator/arm/abs_arm.h\n'}
+[12.603327] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /home/crz/arm-platform/install/manipulator/include/manipulator/arm/i_arm.h\n'}
+[12.603359] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /home/crz/arm-platform/install/manipulator/include/manipulator/arm/a_l1_gamma.h\n'}
+[12.603389] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /home/crz/arm-platform/install/manipulator/include/manipulator/arm/arm_factory.h\n'}
+[12.603420] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /home/crz/arm-platform/install/manipulator/include/manipulator/arm/a_l1_beta.h\n'}
+[12.603450] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /home/crz/arm-platform/install/manipulator/include/manipulator/bus\n'}
+[12.603480] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /home/crz/arm-platform/install/manipulator/include/manipulator/bus/abs_bus.h\n'}
+[12.603510] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /home/crz/arm-platform/install/manipulator/include/manipulator/bus/serial_bus.h\n'}
+[12.603540] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /home/crz/arm-platform/install/manipulator/include/manipulator/bus/i_bus.h\n'}
+[12.603579] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /home/crz/arm-platform/install/manipulator/include/manipulator/slave_arm_node.h\n'}
+[12.603610] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /home/crz/arm-platform/install/manipulator/include/manipulator/master_arm_node.h\n'}
+[12.603658] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /home/crz/arm-platform/install/manipulator/include/manipulator/gravity_compensation.h\n'}
+[12.603686] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /home/crz/arm-platform/install/manipulator/include/manipulator/gravity_compensation_pinocchio.h\n'}
+[12.603713] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /home/crz/arm-platform/install/manipulator/include/manipulator/protocol\n'}
+[12.603740] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /home/crz/arm-platform/install/manipulator/include/manipulator/protocol/protocol_v1.h\n'}
+[12.603766] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /home/crz/arm-platform/install/manipulator/include/manipulator/protocol/protocol_factory.h\n'}
+[12.603794] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /home/crz/arm-platform/install/manipulator/include/manipulator/protocol/i_protocol.h\n'}
+[12.603820] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /home/crz/arm-platform/install/manipulator/include/manipulator/protocol/abs_protocol.h\n'}
+[12.603847] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /home/crz/arm-platform/install/manipulator/include/manipulator/motor\n'}
+[12.603874] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /home/crz/arm-platform/install/manipulator/include/manipulator/motor/dm_motor.h\n'}
+[12.603901] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /home/crz/arm-platform/install/manipulator/include/manipulator/motor/i_motor.h\n'}
+[12.603927] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /home/crz/arm-platform/install/manipulator/include/manipulator/motor/abs_motor.h\n'}
+[12.603955] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /home/crz/arm-platform/install/manipulator/include/manipulator/arm_hardware_node.h\n'}
+[12.603983] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /home/crz/arm-platform/install/manipulator/share/manipulator/\n'}
+[12.604016] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /home/crz/arm-platform/install/manipulator/share/manipulator//master_arm.launch.py\n'}
+[12.604043] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /home/crz/arm-platform/install/manipulator/share/manipulator//slave_arm.launch.py\n'}
+[12.604070] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /home/crz/arm-platform/install/manipulator/share/manipulator//demo.launch.py\n'}
+[12.604097] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /home/crz/arm-platform/install/manipulator/share/manipulator/environment/library_path.sh\n'}
+[12.604123] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /home/crz/arm-platform/install/manipulator/share/manipulator/environment/library_path.dsv\n'}
+[12.604150] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /home/crz/arm-platform/install/manipulator/share/ament_index/resource_index/package_run_dependencies/manipulator\n'}
+[12.604177] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /home/crz/arm-platform/install/manipulator/share/ament_index/resource_index/parent_prefix_path/manipulator\n'}
+[12.604204] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /home/crz/arm-platform/install/manipulator/share/manipulator/environment/ament_prefix_path.sh\n'}
+[12.604231] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /home/crz/arm-platform/install/manipulator/share/manipulator/environment/ament_prefix_path.dsv\n'}
+[12.604257] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /home/crz/arm-platform/install/manipulator/share/manipulator/environment/path.sh\n'}
+[12.604284] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /home/crz/arm-platform/install/manipulator/share/manipulator/environment/path.dsv\n'}
+[12.604310] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /home/crz/arm-platform/install/manipulator/share/manipulator/local_setup.bash\n'}
+[12.604338] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /home/crz/arm-platform/install/manipulator/share/manipulator/local_setup.sh\n'}
+[12.604365] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /home/crz/arm-platform/install/manipulator/share/manipulator/local_setup.zsh\n'}
+[12.604392] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /home/crz/arm-platform/install/manipulator/share/manipulator/local_setup.dsv\n'}
+[12.604421] (manipulator) StdoutLine: {'line': b'-- Installing: /home/crz/arm-platform/install/manipulator/share/manipulator/package.dsv\n'}
+[12.604447] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /home/crz/arm-platform/install/manipulator/share/ament_index/resource_index/packages/manipulator\n'}
+[12.604474] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /home/crz/arm-platform/install/manipulator/share/manipulator/cmake/export_manipulatorExport.cmake\n'}
+[12.604501] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /home/crz/arm-platform/install/manipulator/share/manipulator/cmake/export_manipulatorExport-noconfig.cmake\n'}
+[12.604583] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /home/crz/arm-platform/install/manipulator/share/manipulator/cmake/ament_cmake_export_targets-extras.cmake\n'}
+[12.604615] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /home/crz/arm-platform/install/manipulator/share/manipulator/cmake/ament_cmake_export_include_directories-extras.cmake\n'}
+[12.604798] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /home/crz/arm-platform/install/manipulator/share/manipulator/cmake/ament_cmake_export_dependencies-extras.cmake\n'}
+[12.604829] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /home/crz/arm-platform/install/manipulator/share/manipulator/cmake/manipulatorConfig.cmake\n'}
+[12.604857] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /home/crz/arm-platform/install/manipulator/share/manipulator/cmake/manipulatorConfig-version.cmake\n'}
+[12.604888] (manipulator) StdoutLine: {'line': b'-- Up-to-date: /home/crz/arm-platform/install/manipulator/share/manipulator/package.xml\n'}
+[12.605578] (manipulator) CommandEnded: {'returncode': 0}
+[12.617641] (manipulator) JobEnded: {'identifier': 'manipulator', 'rc': 0}
+[12.618155] (-) EventReactorShutdown: {}

@@ -53,10 +53,10 @@ RM = /usr/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /mnt/emmc/cat_home/arm-platform
+CMAKE_SOURCE_DIR = /home/crz/arm-platform
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /mnt/emmc/cat_home/arm-platform/build/manipulator
+CMAKE_BINARY_DIR = /home/crz/arm-platform/build/manipulator
 
 # Include any dependencies generated for this target.
 include CMakeFiles/slave_arm_node.dir/depend.make
@@ -72,16 +72,16 @@ include CMakeFiles/slave_arm_node.dir/flags.make
 CMakeFiles/slave_arm_node.dir/src/slave_arm_node.cc.o: CMakeFiles/slave_arm_node.dir/flags.make
 CMakeFiles/slave_arm_node.dir/src/slave_arm_node.cc.o: ../../src/slave_arm_node.cc
 CMakeFiles/slave_arm_node.dir/src/slave_arm_node.cc.o: CMakeFiles/slave_arm_node.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/mnt/emmc/cat_home/arm-platform/build/manipulator/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/slave_arm_node.dir/src/slave_arm_node.cc.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/slave_arm_node.dir/src/slave_arm_node.cc.o -MF CMakeFiles/slave_arm_node.dir/src/slave_arm_node.cc.o.d -o CMakeFiles/slave_arm_node.dir/src/slave_arm_node.cc.o -c /mnt/emmc/cat_home/arm-platform/src/slave_arm_node.cc
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/crz/arm-platform/build/manipulator/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/slave_arm_node.dir/src/slave_arm_node.cc.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/slave_arm_node.dir/src/slave_arm_node.cc.o -MF CMakeFiles/slave_arm_node.dir/src/slave_arm_node.cc.o.d -o CMakeFiles/slave_arm_node.dir/src/slave_arm_node.cc.o -c /home/crz/arm-platform/src/slave_arm_node.cc
 
 CMakeFiles/slave_arm_node.dir/src/slave_arm_node.cc.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/slave_arm_node.dir/src/slave_arm_node.cc.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /mnt/emmc/cat_home/arm-platform/src/slave_arm_node.cc > CMakeFiles/slave_arm_node.dir/src/slave_arm_node.cc.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/crz/arm-platform/src/slave_arm_node.cc > CMakeFiles/slave_arm_node.dir/src/slave_arm_node.cc.i
 
 CMakeFiles/slave_arm_node.dir/src/slave_arm_node.cc.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/slave_arm_node.dir/src/slave_arm_node.cc.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /mnt/emmc/cat_home/arm-platform/src/slave_arm_node.cc -o CMakeFiles/slave_arm_node.dir/src/slave_arm_node.cc.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/crz/arm-platform/src/slave_arm_node.cc -o CMakeFiles/slave_arm_node.dir/src/slave_arm_node.cc.s
 
 # Object files for target slave_arm_node
 slave_arm_node_OBJECTS = \
@@ -100,22 +100,17 @@ slave_arm_node: /opt/ros/humble/lib/libsensor_msgs__rosidl_typesupport_fastrtps_
 slave_arm_node: /opt/ros/humble/lib/libsensor_msgs__rosidl_typesupport_introspection_c.so
 slave_arm_node: /opt/ros/humble/lib/libsensor_msgs__rosidl_typesupport_introspection_cpp.so
 slave_arm_node: /opt/ros/humble/lib/libsensor_msgs__rosidl_generator_py.so
-slave_arm_node: /home/cat/ArmRemoteController/install/dummy_interface/lib/libdummy_interface__rosidl_typesupport_fastrtps_c.so
-slave_arm_node: /home/cat/ArmRemoteController/install/dummy_interface/lib/libdummy_interface__rosidl_typesupport_fastrtps_cpp.so
-slave_arm_node: /home/cat/ArmRemoteController/install/dummy_interface/lib/libdummy_interface__rosidl_typesupport_introspection_c.so
-slave_arm_node: /home/cat/ArmRemoteController/install/dummy_interface/lib/libdummy_interface__rosidl_typesupport_introspection_cpp.so
-slave_arm_node: /home/cat/ArmRemoteController/install/dummy_interface/lib/libdummy_interface__rosidl_typesupport_cpp.so
-slave_arm_node: /home/cat/ArmRemoteController/install/dummy_interface/lib/libdummy_interface__rosidl_generator_py.so
-slave_arm_node: /opt/ros/humble/lib/libgeometry_msgs__rosidl_typesupport_fastrtps_c.so
-slave_arm_node: /opt/ros/humble/lib/libgeometry_msgs__rosidl_typesupport_introspection_c.so
-slave_arm_node: /opt/ros/humble/lib/libgeometry_msgs__rosidl_typesupport_fastrtps_cpp.so
-slave_arm_node: /opt/ros/humble/lib/libgeometry_msgs__rosidl_typesupport_introspection_cpp.so
-slave_arm_node: /opt/ros/humble/lib/libgeometry_msgs__rosidl_generator_py.so
+slave_arm_node: /home/crz/dummy-interface/install/dummy_interface/lib/libdummy_interface__rosidl_typesupport_fastrtps_c.so
+slave_arm_node: /home/crz/dummy-interface/install/dummy_interface/lib/libdummy_interface__rosidl_typesupport_introspection_c.so
+slave_arm_node: /home/crz/dummy-interface/install/dummy_interface/lib/libdummy_interface__rosidl_typesupport_fastrtps_cpp.so
+slave_arm_node: /home/crz/dummy-interface/install/dummy_interface/lib/libdummy_interface__rosidl_typesupport_introspection_cpp.so
+slave_arm_node: /home/crz/dummy-interface/install/dummy_interface/lib/libdummy_interface__rosidl_typesupport_cpp.so
+slave_arm_node: /home/crz/dummy-interface/install/dummy_interface/lib/libdummy_interface__rosidl_generator_py.so
 slave_arm_node: /opt/ros/humble/lib/libsensor_msgs__rosidl_typesupport_c.so
 slave_arm_node: /opt/ros/humble/lib/libsensor_msgs__rosidl_generator_c.so
 slave_arm_node: /opt/ros/humble/lib/libsensor_msgs__rosidl_typesupport_cpp.so
-slave_arm_node: /home/cat/ArmRemoteController/install/dummy_interface/lib/libdummy_interface__rosidl_typesupport_c.so
-slave_arm_node: /home/cat/ArmRemoteController/install/dummy_interface/lib/libdummy_interface__rosidl_generator_c.so
+slave_arm_node: /home/crz/dummy-interface/install/dummy_interface/lib/libdummy_interface__rosidl_typesupport_c.so
+slave_arm_node: /home/crz/dummy-interface/install/dummy_interface/lib/libdummy_interface__rosidl_generator_c.so
 slave_arm_node: /usr/local/lib/libserial.so
 slave_arm_node: /opt/ros/humble/lib/liblibstatistics_collector.so
 slave_arm_node: /opt/ros/humble/lib/librcl.so
@@ -150,16 +145,35 @@ slave_arm_node: /opt/ros/humble/lib/libstatistics_msgs__rosidl_generator_py.so
 slave_arm_node: /opt/ros/humble/lib/libstatistics_msgs__rosidl_typesupport_c.so
 slave_arm_node: /opt/ros/humble/lib/libstatistics_msgs__rosidl_generator_c.so
 slave_arm_node: /opt/ros/humble/lib/libtracetools.so
+slave_arm_node: /opt/ros/humble/lib/x86_64-linux-gnu/libpinocchio_parsers.so.3.9.0
+slave_arm_node: /opt/ros/humble/lib/x86_64-linux-gnu/liburdfdom_sensor.so.3.0
+slave_arm_node: /opt/ros/humble/lib/x86_64-linux-gnu/liburdfdom_model.so.3.0
+slave_arm_node: /opt/ros/humble/lib/x86_64-linux-gnu/liburdfdom_world.so.3.0
+slave_arm_node: /usr/lib/x86_64-linux-gnu/libconsole_bridge.so.1.0
+slave_arm_node: /usr/lib/x86_64-linux-gnu/libtinyxml.so
+slave_arm_node: /opt/ros/humble/lib/x86_64-linux-gnu/libpinocchio_collision.so.3.9.0
+slave_arm_node: /opt/ros/humble/lib/x86_64-linux-gnu/libpinocchio_visualizers.so.3.9.0
+slave_arm_node: /opt/ros/humble/lib/x86_64-linux-gnu/libpinocchio_default.so.3.9.0
+slave_arm_node: /opt/ros/humble/lib/x86_64-linux-gnu/libhpp-fcl.so
+slave_arm_node: /usr/lib/x86_64-linux-gnu/libboost_filesystem.so
+slave_arm_node: /usr/lib/x86_64-linux-gnu/libboost_serialization.so
+slave_arm_node: /usr/lib/x86_64-linux-gnu/libboost_chrono.so
+slave_arm_node: /usr/lib/x86_64-linux-gnu/liboctomap.so.1.9.7
+slave_arm_node: /usr/lib/x86_64-linux-gnu/liboctomath.so.1.9.7
+slave_arm_node: /opt/ros/humble/lib/libgeometry_msgs__rosidl_typesupport_fastrtps_c.so
 slave_arm_node: /opt/ros/humble/lib/libstd_msgs__rosidl_typesupport_fastrtps_c.so
 slave_arm_node: /opt/ros/humble/lib/libbuiltin_interfaces__rosidl_typesupport_fastrtps_c.so
 slave_arm_node: /opt/ros/humble/lib/librosidl_typesupport_fastrtps_c.so
+slave_arm_node: /opt/ros/humble/lib/libgeometry_msgs__rosidl_typesupport_introspection_c.so
 slave_arm_node: /opt/ros/humble/lib/libstd_msgs__rosidl_typesupport_introspection_c.so
 slave_arm_node: /opt/ros/humble/lib/libbuiltin_interfaces__rosidl_typesupport_introspection_c.so
+slave_arm_node: /opt/ros/humble/lib/libgeometry_msgs__rosidl_typesupport_fastrtps_cpp.so
 slave_arm_node: /opt/ros/humble/lib/libstd_msgs__rosidl_typesupport_fastrtps_cpp.so
 slave_arm_node: /opt/ros/humble/lib/libbuiltin_interfaces__rosidl_typesupport_fastrtps_cpp.so
 slave_arm_node: /opt/ros/humble/lib/librosidl_typesupport_fastrtps_cpp.so
 slave_arm_node: /opt/ros/humble/lib/libfastcdr.so.1.0.24
 slave_arm_node: /opt/ros/humble/lib/librmw.so
+slave_arm_node: /opt/ros/humble/lib/libgeometry_msgs__rosidl_typesupport_introspection_cpp.so
 slave_arm_node: /opt/ros/humble/lib/libstd_msgs__rosidl_typesupport_introspection_cpp.so
 slave_arm_node: /opt/ros/humble/lib/libbuiltin_interfaces__rosidl_typesupport_introspection_cpp.so
 slave_arm_node: /opt/ros/humble/lib/librosidl_typesupport_introspection_cpp.so
@@ -168,6 +182,7 @@ slave_arm_node: /opt/ros/humble/lib/libgeometry_msgs__rosidl_typesupport_cpp.so
 slave_arm_node: /opt/ros/humble/lib/libstd_msgs__rosidl_typesupport_cpp.so
 slave_arm_node: /opt/ros/humble/lib/libbuiltin_interfaces__rosidl_typesupport_cpp.so
 slave_arm_node: /opt/ros/humble/lib/librosidl_typesupport_cpp.so
+slave_arm_node: /opt/ros/humble/lib/libgeometry_msgs__rosidl_generator_py.so
 slave_arm_node: /opt/ros/humble/lib/libstd_msgs__rosidl_generator_py.so
 slave_arm_node: /opt/ros/humble/lib/libgeometry_msgs__rosidl_typesupport_c.so
 slave_arm_node: /opt/ros/humble/lib/libstd_msgs__rosidl_typesupport_c.so
@@ -180,24 +195,9 @@ slave_arm_node: /opt/ros/humble/lib/librosidl_typesupport_c.so
 slave_arm_node: /opt/ros/humble/lib/librcpputils.so
 slave_arm_node: /opt/ros/humble/lib/librosidl_runtime_c.so
 slave_arm_node: /opt/ros/humble/lib/librcutils.so
-slave_arm_node: /usr/lib/aarch64-linux-gnu/libpython3.10.so
-slave_arm_node: /opt/ros/humble/lib/aarch64-linux-gnu/libpinocchio_parsers.so.3.9.0
-slave_arm_node: /opt/ros/humble/lib/aarch64-linux-gnu/liburdfdom_sensor.so.3.0
-slave_arm_node: /opt/ros/humble/lib/aarch64-linux-gnu/liburdfdom_model.so.3.0
-slave_arm_node: /opt/ros/humble/lib/aarch64-linux-gnu/liburdfdom_world.so.3.0
-slave_arm_node: /usr/lib/aarch64-linux-gnu/libconsole_bridge.so.1.0
-slave_arm_node: /usr/lib/aarch64-linux-gnu/libtinyxml.so
-slave_arm_node: /opt/ros/humble/lib/aarch64-linux-gnu/libpinocchio_collision.so.3.9.0
-slave_arm_node: /opt/ros/humble/lib/aarch64-linux-gnu/libpinocchio_visualizers.so.3.9.0
-slave_arm_node: /opt/ros/humble/lib/aarch64-linux-gnu/libpinocchio_default.so.3.9.0
-slave_arm_node: /opt/ros/humble/lib/aarch64-linux-gnu/libhpp-fcl.so
-slave_arm_node: /usr/lib/aarch64-linux-gnu/libboost_filesystem.so
-slave_arm_node: /usr/lib/aarch64-linux-gnu/libboost_serialization.so
-slave_arm_node: /usr/lib/aarch64-linux-gnu/libboost_chrono.so
-slave_arm_node: /usr/lib/aarch64-linux-gnu/liboctomap.so.1.9.7
-slave_arm_node: /usr/lib/aarch64-linux-gnu/liboctomath.so.1.9.7
+slave_arm_node: /usr/lib/x86_64-linux-gnu/libpython3.10.so
 slave_arm_node: CMakeFiles/slave_arm_node.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/mnt/emmc/cat_home/arm-platform/build/manipulator/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX executable slave_arm_node"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/crz/arm-platform/build/manipulator/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX executable slave_arm_node"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/slave_arm_node.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.
@@ -209,6 +209,6 @@ CMakeFiles/slave_arm_node.dir/clean:
 .PHONY : CMakeFiles/slave_arm_node.dir/clean
 
 CMakeFiles/slave_arm_node.dir/depend:
-	cd /mnt/emmc/cat_home/arm-platform/build/manipulator && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /mnt/emmc/cat_home/arm-platform /mnt/emmc/cat_home/arm-platform /mnt/emmc/cat_home/arm-platform/build/manipulator /mnt/emmc/cat_home/arm-platform/build/manipulator /mnt/emmc/cat_home/arm-platform/build/manipulator/CMakeFiles/slave_arm_node.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/crz/arm-platform/build/manipulator && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/crz/arm-platform /home/crz/arm-platform /home/crz/arm-platform/build/manipulator /home/crz/arm-platform/build/manipulator /home/crz/arm-platform/build/manipulator/CMakeFiles/slave_arm_node.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/slave_arm_node.dir/depend
 

@@ -19,7 +19,7 @@ namespace manipulator {
  * @brief Slave arm control node for ground station
  * 
  * This node controls the slave arm with gravity compensation
- * and publishes joint states. It subscribes to master arm state    
+ * and publishes joint states. It subscribes to master arm state
  * and UAV pose for force feedback control.
  */
 class SlaveArmNode : public rclcpp::Node {
@@ -60,10 +60,15 @@ class SlaveArmNode : public rclcpp::Node {
   rclcpp::Publisher<dummy_interface::msg::MotorState>::SharedPtr pub_joint_feedback_;
   // rclcpp::Publisher<std_msgs::msg::Float64MultiArray>::SharedPtr pub_joint_compensation_;
   rclcpp::Subscription<geometry_msgs::msg::Point>::SharedPtr sub_uav_pose_;
+  rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr sub_slave_state_;
 
   // Hardware interface
   arm::AbsArm::UniPtr arm_;
   arm::AbsArm::JointState arm_state_;
+
+  // Force feedback data from slave arm
+  std::array<double, 7> uav_joint_currents = {0, 0, 0, 0, 0, 0, 0};
+  std::array<double, 7> uav_compensation_torques = {0, 0, 0, 0, 0, 0, 0};
 
   // Gravity compensation algorithm
   GravityCompensationPinocchio gravity_compensation_;

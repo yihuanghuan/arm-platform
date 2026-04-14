@@ -53,10 +53,10 @@ RM = /usr/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /mnt/emmc/cat_home/arm-platform
+CMAKE_SOURCE_DIR = /home/crz/arm-platform
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /mnt/emmc/cat_home/arm-platform/build/manipulator
+CMAKE_BINARY_DIR = /home/crz/arm-platform/build/manipulator
 
 # Utility rule file for uninstall.
 
@@ -78,6 +78,6 @@ CMakeFiles/uninstall.dir/clean:
 .PHONY : CMakeFiles/uninstall.dir/clean
 
 CMakeFiles/uninstall.dir/depend:
-	cd /mnt/emmc/cat_home/arm-platform/build/manipulator && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /mnt/emmc/cat_home/arm-platform /mnt/emmc/cat_home/arm-platform /mnt/emmc/cat_home/arm-platform/build/manipulator /mnt/emmc/cat_home/arm-platform/build/manipulator /mnt/emmc/cat_home/arm-platform/build/manipulator/CMakeFiles/uninstall.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/crz/arm-platform/build/manipulator && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/crz/arm-platform /home/crz/arm-platform /home/crz/arm-platform/build/manipulator /home/crz/arm-platform/build/manipulator /home/crz/arm-platform/build/manipulator/CMakeFiles/uninstall.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/uninstall.dir/depend
 

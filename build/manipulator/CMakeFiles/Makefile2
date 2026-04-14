@@ -54,10 +54,10 @@ RM = /usr/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /mnt/emmc/cat_home/arm-platform
+CMAKE_SOURCE_DIR = /home/crz/arm-platform
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /mnt/emmc/cat_home/arm-platform/build/manipulator
+CMAKE_BINARY_DIR = /home/crz/arm-platform/build/manipulator
 
 #=============================================================================
 # Directory level rules for the build root directory
@@ -93,14 +93,14 @@ clean: CMakeFiles/slave_arm_node.dir/clean
 CMakeFiles/uninstall.dir/all: CMakeFiles/manipulator_uninstall.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/uninstall.dir/build.make CMakeFiles/uninstall.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/uninstall.dir/build.make CMakeFiles/uninstall.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/mnt/emmc/cat_home/arm-platform/build/manipulator/CMakeFiles --progress-num= "Built target uninstall"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/crz/arm-platform/build/manipulator/CMakeFiles --progress-num= "Built target uninstall"
 .PHONY : CMakeFiles/uninstall.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/uninstall.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /mnt/emmc/cat_home/arm-platform/build/manipulator/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/crz/arm-platform/build/manipulator/CMakeFiles 0
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/uninstall.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /mnt/emmc/cat_home/arm-platform/build/manipulator/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/crz/arm-platform/build/manipulator/CMakeFiles 0
 .PHONY : CMakeFiles/uninstall.dir/rule
 
 # Convenience name for target.
@@ -119,14 +119,14 @@ CMakeFiles/uninstall.dir/clean:
 CMakeFiles/manipulator_uninstall.dir/all:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/manipulator_uninstall.dir/build.make CMakeFiles/manipulator_uninstall.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/manipulator_uninstall.dir/build.make CMakeFiles/manipulator_uninstall.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/mnt/emmc/cat_home/arm-platform/build/manipulator/CMakeFiles --progress-num= "Built target manipulator_uninstall"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/crz/arm-platform/build/manipulator/CMakeFiles --progress-num= "Built target manipulator_uninstall"
 .PHONY : CMakeFiles/manipulator_uninstall.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/manipulator_uninstall.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /mnt/emmc/cat_home/arm-platform/build/manipulator/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/crz/arm-platform/build/manipulator/CMakeFiles 0
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/manipulator_uninstall.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /mnt/emmc/cat_home/arm-platform/build/manipulator/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/crz/arm-platform/build/manipulator/CMakeFiles 0
 .PHONY : CMakeFiles/manipulator_uninstall.dir/rule
 
 # Convenience name for target.
@@ -145,14 +145,14 @@ CMakeFiles/manipulator_uninstall.dir/clean:
 CMakeFiles/manipulator_core.dir/all:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/manipulator_core.dir/build.make CMakeFiles/manipulator_core.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/manipulator_core.dir/build.make CMakeFiles/manipulator_core.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/mnt/emmc/cat_home/arm-platform/build/manipulator/CMakeFiles --progress-num=7,8,9,10,11,12,13,14,15,16,17 "Built target manipulator_core"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/crz/arm-platform/build/manipulator/CMakeFiles --progress-num=7,8,9,10,11,12,13,14,15,16,17 "Built target manipulator_core"
 .PHONY : CMakeFiles/manipulator_core.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/manipulator_core.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /mnt/emmc/cat_home/arm-platform/build/manipulator/CMakeFiles 11
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/crz/arm-platform/build/manipulator/CMakeFiles 11
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/manipulator_core.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /mnt/emmc/cat_home/arm-platform/build/manipulator/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/crz/arm-platform/build/manipulator/CMakeFiles 0
 .PHONY : CMakeFiles/manipulator_core.dir/rule
 
 # Convenience name for target.
@@ -171,14 +171,14 @@ CMakeFiles/manipulator_core.dir/clean:
 CMakeFiles/gravity_compensation.dir/all:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/gravity_compensation.dir/build.make CMakeFiles/gravity_compensation.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/gravity_compensation.dir/build.make CMakeFiles/gravity_compensation.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/mnt/emmc/cat_home/arm-platform/build/manipulator/CMakeFiles --progress-num=3,4 "Built target gravity_compensation"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/crz/arm-platform/build/manipulator/CMakeFiles --progress-num=3,4 "Built target gravity_compensation"
 .PHONY : CMakeFiles/gravity_compensation.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/gravity_compensation.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /mnt/emmc/cat_home/arm-platform/build/manipulator/CMakeFiles 2
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/crz/arm-platform/build/manipulator/CMakeFiles 2
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/gravity_compensation.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /mnt/emmc/cat_home/arm-platform/build/manipulator/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/crz/arm-platform/build/manipulator/CMakeFiles 0
 .PHONY : CMakeFiles/gravity_compensation.dir/rule
 
 # Convenience name for target.
@@ -197,14 +197,14 @@ CMakeFiles/gravity_compensation.dir/clean:
 CMakeFiles/gravity_compensation_pinocchio.dir/all:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/gravity_compensation_pinocchio.dir/build.make CMakeFiles/gravity_compensation_pinocchio.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/gravity_compensation_pinocchio.dir/build.make CMakeFiles/gravity_compensation_pinocchio.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/mnt/emmc/cat_home/arm-platform/build/manipulator/CMakeFiles --progress-num=5,6 "Built target gravity_compensation_pinocchio"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/crz/arm-platform/build/manipulator/CMakeFiles --progress-num=5,6 "Built target gravity_compensation_pinocchio"
 .PHONY : CMakeFiles/gravity_compensation_pinocchio.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/gravity_compensation_pinocchio.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /mnt/emmc/cat_home/arm-platform/build/manipulator/CMakeFiles 2
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/crz/arm-platform/build/manipulator/CMakeFiles 2
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/gravity_compensation_pinocchio.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /mnt/emmc/cat_home/arm-platform/build/manipulator/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/crz/arm-platform/build/manipulator/CMakeFiles 0
 .PHONY : CMakeFiles/gravity_compensation_pinocchio.dir/rule
 
 # Convenience name for target.
@@ -223,14 +223,14 @@ CMakeFiles/gravity_compensation_pinocchio.dir/clean:
 CMakeFiles/arm_hardware_node.dir/all: CMakeFiles/manipulator_core.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/arm_hardware_node.dir/build.make CMakeFiles/arm_hardware_node.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/arm_hardware_node.dir/build.make CMakeFiles/arm_hardware_node.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/mnt/emmc/cat_home/arm-platform/build/manipulator/CMakeFiles --progress-num=1,2 "Built target arm_hardware_node"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/crz/arm-platform/build/manipulator/CMakeFiles --progress-num=1,2 "Built target arm_hardware_node"
 .PHONY : CMakeFiles/arm_hardware_node.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/arm_hardware_node.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /mnt/emmc/cat_home/arm-platform/build/manipulator/CMakeFiles 13
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/crz/arm-platform/build/manipulator/CMakeFiles 13
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/arm_hardware_node.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /mnt/emmc/cat_home/arm-platform/build/manipulator/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/crz/arm-platform/build/manipulator/CMakeFiles 0
 .PHONY : CMakeFiles/arm_hardware_node.dir/rule
 
 # Convenience name for target.
@@ -250,14 +250,14 @@ CMakeFiles/master_arm_node.dir/all: CMakeFiles/manipulator_core.dir/all
 CMakeFiles/master_arm_node.dir/all: CMakeFiles/gravity_compensation_pinocchio.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/master_arm_node.dir/build.make CMakeFiles/master_arm_node.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/master_arm_node.dir/build.make CMakeFiles/master_arm_node.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/mnt/emmc/cat_home/arm-platform/build/manipulator/CMakeFiles --progress-num=18,19 "Built target master_arm_node"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/crz/arm-platform/build/manipulator/CMakeFiles --progress-num=18,19 "Built target master_arm_node"
 .PHONY : CMakeFiles/master_arm_node.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/master_arm_node.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /mnt/emmc/cat_home/arm-platform/build/manipulator/CMakeFiles 15
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/crz/arm-platform/build/manipulator/CMakeFiles 15
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/master_arm_node.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /mnt/emmc/cat_home/arm-platform/build/manipulator/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/crz/arm-platform/build/manipulator/CMakeFiles 0
 .PHONY : CMakeFiles/master_arm_node.dir/rule
 
 # Convenience name for target.
@@ -277,14 +277,14 @@ CMakeFiles/slave_arm_node.dir/all: CMakeFiles/manipulator_core.dir/all
 CMakeFiles/slave_arm_node.dir/all: CMakeFiles/gravity_compensation_pinocchio.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/slave_arm_node.dir/build.make CMakeFiles/slave_arm_node.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/slave_arm_node.dir/build.make CMakeFiles/slave_arm_node.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/mnt/emmc/cat_home/arm-platform/build/manipulator/CMakeFiles --progress-num=20,21 "Built target slave_arm_node"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/crz/arm-platform/build/manipulator/CMakeFiles --progress-num=20,21 "Built target slave_arm_node"
 .PHONY : CMakeFiles/slave_arm_node.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/slave_arm_node.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /mnt/emmc/cat_home/arm-platform/build/manipulator/CMakeFiles 15
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/crz/arm-platform/build/manipulator/CMakeFiles 15
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/slave_arm_node.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /mnt/emmc/cat_home/arm-platform/build/manipulator/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/crz/arm-platform/build/manipulator/CMakeFiles 0
 .PHONY : CMakeFiles/slave_arm_node.dir/rule
 
 # Convenience name for target.

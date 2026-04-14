@@ -57,7 +57,7 @@ def generate_launch_description():
                 {'publish_joint_state': LaunchConfiguration('publish_joint_state')},
                 # 是否发布joint_feedback
                 {'publish_joint_feedback': LaunchConfiguration('publish_joint_feedback')},
-                {'urdf_path': "/home/iusl/huaben_ws/src/dummy_description/urdf/arm/A-L1-GAMMA/arm.urdf"}
+                {'urdf_path': "/home/crz/arm-platform/arm.urdf"}
             ]
         ),
     ])

@@ -53,10 +53,10 @@ RM = /usr/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /mnt/emmc/cat_home/arm-platform
+CMAKE_SOURCE_DIR = /home/crz/arm-platform
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /mnt/emmc/cat_home/arm-platform/build/manipulator
+CMAKE_BINARY_DIR = /home/crz/arm-platform/build/manipulator
 
 # Include any dependencies generated for this target.
 include CMakeFiles/gravity_compensation.dir/depend.make
@@ -72,16 +72,16 @@ include CMakeFiles/gravity_compensation.dir/flags.make
 CMakeFiles/gravity_compensation.dir/src/gravity_compensation.cc.o: CMakeFiles/gravity_compensation.dir/flags.make
 CMakeFiles/gravity_compensation.dir/src/gravity_compensation.cc.o: ../../src/gravity_compensation.cc
 CMakeFiles/gravity_compensation.dir/src/gravity_compensation.cc.o: CMakeFiles/gravity_compensation.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/mnt/emmc/cat_home/arm-platform/build/manipulator/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/gravity_compensation.dir/src/gravity_compensation.cc.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/gravity_compensation.dir/src/gravity_compensation.cc.o -MF CMakeFiles/gravity_compensation.dir/src/gravity_compensation.cc.o.d -o CMakeFiles/gravity_compensation.dir/src/gravity_compensation.cc.o -c /mnt/emmc/cat_home/arm-platform/src/gravity_compensation.cc
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/crz/arm-platform/build/manipulator/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/gravity_compensation.dir/src/gravity_compensation.cc.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/gravity_compensation.dir/src/gravity_compensation.cc.o -MF CMakeFiles/gravity_compensation.dir/src/gravity_compensation.cc.o.d -o CMakeFiles/gravity_compensation.dir/src/gravity_compensation.cc.o -c /home/crz/arm-platform/src/gravity_compensation.cc
 
 CMakeFiles/gravity_compensation.dir/src/gravity_compensation.cc.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/gravity_compensation.dir/src/gravity_compensation.cc.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /mnt/emmc/cat_home/arm-platform/src/gravity_compensation.cc > CMakeFiles/gravity_compensation.dir/src/gravity_compensation.cc.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/crz/arm-platform/src/gravity_compensation.cc > CMakeFiles/gravity_compensation.dir/src/gravity_compensation.cc.i
 
 CMakeFiles/gravity_compensation.dir/src/gravity_compensation.cc.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/gravity_compensation.dir/src/gravity_compensation.cc.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /mnt/emmc/cat_home/arm-platform/src/gravity_compensation.cc -o CMakeFiles/gravity_compensation.dir/src/gravity_compensation.cc.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/crz/arm-platform/src/gravity_compensation.cc -o CMakeFiles/gravity_compensation.dir/src/gravity_compensation.cc.s
 
 # Object files for target gravity_compensation
 gravity_compensation_OBJECTS = \
@@ -93,7 +93,7 @@ gravity_compensation_EXTERNAL_OBJECTS =
 libgravity_compensation.a: CMakeFiles/gravity_compensation.dir/src/gravity_compensation.cc.o
 libgravity_compensation.a: CMakeFiles/gravity_compensation.dir/build.make
 libgravity_compensation.a: CMakeFiles/gravity_compensation.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/mnt/emmc/cat_home/arm-platform/build/manipulator/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX static library libgravity_compensation.a"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/crz/arm-platform/build/manipulator/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX static library libgravity_compensation.a"
 	$(CMAKE_COMMAND) -P CMakeFiles/gravity_compensation.dir/cmake_clean_target.cmake
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/gravity_compensation.dir/link.txt --verbose=$(VERBOSE)
 
@@ -106,6 +106,6 @@ CMakeFiles/gravity_compensation.dir/clean:
 .PHONY : CMakeFiles/gravity_compensation.dir/clean
 
 CMakeFiles/gravity_compensation.dir/depend:
-	cd /mnt/emmc/cat_home/arm-platform/build/manipulator && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /mnt/emmc/cat_home/arm-platform /mnt/emmc/cat_home/arm-platform /mnt/emmc/cat_home/arm-platform/build/manipulator /mnt/emmc/cat_home/arm-platform/build/manipulator /mnt/emmc/cat_home/arm-platform/build/manipulator/CMakeFiles/gravity_compensation.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/crz/arm-platform/build/manipulator && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/crz/arm-platform /home/crz/arm-platform /home/crz/arm-platform/build/manipulator /home/crz/arm-platform/build/manipulator /home/crz/arm-platform/build/manipulator/CMakeFiles/gravity_compensation.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/gravity_compensation.dir/depend
 

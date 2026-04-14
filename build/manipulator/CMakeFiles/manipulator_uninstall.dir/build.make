@@ -53,10 +53,10 @@ RM = /usr/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /mnt/emmc/cat_home/arm-platform
+CMAKE_SOURCE_DIR = /home/crz/arm-platform
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /mnt/emmc/cat_home/arm-platform/build/manipulator
+CMAKE_BINARY_DIR = /home/crz/arm-platform/build/manipulator
 
 # Utility rule file for manipulator_uninstall.
 
@@ -67,7 +67,7 @@ include CMakeFiles/manipulator_uninstall.dir/compiler_depend.make
 include CMakeFiles/manipulator_uninstall.dir/progress.make
 
 CMakeFiles/manipulator_uninstall:
-	/usr/bin/cmake -P /mnt/emmc/cat_home/arm-platform/build/manipulator/ament_cmake_uninstall_target/ament_cmake_uninstall_target.cmake
+	/usr/bin/cmake -P /home/crz/arm-platform/build/manipulator/ament_cmake_uninstall_target/ament_cmake_uninstall_target.cmake
 
 manipulator_uninstall: CMakeFiles/manipulator_uninstall
 manipulator_uninstall: CMakeFiles/manipulator_uninstall.dir/build.make
@@ -82,6 +82,6 @@ CMakeFiles/manipulator_uninstall.dir/clean:
 .PHONY : CMakeFiles/manipulator_uninstall.dir/clean
 
 CMakeFiles/manipulator_uninstall.dir/depend:
-	cd /mnt/emmc/cat_home/arm-platform/build/manipulator && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /mnt/emmc/cat_home/arm-platform /mnt/emmc/cat_home/arm-platform /mnt/emmc/cat_home/arm-platform/build/manipulator /mnt/emmc/cat_home/arm-platform/build/manipulator /mnt/emmc/cat_home/arm-platform/build/manipulator/CMakeFiles/manipulator_uninstall.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/crz/arm-platform/build/manipulator && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/crz/arm-platform /home/crz/arm-platform /home/crz/arm-platform/build/manipulator /home/crz/arm-platform/build/manipulator /home/crz/arm-platform/build/manipulator/CMakeFiles/manipulator_uninstall.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/manipulator_uninstall.dir/depend
 

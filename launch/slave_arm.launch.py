@@ -30,7 +30,8 @@ def generate_launch_description():
                 # 调试信息打印频率（Hz）
                 {'debug_rate': 1.0},
                 # 是否发布 joint states
-                {'publish_joint_states': True}
+                {'publish_joint_states': True},
+                {'urdf_path': "/home/crz/arm-platform/arm.urdf"}
             ]
         ),
     ])

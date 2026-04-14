@@ -53,10 +53,10 @@ RM = /usr/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /mnt/emmc/cat_home/arm-platform
+CMAKE_SOURCE_DIR = /home/crz/arm-platform
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /mnt/emmc/cat_home/arm-platform/build/manipulator
+CMAKE_BINARY_DIR = /home/crz/arm-platform/build/manipulator
 
 # Include any dependencies generated for this target.
 include CMakeFiles/arm_hardware_node.dir/depend.make
@@ -72,16 +72,16 @@ include CMakeFiles/arm_hardware_node.dir/flags.make
 CMakeFiles/arm_hardware_node.dir/src/arm_hardware_node.cc.o: CMakeFiles/arm_hardware_node.dir/flags.make
 CMakeFiles/arm_hardware_node.dir/src/arm_hardware_node.cc.o: ../../src/arm_hardware_node.cc
 CMakeFiles/arm_hardware_node.dir/src/arm_hardware_node.cc.o: CMakeFiles/arm_hardware_node.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/mnt/emmc/cat_home/arm-platform/build/manipulator/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/arm_hardware_node.dir/src/arm_hardware_node.cc.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/arm_hardware_node.dir/src/arm_hardware_node.cc.o -MF CMakeFiles/arm_hardware_node.dir/src/arm_hardware_node.cc.o.d -o CMakeFiles/arm_hardware_node.dir/src/arm_hardware_node.cc.o -c /mnt/emmc/cat_home/arm-platform/src/arm_hardware_node.cc
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/crz/arm-platform/build/manipulator/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/arm_hardware_node.dir/src/arm_hardware_node.cc.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/arm_hardware_node.dir/src/arm_hardware_node.cc.o -MF CMakeFiles/arm_hardware_node.dir/src/arm_hardware_node.cc.o.d -o CMakeFiles/arm_hardware_node.dir/src/arm_hardware_node.cc.o -c /home/crz/arm-platform/src/arm_hardware_node.cc
 
 CMakeFiles/arm_hardware_node.dir/src/arm_hardware_node.cc.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/arm_hardware_node.dir/src/arm_hardware_node.cc.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /mnt/emmc/cat_home/arm-platform/src/arm_hardware_node.cc > CMakeFiles/arm_hardware_node.dir/src/arm_hardware_node.cc.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/crz/arm-platform/src/arm_hardware_node.cc > CMakeFiles/arm_hardware_node.dir/src/arm_hardware_node.cc.i
 
 CMakeFiles/arm_hardware_node.dir/src/arm_hardware_node.cc.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/arm_hardware_node.dir/src/arm_hardware_node.cc.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /mnt/emmc/cat_home/arm-platform/src/arm_hardware_node.cc -o CMakeFiles/arm_hardware_node.dir/src/arm_hardware_node.cc.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/crz/arm-platform/src/arm_hardware_node.cc -o CMakeFiles/arm_hardware_node.dir/src/arm_hardware_node.cc.s
 
 # Object files for target arm_hardware_node
 arm_hardware_node_OBJECTS = \
@@ -127,14 +127,14 @@ arm_hardware_node: /opt/ros/humble/lib/libstatistics_msgs__rosidl_generator_py.s
 arm_hardware_node: /opt/ros/humble/lib/libstatistics_msgs__rosidl_typesupport_c.so
 arm_hardware_node: /opt/ros/humble/lib/libstatistics_msgs__rosidl_generator_c.so
 arm_hardware_node: /opt/ros/humble/lib/libtracetools.so
-arm_hardware_node: /home/cat/ArmRemoteController/install/dummy_interface/lib/libdummy_interface__rosidl_typesupport_fastrtps_c.so
-arm_hardware_node: /home/cat/ArmRemoteController/install/dummy_interface/lib/libdummy_interface__rosidl_typesupport_fastrtps_cpp.so
-arm_hardware_node: /home/cat/ArmRemoteController/install/dummy_interface/lib/libdummy_interface__rosidl_typesupport_introspection_c.so
-arm_hardware_node: /home/cat/ArmRemoteController/install/dummy_interface/lib/libdummy_interface__rosidl_typesupport_introspection_cpp.so
-arm_hardware_node: /home/cat/ArmRemoteController/install/dummy_interface/lib/libdummy_interface__rosidl_typesupport_cpp.so
-arm_hardware_node: /home/cat/ArmRemoteController/install/dummy_interface/lib/libdummy_interface__rosidl_generator_py.so
-arm_hardware_node: /home/cat/ArmRemoteController/install/dummy_interface/lib/libdummy_interface__rosidl_typesupport_c.so
-arm_hardware_node: /home/cat/ArmRemoteController/install/dummy_interface/lib/libdummy_interface__rosidl_generator_c.so
+arm_hardware_node: /home/crz/dummy-interface/install/dummy_interface/lib/libdummy_interface__rosidl_typesupport_fastrtps_c.so
+arm_hardware_node: /home/crz/dummy-interface/install/dummy_interface/lib/libdummy_interface__rosidl_typesupport_introspection_c.so
+arm_hardware_node: /home/crz/dummy-interface/install/dummy_interface/lib/libdummy_interface__rosidl_typesupport_fastrtps_cpp.so
+arm_hardware_node: /home/crz/dummy-interface/install/dummy_interface/lib/libdummy_interface__rosidl_typesupport_introspection_cpp.so
+arm_hardware_node: /home/crz/dummy-interface/install/dummy_interface/lib/libdummy_interface__rosidl_typesupport_cpp.so
+arm_hardware_node: /home/crz/dummy-interface/install/dummy_interface/lib/libdummy_interface__rosidl_generator_py.so
+arm_hardware_node: /home/crz/dummy-interface/install/dummy_interface/lib/libdummy_interface__rosidl_typesupport_c.so
+arm_hardware_node: /home/crz/dummy-interface/install/dummy_interface/lib/libdummy_interface__rosidl_generator_c.so
 arm_hardware_node: /opt/ros/humble/lib/libsensor_msgs__rosidl_typesupport_fastrtps_c.so
 arm_hardware_node: /opt/ros/humble/lib/libgeometry_msgs__rosidl_typesupport_fastrtps_c.so
 arm_hardware_node: /opt/ros/humble/lib/libstd_msgs__rosidl_typesupport_fastrtps_c.so
@@ -163,7 +163,7 @@ arm_hardware_node: /opt/ros/humble/lib/libsensor_msgs__rosidl_generator_c.so
 arm_hardware_node: /opt/ros/humble/lib/libgeometry_msgs__rosidl_generator_py.so
 arm_hardware_node: /opt/ros/humble/lib/libstd_msgs__rosidl_generator_py.so
 arm_hardware_node: /opt/ros/humble/lib/libbuiltin_interfaces__rosidl_generator_py.so
-arm_hardware_node: /usr/lib/aarch64-linux-gnu/libpython3.10.so
+arm_hardware_node: /usr/lib/x86_64-linux-gnu/libpython3.10.so
 arm_hardware_node: /opt/ros/humble/lib/libgeometry_msgs__rosidl_typesupport_c.so
 arm_hardware_node: /opt/ros/humble/lib/libstd_msgs__rosidl_typesupport_c.so
 arm_hardware_node: /opt/ros/humble/lib/libbuiltin_interfaces__rosidl_typesupport_c.so
@@ -181,7 +181,7 @@ arm_hardware_node: /opt/ros/humble/lib/librosidl_runtime_c.so
 arm_hardware_node: /opt/ros/humble/lib/librcutils.so
 arm_hardware_node: /usr/local/lib/libserial.so
 arm_hardware_node: CMakeFiles/arm_hardware_node.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/mnt/emmc/cat_home/arm-platform/build/manipulator/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX executable arm_hardware_node"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/crz/arm-platform/build/manipulator/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX executable arm_hardware_node"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/arm_hardware_node.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.
@@ -193,6 +193,6 @@ CMakeFiles/arm_hardware_node.dir/clean:
 .PHONY : CMakeFiles/arm_hardware_node.dir/clean
 
 CMakeFiles/arm_hardware_node.dir/depend:
-	cd /mnt/emmc/cat_home/arm-platform/build/manipulator && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /mnt/emmc/cat_home/arm-platform /mnt/emmc/cat_home/arm-platform /mnt/emmc/cat_home/arm-platform/build/manipulator /mnt/emmc/cat_home/arm-platform/build/manipulator /mnt/emmc/cat_home/arm-platform/build/manipulator/CMakeFiles/arm_hardware_node.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/crz/arm-platform/build/manipulator && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/crz/arm-platform /home/crz/arm-platform /home/crz/arm-platform/build/manipulator /home/crz/arm-platform/build/manipulator /home/crz/arm-platform/build/manipulator/CMakeFiles/arm_hardware_node.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/arm_hardware_node.dir/depend
 

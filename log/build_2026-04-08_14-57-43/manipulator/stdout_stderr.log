@@ -1,7 +1,0 @@
-[ 23%] Built target gravity_compensation
-[ 61%] Built target manipulator_core
-[ 66%] [32mBuilding CXX object CMakeFiles/gravity_compensation_pinocchio.dir/src/gravity_compensation_pinocchio.cc.o[0m
-[ 76%] Built target arm_hardware_node
-gmake[2]: *** [CMakeFiles/gravity_compensation_pinocchio.dir/build.make:76: CMakeFiles/gravity_compensation_pinocchio.dir/src/gravity_compensation_pinocchio.cc.o] 中断
-gmake[1]: *** [CMakeFiles/Makefile2:199: CMakeFiles/gravity_compensation_pinocchio.dir/all] 中断
-gmake: *** [Makefile:146: all] 中断

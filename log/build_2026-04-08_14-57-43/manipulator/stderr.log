@@ -1,3 +1,0 @@
-gmake[2]: *** [CMakeFiles/gravity_compensation_pinocchio.dir/build.make:76: CMakeFiles/gravity_compensation_pinocchio.dir/src/gravity_compensation_pinocchio.cc.o] 中断
-gmake[1]: *** [CMakeFiles/Makefile2:199: CMakeFiles/gravity_compensation_pinocchio.dir/all] 中断
-gmake: *** [Makefile:146: all] 中断

@@ -53,10 +53,10 @@ RM = /usr/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /mnt/emmc/cat_home/arm-platform
+CMAKE_SOURCE_DIR = /home/crz/arm-platform
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /mnt/emmc/cat_home/arm-platform/build/manipulator
+CMAKE_BINARY_DIR = /home/crz/arm-platform/build/manipulator
 
 # Include any dependencies generated for this target.
 include CMakeFiles/manipulator_core.dir/depend.make
@@ -72,142 +72,142 @@ include CMakeFiles/manipulator_core.dir/flags.make
 CMakeFiles/manipulator_core.dir/src/arm/abs_arm.cc.o: CMakeFiles/manipulator_core.dir/flags.make
 CMakeFiles/manipulator_core.dir/src/arm/abs_arm.cc.o: ../../src/arm/abs_arm.cc
 CMakeFiles/manipulator_core.dir/src/arm/abs_arm.cc.o: CMakeFiles/manipulator_core.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/mnt/emmc/cat_home/arm-platform/build/manipulator/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/manipulator_core.dir/src/arm/abs_arm.cc.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/manipulator_core.dir/src/arm/abs_arm.cc.o -MF CMakeFiles/manipulator_core.dir/src/arm/abs_arm.cc.o.d -o CMakeFiles/manipulator_core.dir/src/arm/abs_arm.cc.o -c /mnt/emmc/cat_home/arm-platform/src/arm/abs_arm.cc
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/crz/arm-platform/build/manipulator/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/manipulator_core.dir/src/arm/abs_arm.cc.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/manipulator_core.dir/src/arm/abs_arm.cc.o -MF CMakeFiles/manipulator_core.dir/src/arm/abs_arm.cc.o.d -o CMakeFiles/manipulator_core.dir/src/arm/abs_arm.cc.o -c /home/crz/arm-platform/src/arm/abs_arm.cc
 
 CMakeFiles/manipulator_core.dir/src/arm/abs_arm.cc.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/manipulator_core.dir/src/arm/abs_arm.cc.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /mnt/emmc/cat_home/arm-platform/src/arm/abs_arm.cc > CMakeFiles/manipulator_core.dir/src/arm/abs_arm.cc.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/crz/arm-platform/src/arm/abs_arm.cc > CMakeFiles/manipulator_core.dir/src/arm/abs_arm.cc.i
 
 CMakeFiles/manipulator_core.dir/src/arm/abs_arm.cc.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/manipulator_core.dir/src/arm/abs_arm.cc.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /mnt/emmc/cat_home/arm-platform/src/arm/abs_arm.cc -o CMakeFiles/manipulator_core.dir/src/arm/abs_arm.cc.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/crz/arm-platform/src/arm/abs_arm.cc -o CMakeFiles/manipulator_core.dir/src/arm/abs_arm.cc.s
 
 CMakeFiles/manipulator_core.dir/src/arm/a_l1_beta.cc.o: CMakeFiles/manipulator_core.dir/flags.make
 CMakeFiles/manipulator_core.dir/src/arm/a_l1_beta.cc.o: ../../src/arm/a_l1_beta.cc
 CMakeFiles/manipulator_core.dir/src/arm/a_l1_beta.cc.o: CMakeFiles/manipulator_core.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/mnt/emmc/cat_home/arm-platform/build/manipulator/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/manipulator_core.dir/src/arm/a_l1_beta.cc.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/manipulator_core.dir/src/arm/a_l1_beta.cc.o -MF CMakeFiles/manipulator_core.dir/src/arm/a_l1_beta.cc.o.d -o CMakeFiles/manipulator_core.dir/src/arm/a_l1_beta.cc.o -c /mnt/emmc/cat_home/arm-platform/src/arm/a_l1_beta.cc
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/crz/arm-platform/build/manipulator/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/manipulator_core.dir/src/arm/a_l1_beta.cc.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/manipulator_core.dir/src/arm/a_l1_beta.cc.o -MF CMakeFiles/manipulator_core.dir/src/arm/a_l1_beta.cc.o.d -o CMakeFiles/manipulator_core.dir/src/arm/a_l1_beta.cc.o -c /home/crz/arm-platform/src/arm/a_l1_beta.cc
 
 CMakeFiles/manipulator_core.dir/src/arm/a_l1_beta.cc.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/manipulator_core.dir/src/arm/a_l1_beta.cc.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /mnt/emmc/cat_home/arm-platform/src/arm/a_l1_beta.cc > CMakeFiles/manipulator_core.dir/src/arm/a_l1_beta.cc.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/crz/arm-platform/src/arm/a_l1_beta.cc > CMakeFiles/manipulator_core.dir/src/arm/a_l1_beta.cc.i
 
 CMakeFiles/manipulator_core.dir/src/arm/a_l1_beta.cc.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/manipulator_core.dir/src/arm/a_l1_beta.cc.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /mnt/emmc/cat_home/arm-platform/src/arm/a_l1_beta.cc -o CMakeFiles/manipulator_core.dir/src/arm/a_l1_beta.cc.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/crz/arm-platform/src/arm/a_l1_beta.cc -o CMakeFiles/manipulator_core.dir/src/arm/a_l1_beta.cc.s
 
 CMakeFiles/manipulator_core.dir/src/arm/a_l1_gamma.cc.o: CMakeFiles/manipulator_core.dir/flags.make
 CMakeFiles/manipulator_core.dir/src/arm/a_l1_gamma.cc.o: ../../src/arm/a_l1_gamma.cc
 CMakeFiles/manipulator_core.dir/src/arm/a_l1_gamma.cc.o: CMakeFiles/manipulator_core.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/mnt/emmc/cat_home/arm-platform/build/manipulator/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/manipulator_core.dir/src/arm/a_l1_gamma.cc.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/manipulator_core.dir/src/arm/a_l1_gamma.cc.o -MF CMakeFiles/manipulator_core.dir/src/arm/a_l1_gamma.cc.o.d -o CMakeFiles/manipulator_core.dir/src/arm/a_l1_gamma.cc.o -c /mnt/emmc/cat_home/arm-platform/src/arm/a_l1_gamma.cc
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/crz/arm-platform/build/manipulator/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/manipulator_core.dir/src/arm/a_l1_gamma.cc.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/manipulator_core.dir/src/arm/a_l1_gamma.cc.o -MF CMakeFiles/manipulator_core.dir/src/arm/a_l1_gamma.cc.o.d -o CMakeFiles/manipulator_core.dir/src/arm/a_l1_gamma.cc.o -c /home/crz/arm-platform/src/arm/a_l1_gamma.cc
 
 CMakeFiles/manipulator_core.dir/src/arm/a_l1_gamma.cc.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/manipulator_core.dir/src/arm/a_l1_gamma.cc.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /mnt/emmc/cat_home/arm-platform/src/arm/a_l1_gamma.cc > CMakeFiles/manipulator_core.dir/src/arm/a_l1_gamma.cc.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/crz/arm-platform/src/arm/a_l1_gamma.cc > CMakeFiles/manipulator_core.dir/src/arm/a_l1_gamma.cc.i
 
 CMakeFiles/manipulator_core.dir/src/arm/a_l1_gamma.cc.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/manipulator_core.dir/src/arm/a_l1_gamma.cc.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /mnt/emmc/cat_home/arm-platform/src/arm/a_l1_gamma.cc -o CMakeFiles/manipulator_core.dir/src/arm/a_l1_gamma.cc.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/crz/arm-platform/src/arm/a_l1_gamma.cc -o CMakeFiles/manipulator_core.dir/src/arm/a_l1_gamma.cc.s
 
 CMakeFiles/manipulator_core.dir/src/arm/arm_factory.cc.o: CMakeFiles/manipulator_core.dir/flags.make
 CMakeFiles/manipulator_core.dir/src/arm/arm_factory.cc.o: ../../src/arm/arm_factory.cc
 CMakeFiles/manipulator_core.dir/src/arm/arm_factory.cc.o: CMakeFiles/manipulator_core.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/mnt/emmc/cat_home/arm-platform/build/manipulator/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/manipulator_core.dir/src/arm/arm_factory.cc.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/manipulator_core.dir/src/arm/arm_factory.cc.o -MF CMakeFiles/manipulator_core.dir/src/arm/arm_factory.cc.o.d -o CMakeFiles/manipulator_core.dir/src/arm/arm_factory.cc.o -c /mnt/emmc/cat_home/arm-platform/src/arm/arm_factory.cc
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/crz/arm-platform/build/manipulator/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/manipulator_core.dir/src/arm/arm_factory.cc.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/manipulator_core.dir/src/arm/arm_factory.cc.o -MF CMakeFiles/manipulator_core.dir/src/arm/arm_factory.cc.o.d -o CMakeFiles/manipulator_core.dir/src/arm/arm_factory.cc.o -c /home/crz/arm-platform/src/arm/arm_factory.cc
 
 CMakeFiles/manipulator_core.dir/src/arm/arm_factory.cc.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/manipulator_core.dir/src/arm/arm_factory.cc.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /mnt/emmc/cat_home/arm-platform/src/arm/arm_factory.cc > CMakeFiles/manipulator_core.dir/src/arm/arm_factory.cc.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/crz/arm-platform/src/arm/arm_factory.cc > CMakeFiles/manipulator_core.dir/src/arm/arm_factory.cc.i
 
 CMakeFiles/manipulator_core.dir/src/arm/arm_factory.cc.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/manipulator_core.dir/src/arm/arm_factory.cc.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /mnt/emmc/cat_home/arm-platform/src/arm/arm_factory.cc -o CMakeFiles/manipulator_core.dir/src/arm/arm_factory.cc.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/crz/arm-platform/src/arm/arm_factory.cc -o CMakeFiles/manipulator_core.dir/src/arm/arm_factory.cc.s
 
 CMakeFiles/manipulator_core.dir/src/bus/abs_bus.cc.o: CMakeFiles/manipulator_core.dir/flags.make
 CMakeFiles/manipulator_core.dir/src/bus/abs_bus.cc.o: ../../src/bus/abs_bus.cc
 CMakeFiles/manipulator_core.dir/src/bus/abs_bus.cc.o: CMakeFiles/manipulator_core.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/mnt/emmc/cat_home/arm-platform/build/manipulator/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/manipulator_core.dir/src/bus/abs_bus.cc.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/manipulator_core.dir/src/bus/abs_bus.cc.o -MF CMakeFiles/manipulator_core.dir/src/bus/abs_bus.cc.o.d -o CMakeFiles/manipulator_core.dir/src/bus/abs_bus.cc.o -c /mnt/emmc/cat_home/arm-platform/src/bus/abs_bus.cc
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/crz/arm-platform/build/manipulator/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/manipulator_core.dir/src/bus/abs_bus.cc.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/manipulator_core.dir/src/bus/abs_bus.cc.o -MF CMakeFiles/manipulator_core.dir/src/bus/abs_bus.cc.o.d -o CMakeFiles/manipulator_core.dir/src/bus/abs_bus.cc.o -c /home/crz/arm-platform/src/bus/abs_bus.cc
 
 CMakeFiles/manipulator_core.dir/src/bus/abs_bus.cc.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/manipulator_core.dir/src/bus/abs_bus.cc.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /mnt/emmc/cat_home/arm-platform/src/bus/abs_bus.cc > CMakeFiles/manipulator_core.dir/src/bus/abs_bus.cc.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/crz/arm-platform/src/bus/abs_bus.cc > CMakeFiles/manipulator_core.dir/src/bus/abs_bus.cc.i
 
 CMakeFiles/manipulator_core.dir/src/bus/abs_bus.cc.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/manipulator_core.dir/src/bus/abs_bus.cc.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /mnt/emmc/cat_home/arm-platform/src/bus/abs_bus.cc -o CMakeFiles/manipulator_core.dir/src/bus/abs_bus.cc.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/crz/arm-platform/src/bus/abs_bus.cc -o CMakeFiles/manipulator_core.dir/src/bus/abs_bus.cc.s
 
 CMakeFiles/manipulator_core.dir/src/bus/serial_bus.cc.o: CMakeFiles/manipulator_core.dir/flags.make
 CMakeFiles/manipulator_core.dir/src/bus/serial_bus.cc.o: ../../src/bus/serial_bus.cc
 CMakeFiles/manipulator_core.dir/src/bus/serial_bus.cc.o: CMakeFiles/manipulator_core.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/mnt/emmc/cat_home/arm-platform/build/manipulator/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/manipulator_core.dir/src/bus/serial_bus.cc.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/manipulator_core.dir/src/bus/serial_bus.cc.o -MF CMakeFiles/manipulator_core.dir/src/bus/serial_bus.cc.o.d -o CMakeFiles/manipulator_core.dir/src/bus/serial_bus.cc.o -c /mnt/emmc/cat_home/arm-platform/src/bus/serial_bus.cc
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/crz/arm-platform/build/manipulator/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/manipulator_core.dir/src/bus/serial_bus.cc.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/manipulator_core.dir/src/bus/serial_bus.cc.o -MF CMakeFiles/manipulator_core.dir/src/bus/serial_bus.cc.o.d -o CMakeFiles/manipulator_core.dir/src/bus/serial_bus.cc.o -c /home/crz/arm-platform/src/bus/serial_bus.cc
 
 CMakeFiles/manipulator_core.dir/src/bus/serial_bus.cc.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/manipulator_core.dir/src/bus/serial_bus.cc.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /mnt/emmc/cat_home/arm-platform/src/bus/serial_bus.cc > CMakeFiles/manipulator_core.dir/src/bus/serial_bus.cc.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/crz/arm-platform/src/bus/serial_bus.cc > CMakeFiles/manipulator_core.dir/src/bus/serial_bus.cc.i
 
 CMakeFiles/manipulator_core.dir/src/bus/serial_bus.cc.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/manipulator_core.dir/src/bus/serial_bus.cc.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /mnt/emmc/cat_home/arm-platform/src/bus/serial_bus.cc -o CMakeFiles/manipulator_core.dir/src/bus/serial_bus.cc.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/crz/arm-platform/src/bus/serial_bus.cc -o CMakeFiles/manipulator_core.dir/src/bus/serial_bus.cc.s
 
 CMakeFiles/manipulator_core.dir/src/motor/dm_motor.cc.o: CMakeFiles/manipulator_core.dir/flags.make
 CMakeFiles/manipulator_core.dir/src/motor/dm_motor.cc.o: ../../src/motor/dm_motor.cc
 CMakeFiles/manipulator_core.dir/src/motor/dm_motor.cc.o: CMakeFiles/manipulator_core.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/mnt/emmc/cat_home/arm-platform/build/manipulator/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object CMakeFiles/manipulator_core.dir/src/motor/dm_motor.cc.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/manipulator_core.dir/src/motor/dm_motor.cc.o -MF CMakeFiles/manipulator_core.dir/src/motor/dm_motor.cc.o.d -o CMakeFiles/manipulator_core.dir/src/motor/dm_motor.cc.o -c /mnt/emmc/cat_home/arm-platform/src/motor/dm_motor.cc
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/crz/arm-platform/build/manipulator/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object CMakeFiles/manipulator_core.dir/src/motor/dm_motor.cc.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/manipulator_core.dir/src/motor/dm_motor.cc.o -MF CMakeFiles/manipulator_core.dir/src/motor/dm_motor.cc.o.d -o CMakeFiles/manipulator_core.dir/src/motor/dm_motor.cc.o -c /home/crz/arm-platform/src/motor/dm_motor.cc
 
 CMakeFiles/manipulator_core.dir/src/motor/dm_motor.cc.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/manipulator_core.dir/src/motor/dm_motor.cc.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /mnt/emmc/cat_home/arm-platform/src/motor/dm_motor.cc > CMakeFiles/manipulator_core.dir/src/motor/dm_motor.cc.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/crz/arm-platform/src/motor/dm_motor.cc > CMakeFiles/manipulator_core.dir/src/motor/dm_motor.cc.i
 
 CMakeFiles/manipulator_core.dir/src/motor/dm_motor.cc.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/manipulator_core.dir/src/motor/dm_motor.cc.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /mnt/emmc/cat_home/arm-platform/src/motor/dm_motor.cc -o CMakeFiles/manipulator_core.dir/src/motor/dm_motor.cc.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/crz/arm-platform/src/motor/dm_motor.cc -o CMakeFiles/manipulator_core.dir/src/motor/dm_motor.cc.s
 
 CMakeFiles/manipulator_core.dir/src/protocol/abs_protocol.cc.o: CMakeFiles/manipulator_core.dir/flags.make
 CMakeFiles/manipulator_core.dir/src/protocol/abs_protocol.cc.o: ../../src/protocol/abs_protocol.cc
 CMakeFiles/manipulator_core.dir/src/protocol/abs_protocol.cc.o: CMakeFiles/manipulator_core.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/mnt/emmc/cat_home/arm-platform/build/manipulator/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Building CXX object CMakeFiles/manipulator_core.dir/src/protocol/abs_protocol.cc.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/manipulator_core.dir/src/protocol/abs_protocol.cc.o -MF CMakeFiles/manipulator_core.dir/src/protocol/abs_protocol.cc.o.d -o CMakeFiles/manipulator_core.dir/src/protocol/abs_protocol.cc.o -c /mnt/emmc/cat_home/arm-platform/src/protocol/abs_protocol.cc
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/crz/arm-platform/build/manipulator/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Building CXX object CMakeFiles/manipulator_core.dir/src/protocol/abs_protocol.cc.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/manipulator_core.dir/src/protocol/abs_protocol.cc.o -MF CMakeFiles/manipulator_core.dir/src/protocol/abs_protocol.cc.o.d -o CMakeFiles/manipulator_core.dir/src/protocol/abs_protocol.cc.o -c /home/crz/arm-platform/src/protocol/abs_protocol.cc
 
 CMakeFiles/manipulator_core.dir/src/protocol/abs_protocol.cc.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/manipulator_core.dir/src/protocol/abs_protocol.cc.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /mnt/emmc/cat_home/arm-platform/src/protocol/abs_protocol.cc > CMakeFiles/manipulator_core.dir/src/protocol/abs_protocol.cc.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/crz/arm-platform/src/protocol/abs_protocol.cc > CMakeFiles/manipulator_core.dir/src/protocol/abs_protocol.cc.i
 
 CMakeFiles/manipulator_core.dir/src/protocol/abs_protocol.cc.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/manipulator_core.dir/src/protocol/abs_protocol.cc.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /mnt/emmc/cat_home/arm-platform/src/protocol/abs_protocol.cc -o CMakeFiles/manipulator_core.dir/src/protocol/abs_protocol.cc.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/crz/arm-platform/src/protocol/abs_protocol.cc -o CMakeFiles/manipulator_core.dir/src/protocol/abs_protocol.cc.s
 
 CMakeFiles/manipulator_core.dir/src/protocol/protocol_factory.cc.o: CMakeFiles/manipulator_core.dir/flags.make
 CMakeFiles/manipulator_core.dir/src/protocol/protocol_factory.cc.o: ../../src/protocol/protocol_factory.cc
 CMakeFiles/manipulator_core.dir/src/protocol/protocol_factory.cc.o: CMakeFiles/manipulator_core.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/mnt/emmc/cat_home/arm-platform/build/manipulator/CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Building CXX object CMakeFiles/manipulator_core.dir/src/protocol/protocol_factory.cc.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/manipulator_core.dir/src/protocol/protocol_factory.cc.o -MF CMakeFiles/manipulator_core.dir/src/protocol/protocol_factory.cc.o.d -o CMakeFiles/manipulator_core.dir/src/protocol/protocol_factory.cc.o -c /mnt/emmc/cat_home/arm-platform/src/protocol/protocol_factory.cc
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/crz/arm-platform/build/manipulator/CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Building CXX object CMakeFiles/manipulator_core.dir/src/protocol/protocol_factory.cc.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/manipulator_core.dir/src/protocol/protocol_factory.cc.o -MF CMakeFiles/manipulator_core.dir/src/protocol/protocol_factory.cc.o.d -o CMakeFiles/manipulator_core.dir/src/protocol/protocol_factory.cc.o -c /home/crz/arm-platform/src/protocol/protocol_factory.cc
 
 CMakeFiles/manipulator_core.dir/src/protocol/protocol_factory.cc.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/manipulator_core.dir/src/protocol/protocol_factory.cc.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /mnt/emmc/cat_home/arm-platform/src/protocol/protocol_factory.cc > CMakeFiles/manipulator_core.dir/src/protocol/protocol_factory.cc.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/crz/arm-platform/src/protocol/protocol_factory.cc > CMakeFiles/manipulator_core.dir/src/protocol/protocol_factory.cc.i
 
 CMakeFiles/manipulator_core.dir/src/protocol/protocol_factory.cc.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/manipulator_core.dir/src/protocol/protocol_factory.cc.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /mnt/emmc/cat_home/arm-platform/src/protocol/protocol_factory.cc -o CMakeFiles/manipulator_core.dir/src/protocol/protocol_factory.cc.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/crz/arm-platform/src/protocol/protocol_factory.cc -o CMakeFiles/manipulator_core.dir/src/protocol/protocol_factory.cc.s
 
 CMakeFiles/manipulator_core.dir/src/protocol/protocol_v1.cc.o: CMakeFiles/manipulator_core.dir/flags.make
 CMakeFiles/manipulator_core.dir/src/protocol/protocol_v1.cc.o: ../../src/protocol/protocol_v1.cc
 CMakeFiles/manipulator_core.dir/src/protocol/protocol_v1.cc.o: CMakeFiles/manipulator_core.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/mnt/emmc/cat_home/arm-platform/build/manipulator/CMakeFiles --progress-num=$(CMAKE_PROGRESS_10) "Building CXX object CMakeFiles/manipulator_core.dir/src/protocol/protocol_v1.cc.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/manipulator_core.dir/src/protocol/protocol_v1.cc.o -MF CMakeFiles/manipulator_core.dir/src/protocol/protocol_v1.cc.o.d -o CMakeFiles/manipulator_core.dir/src/protocol/protocol_v1.cc.o -c /mnt/emmc/cat_home/arm-platform/src/protocol/protocol_v1.cc
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/crz/arm-platform/build/manipulator/CMakeFiles --progress-num=$(CMAKE_PROGRESS_10) "Building CXX object CMakeFiles/manipulator_core.dir/src/protocol/protocol_v1.cc.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/manipulator_core.dir/src/protocol/protocol_v1.cc.o -MF CMakeFiles/manipulator_core.dir/src/protocol/protocol_v1.cc.o.d -o CMakeFiles/manipulator_core.dir/src/protocol/protocol_v1.cc.o -c /home/crz/arm-platform/src/protocol/protocol_v1.cc
 
 CMakeFiles/manipulator_core.dir/src/protocol/protocol_v1.cc.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/manipulator_core.dir/src/protocol/protocol_v1.cc.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /mnt/emmc/cat_home/arm-platform/src/protocol/protocol_v1.cc > CMakeFiles/manipulator_core.dir/src/protocol/protocol_v1.cc.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/crz/arm-platform/src/protocol/protocol_v1.cc > CMakeFiles/manipulator_core.dir/src/protocol/protocol_v1.cc.i
 
 CMakeFiles/manipulator_core.dir/src/protocol/protocol_v1.cc.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/manipulator_core.dir/src/protocol/protocol_v1.cc.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /mnt/emmc/cat_home/arm-platform/src/protocol/protocol_v1.cc -o CMakeFiles/manipulator_core.dir/src/protocol/protocol_v1.cc.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/crz/arm-platform/src/protocol/protocol_v1.cc -o CMakeFiles/manipulator_core.dir/src/protocol/protocol_v1.cc.s
 
 # Object files for target manipulator_core
 manipulator_core_OBJECTS = \
@@ -237,7 +237,7 @@ libmanipulator_core.a: CMakeFiles/manipulator_core.dir/src/protocol/protocol_fac
 libmanipulator_core.a: CMakeFiles/manipulator_core.dir/src/protocol/protocol_v1.cc.o
 libmanipulator_core.a: CMakeFiles/manipulator_core.dir/build.make
 libmanipulator_core.a: CMakeFiles/manipulator_core.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/mnt/emmc/cat_home/arm-platform/build/manipulator/CMakeFiles --progress-num=$(CMAKE_PROGRESS_11) "Linking CXX static library libmanipulator_core.a"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/crz/arm-platform/build/manipulator/CMakeFiles --progress-num=$(CMAKE_PROGRESS_11) "Linking CXX static library libmanipulator_core.a"
 	$(CMAKE_COMMAND) -P CMakeFiles/manipulator_core.dir/cmake_clean_target.cmake
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/manipulator_core.dir/link.txt --verbose=$(VERBOSE)
 
@@ -250,6 +250,6 @@ CMakeFiles/manipulator_core.dir/clean:
 .PHONY : CMakeFiles/manipulator_core.dir/clean
 
 CMakeFiles/manipulator_core.dir/depend:
-	cd /mnt/emmc/cat_home/arm-platform/build/manipulator && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /mnt/emmc/cat_home/arm-platform /mnt/emmc/cat_home/arm-platform /mnt/emmc/cat_home/arm-platform/build/manipulator /mnt/emmc/cat_home/arm-platform/build/manipulator /mnt/emmc/cat_home/arm-platform/build/manipulator/CMakeFiles/manipulator_core.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/crz/arm-platform/build/manipulator && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/crz/arm-platform /home/crz/arm-platform /home/crz/arm-platform/build/manipulator /home/crz/arm-platform/build/manipulator /home/crz/arm-platform/build/manipulator/CMakeFiles/manipulator_core.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/manipulator_core.dir/depend
 

@@ -155,6 +155,10 @@ void MasterArmNode::ComputeAndPublishCompensation() {
     cmd_.current[i] = tau_comp[i];
     tau_comp_msg.data.push_back(tau_comp[i]);
   }
+
+  cmd_.current[0] *= 1.4;
+  cmd_.current[1] *= 1.4;
+  cmd_.current[3] *= 0.0;
   arm_->SetMotorCommand(cmd_);
 }
 

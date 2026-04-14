@@ -79,7 +79,7 @@ void DMMotor::UpdateCommand(const dummy_interface::msg::MotorControl& cmd) {
     pos_set_send = -pos_set_;
   }
   
-  RCLCPP_INFO(logger, "pos_set_: %f, cmd.position[id_]: %f, position_: %f", pos_set_, cmd.position[id_], position_);
+  //RCLCPP_INFO(logger, "pos_set_: %f, cmd.position[id_]: %f, position_: %f", pos_set_, cmd.position[id_], position_);
   protocol_->SetPosition(id_, pos_set_send);
   protocol_->SetVelocity(id_, vel_cmd);
 }

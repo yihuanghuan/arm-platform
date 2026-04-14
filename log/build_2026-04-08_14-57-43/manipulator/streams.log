@@ -1,9 +1,0 @@
-[0.022s] Invoking command in '/mnt/emmc/cat_home/arm-platform/build/manipulator': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/humble /usr/bin/cmake --build /mnt/emmc/cat_home/arm-platform/build/manipulator -- -j8 -l8
-[0.202s] [ 23%] Built target gravity_compensation
-[0.203s] [ 61%] Built target manipulator_core
-[0.226s] [ 66%] [32mBuilding CXX object CMakeFiles/gravity_compensation_pinocchio.dir/src/gravity_compensation_pinocchio.cc.o[0m
-[0.310s] [ 76%] Built target arm_hardware_node
-[6.511s] gmake[2]: *** [CMakeFiles/gravity_compensation_pinocchio.dir/build.make:76: CMakeFiles/gravity_compensation_pinocchio.dir/src/gravity_compensation_pinocchio.cc.o] 中断
-[6.511s] gmake[1]: *** [CMakeFiles/Makefile2:199: CMakeFiles/gravity_compensation_pinocchio.dir/all] 中断
-[6.512s] gmake: *** [Makefile:146: all] 中断
-[6.566s] Invoked command in '/mnt/emmc/cat_home/arm-platform/build/manipulator' returned '-2': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/humble /usr/bin/cmake --build /mnt/emmc/cat_home/arm-platform/build/manipulator -- -j8 -l8
