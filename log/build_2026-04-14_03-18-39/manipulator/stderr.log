@@ -1,8 +1,0 @@
-[01m[K/home/crz/arm-platform/src/master_arm_node.cc:[m[K In constructor ‘[01m[Kmanipulator::MasterArmNode::MasterArmNode()[m[K’:
-[01m[K/home/crz/arm-platform/src/master_arm_node.cc:72:8:[m[K [01;35m[Kwarning: [m[Kunused variable ‘[01m[Kpublish_joint_state[m[K’ [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-variable-Wunused-variable]8;;[m[K]
-   72 |   bool [01;35m[Kpublish_joint_state[m[K = this->get_parameter("publish_joint_state").as_bool();
-      |        [01;35m[K^~~~~~~~~~~~~~~~~~~[m[K
-[01m[K/home/crz/arm-platform/src/slave_arm_node.cc:[m[K In constructor ‘[01m[Kmanipulator::SlaveArmNode::SlaveArmNode()[m[K’:
-[01m[K/home/crz/arm-platform/src/slave_arm_node.cc:72:8:[m[K [01;35m[Kwarning: [m[Kunused variable ‘[01m[Kpublish_joint_state[m[K’ [[01;35m[K]8;;https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-variable-Wunused-variable]8;;[m[K]
-   72 |   bool [01;35m[Kpublish_joint_state[m[K = this->get_parameter("publish_joint_state").as_bool();
-      |        [01;35m[K^~~~~~~~~~~~~~~~~~~[m[K

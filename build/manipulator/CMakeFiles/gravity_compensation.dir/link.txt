@@ -1,2 +1,0 @@
-/usr/bin/ar qc libgravity_compensation.a CMakeFiles/gravity_compensation.dir/src/gravity_compensation.cc.o
-/usr/bin/ranlib libgravity_compensation.a

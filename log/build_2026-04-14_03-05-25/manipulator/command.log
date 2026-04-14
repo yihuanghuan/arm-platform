@@ -1,6 +1,0 @@
-Invoking command in '/home/crz/arm-platform/build/manipulator': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/humble /usr/bin/cmake /home/crz/arm-platform -DCMAKE_INSTALL_PREFIX=/home/crz/arm-platform/install/manipulator
-Invoked command in '/home/crz/arm-platform/build/manipulator' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/humble /usr/bin/cmake /home/crz/arm-platform -DCMAKE_INSTALL_PREFIX=/home/crz/arm-platform/install/manipulator
-Invoking command in '/home/crz/arm-platform/build/manipulator': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/humble /usr/bin/cmake --build /home/crz/arm-platform/build/manipulator -- -j20 -l20
-Invoked command in '/home/crz/arm-platform/build/manipulator' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/humble /usr/bin/cmake --build /home/crz/arm-platform/build/manipulator -- -j20 -l20
-Invoking command in '/home/crz/arm-platform/build/manipulator': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/humble /usr/bin/cmake --install /home/crz/arm-platform/build/manipulator
-Invoked command in '/home/crz/arm-platform/build/manipulator' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/humble /usr/bin/cmake --install /home/crz/arm-platform/build/manipulator

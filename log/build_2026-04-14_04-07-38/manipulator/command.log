@@ -1,2 +1,0 @@
-Invoking command in '/home/crz/arm-platform/build/manipulator': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/humble /usr/bin/cmake --build /home/crz/arm-platform/build/manipulator -- -j20 -l20
-Invoked command in '/home/crz/arm-platform/build/manipulator' returned '2': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/humble /usr/bin/cmake --build /home/crz/arm-platform/build/manipulator -- -j20 -l20
