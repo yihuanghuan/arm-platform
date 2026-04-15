@@ -22,20 +22,20 @@ find_package(pinocchio REQUIRED)
 # Arm Platform Core Library
 # ==============================
 add_library(manipulator_core
-  src/arm/abs_arm.cc
-  src/arm/a_l1_beta.cc
-  src/arm/a_l1_gamma.cc
-  src/arm/arm_factory.cc
-  src/bus/abs_bus.cc
-  src/bus/serial_bus.cc
-  src/motor/dm_motor.cc
-  src/protocol/abs_protocol.cc
-  src/protocol/protocol_factory.cc
-  src/protocol/protocol_v1.cc
+  src/robotics/arm/abs_arm.cc
+  src/robotics/arm/a_l1_beta.cc
+  src/robotics/arm/a_l1_gamma.cc
+  src/robotics/arm/arm_factory.cc
+  src/robotics/bus/abs_bus.cc
+  src/robotics/bus/serial_bus.cc
+  src/robotics/motor/dm_motor.cc
+  src/robotics/protocol/abs_protocol.cc
+  src/robotics/protocol/protocol_factory.cc
+  src/robotics/protocol/protocol_v1.cc
 )
 
 add_library(gravity_compensation
-  src/gravity_compensation.cc
+  src/robotics/controller/gravity_compensation.cc
 )
 
 target_link_libraries(gravity_compensation
@@ -43,7 +43,7 @@ target_link_libraries(gravity_compensation
 )
 
 add_library(gravity_compensation_pinocchio
-  src/gravity_compensation_pinocchio.cc
+  src/robotics/controller/gravity_compensation_pinocchio.cc
 )
 
 target_link_libraries(gravity_compensation_pinocchio
@@ -92,7 +92,7 @@ ament_target_dependencies(gravity_compensation_pinocchio
 # Robot Arm Node (ROS2 Node)
 # ==============================
 add_executable(arm_hardware_node
-  src/arm_hardware_node.cc
+  src/ros_nodes/arm_hardware_node.cc
 )
 
 target_link_libraries(arm_hardware_node
@@ -100,7 +100,7 @@ target_link_libraries(arm_hardware_node
 )
 
 add_executable(master_arm_node
-  src/master_arm_node.cc
+  src/ros_nodes/master_arm_node.cc
 )
 
 target_link_libraries(master_arm_node
@@ -117,7 +117,7 @@ ament_target_dependencies(master_arm_node
 )
 
 add_executable(slave_arm_node
-  src/slave_arm_node.cc
+  src/ros_nodes/slave_arm_node.cc
 )
 
 target_link_libraries(slave_arm_node
