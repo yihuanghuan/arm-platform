@@ -372,7 +372,7 @@ SlaveArmNode::SlaveArmNode()
 
   this->declare_parameter<double>("target_x", 0.30);
   this->declare_parameter<double>("target_y", 0.30);
-  this->declare_parameter<double>("target_z", 0.20);
+  this->declare_parameter<double>("target_z", 0.30);
 
   this->declare_parameter<double>("target_qx", 0.0);
   this->declare_parameter<double>("target_qy", 0.0);
@@ -593,8 +593,9 @@ void SlaveArmNode::ComputeAndPublishCompensation() {
     cmd_.d[i] = 1.0;
     tau_comp_msg.data.push_back(tau_comp[i]);
   }
-  cmd_.velocity[4] = 1.5;
-  cmd_.d[4] = 1.3;
+  cmd_.p[4] = 30;
+  cmd_.velocity[4] = 3.0;
+  cmd_.d[4] = 2.0;
 
   arm_->SetMotorCommand(cmd_);
 }

@@ -158,7 +158,7 @@ void MasterArmNode::ComputeAndPublishCompensation() {
 
   cmd_.current[0] *= 1.4;
   cmd_.current[1] *= 1.4;
-  cmd_.current[3] *= 0.0;
+  cmd_.current[3] *= 1.0;
   arm_->SetMotorCommand(cmd_);
 }
 
