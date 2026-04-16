@@ -588,11 +588,13 @@ void SlaveArmNode::ComputeAndPublishCompensation() {
   for (int i = 0; i < 7; ++i) {
     cmd_.current[i] = tau_comp[i];
     cmd_.position[i] = g_last_ik_solution[i];
-    cmd_.p[i] = 10;
-    cmd_.velocity[i] = 0.5;
-    cmd_.d[i] = 0.5;
+    cmd_.p[i] = 25;
+    cmd_.velocity[i] = 0.8;
+    cmd_.d[i] = 1.0;
     tau_comp_msg.data.push_back(tau_comp[i]);
   }
+  cmd_.velocity[4] = 1.5;
+  cmd_.d[4] = 1.3;
 
   arm_->SetMotorCommand(cmd_);
 }
