@@ -34,21 +34,40 @@ add_library(manipulator_core
   src/robotics/protocol/protocol_v1.cc
 )
 
-add_library(gravity_compensation
-  src/robotics/controller/gravity_compensation.cc
+add_library(controller_lib
+  src/controller/smooth_position_controller.cc
+  src/controller/gravity_controller.cc
 )
 
-target_link_libraries(gravity_compensation
+add_library(planner_lib
+  src/planning/abs_motion_planner.cc
+  src/planning/reset_motion_planner.cc
+)
+
+ament_target_dependencies(planner_lib
+  rclcpp
+  std_msgs
+  sensor_msgs
+  dummy_interface
+)
+
+ament_target_dependencies(controller_lib
+  rclcpp
+  geometry_msgs
+  dummy_interface
+)
+
+target_link_libraries(planner_lib
   Eigen3::Eigen
 )
 
-add_library(gravity_compensation_pinocchio
-  src/robotics/controller/gravity_compensation_pinocchio.cc
-)
-
-target_link_libraries(gravity_compensation_pinocchio
+target_link_libraries(controller_lib
   Eigen3::Eigen
   pinocchio::pinocchio
+)
+
+target_link_libraries(manipulator_core
+  Eigen3::Eigen
 )
 
 target_include_directories(manipulator_core PUBLIC
@@ -56,36 +75,14 @@ target_include_directories(manipulator_core PUBLIC
   $<INSTALL_INTERFACE:include>
 )
 
-target_include_directories(gravity_compensation PUBLIC
+target_include_directories(planner_lib PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>
 )
 
-target_include_directories(gravity_compensation_pinocchio PUBLIC
+target_include_directories(controller_lib PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>
-)
-
-ament_target_dependencies(manipulator_core
-  rclcpp
-  std_msgs
-  dummy_interface
-  serial
-  sensor_msgs
-)
-
-ament_target_dependencies(gravity_compensation
-  rclcpp
-  std_msgs
-  geometry_msgs
-  Eigen3
-)
-
-ament_target_dependencies(gravity_compensation_pinocchio
-  rclcpp
-  std_msgs
-  geometry_msgs
-  Eigen3
 )
 
 # ==============================
@@ -105,44 +102,52 @@ add_executable(master_arm_node
 
 target_link_libraries(master_arm_node
   manipulator_core
-  gravity_compensation_pinocchio
+  controller_lib
+  planner_lib
+)
+
+ament_target_dependencies(manipulator_core
+  rclcpp
+  std_msgs
+  serial
+  sensor_msgs
+  dummy_interface
 )
 
 ament_target_dependencies(master_arm_node
   rclcpp
   sensor_msgs
   std_msgs
-  dummy_interface
   geometry_msgs
-)
-
-add_executable(slave_arm_node
-  src/ros_nodes/slave_arm_node.cc
-)
-
-target_link_libraries(slave_arm_node
-  manipulator_core
-  gravity_compensation_pinocchio
-)
-
-ament_target_dependencies(slave_arm_node
-  rclcpp
-  sensor_msgs
-  std_msgs
   dummy_interface
 )
+
+# add_executable(slave_arm_node
+#   src/ros_nodes/slave_arm_node.cc
+#   controller_lib
+#   planner_lib
+# )
+
+# target_link_libraries(slave_arm_node
+#   manipulator_core
+#   gravity_controller
+# )
+
+# ament_target_dependencies(slave_arm_node
+#   rclcpp
+#   sensor_msgs
+#   std_msgs
+#   dummy_interface
+# )
 
 # ==============================
 # Install
 # ==============================
 install(TARGETS
   manipulator_core
-  gravity_compensation
-  gravity_compensation_pinocchio
   arm_hardware_node
   master_arm_node
-  slave_arm_node
-  # moveit_bridge_node
+  # slave_arm_node
   EXPORT export_${PROJECT_NAME}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib

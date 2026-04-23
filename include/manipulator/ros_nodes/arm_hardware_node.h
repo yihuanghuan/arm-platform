@@ -26,7 +26,7 @@ class ArmHardwareNode : public rclcpp::Node {
   rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr sub_joint_ctrl_;
   arm::AbsArm::UniPtr arm_;
 
-  arm::AbsArm::JointState arm_current_state_;
+  arm::JointState arm_current_state_;
 };
 
 } // namespace manipulator

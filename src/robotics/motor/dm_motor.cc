@@ -21,7 +21,6 @@ void DMMotor::UpdateState() {
     torque_ = -torque_;
   }
   
-  if (not is_received_) pos_set_ = position_;
   is_received_ = true;
 }
 
@@ -43,6 +42,7 @@ void DMMotor::SetState(const sensor_msgs::msg::JointState& state) {
   cmd.current.push_back(0.1);
   UpdateCommand(cmd);
 }
+
 void DMMotor::UpdateCommand(const dummy_interface::msg::MotorControl& cmd) {
   if (not is_received_) return;
 
@@ -53,40 +53,29 @@ void DMMotor::UpdateCommand(const dummy_interface::msg::MotorControl& cmd) {
   if (coord_system_ == CoordinateSystem::LeftHand) {
     current = -current;
   }
-  protocol_->SetKp(id_, cmd.p[cmd_ind]);
-  protocol_->SetKd(id_, cmd.d[cmd_ind]);
-  protocol_->SetCurrent(id_, current);
+  protocol_->SetKp(cmd_ind, cmd.p[cmd_ind]);
+  protocol_->SetKd(cmd_ind, cmd.d[cmd_ind]);
+  protocol_->SetCurrent(cmd_ind, current);
 
   if(cmd.position.empty()) return;
 
-  
   double pos_err = cmd.position[cmd_ind] - position_;
-  if (abs(pos_err) < 0.01) {
-    pos_set_ = position_;
-    return;
-  }
+  // if (abs(pos_err) < 0.01) {
+  //   return;
+  // }
 
-  double delta = pos_err * DT_;
-  if (std::abs(delta) < 0.01) {
-    delta = (delta >= 0) ? 0.01 : -0.01;
-  }
-  pos_set_ += delta;
-  pos_set_ = std::clamp(pos_set_, std::min(cmd.position[cmd_ind], position_), std::max(cmd.position[cmd_ind], position_));
+  pos_set_ = cmd.position[cmd_ind];
   
-  if (id_ == 6) pos_set_ = cmd.position[id_];
-  
-  double vel_cmd = cmd.velocity[id_];
+  double vel_cmd = cmd.velocity[cmd_ind];
+  double pos_set_send = pos_set_;
+
   if (coord_system_ == CoordinateSystem::LeftHand) {
     vel_cmd = -vel_cmd;
-  }
-  double pos_set_send = pos_set_;
-  if (coord_system_ == CoordinateSystem::LeftHand) {
     pos_set_send = -pos_set_;
   }
   
-  // RCLCPP_INFO(logger, "pos_set_: %f, cmd.position[id_]: %f, position_: %f", pos_set_, cmd.position[id_], position_);
-  protocol_->SetPosition(id_, pos_set_send);
-  protocol_->SetVelocity(id_, vel_cmd);
+  protocol_->SetPosition(cmd_ind, pos_set_send);
+  protocol_->SetVelocity(cmd_ind, vel_cmd);
 }
 
 double DMMotor::GetPosition() const {

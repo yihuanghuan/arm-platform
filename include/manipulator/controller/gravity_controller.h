@@ -6,31 +6,29 @@
 #include <geometry_msgs/msg/point.hpp>
 #include <pinocchio/multibody/model.hpp>
 #include <pinocchio/multibody/data.hpp>
+#include <manipulator/controller/i_arm_controller.h>
 
-namespace manipulator {
+namespace manipulator::controller {
 
-class GravityCompensationPinocchio {
+class GravityController : public IArmController {
  public:
-  GravityCompensationPinocchio();
-  ~GravityCompensationPinocchio() = default;
+  GravityController();
+  ~GravityController() = default;
+
+  JointCommand Compute(const JointStates& joint_states,
+      const JointSetPoint& joint_set_point,
+      double dt) override;
 
   bool LoadModel(const std::string& urdf_path);
-
   void SetParams(double MAX_TORQUE, double GRAVITY, double FORCE_FEEDBACK_THRESHOLD, double FORCE_FEEDBACK_GAIN);
   void SetCollisionCoeffs(const std::array<double, 7>& coeffs);
-
   void SetUavPose(const geometry_msgs::msg::Point& pose);
-
   void SetRotationAngle(double roll, double pitch, double yaw);
-
-  std::array<double, 7> Compute(const std::array<double, 7>& joint_positions);
-
+ private:
+  void UpdateGravityVector();
   std::array<double, 7> collision_detection(const std::array<double, 7>& tau_comp,
                                            const std::array<double, 7>& joint_currents_,
                                            const std::array<double, 7>& compensation_torques);
-
- private:
-  void UpdateGravityVector();
 
   pinocchio::Model model_;
   pinocchio::Data data_;

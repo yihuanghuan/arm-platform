@@ -1,6 +1,11 @@
 #include <manipulator/robotics/arm/abs_arm.h>
 #include <stdexcept>
 #include <algorithm>
+#include <thread>
+#include <cmath>
+#include <rclcpp/rclcpp.hpp>
+
+auto mylogger = rclcpp::get_logger("AbsArm");
 
 namespace manipulator::arm {
 AbsArm::AbsArm() {
@@ -24,6 +29,88 @@ bool AbsArm::SetMotorCommand(const dummy_interface::msg::MotorControl& cmd) {
   }
   bus_->Send(); 
   return true;
+}
+
+std::pair<double, double> AbsArm::GetSCurvePosition(double start_pos, double end_pos, 
+                                                      double t, double duration) const {
+  if (t <= 0) {
+    return {start_pos, 0.0};
+  }
+  if (t >= duration) {
+    return {end_pos, 0.0};
+  }
+  
+  double tau = t / duration;
+  double tau2 = tau * tau;
+  double tau3 = tau2 * tau;
+  double tau4 = tau3 * tau;
+  double tau5 = tau4 * tau;
+  
+  double pos = start_pos + (end_pos - start_pos) * (10 * tau3 - 15 * tau4 + 6 * tau5);
+  double vel = (end_pos - start_pos) / duration * (30 * tau2 - 60 * tau3 + 30 * tau4);
+  
+  return {pos, vel};
+}
+
+bool AbsArm::WaitUntilCommandReached(const dummy_interface::msg::MotorControl& cmd, 
+                                     double timeout_sec, double tolerance) {
+  UpdateJointStates();
+  std::vector<double> start_positions = joint_states_.position;
+  std::vector<double> end_positions = cmd.position;
+  
+  double scurve_duration = 0.3;
+  double dt = 0.001;
+  int num_points = static_cast<int>(scurve_duration / dt);
+  
+  std::vector<std::vector<double>> scurve_positions(num_points + 1);
+  std::vector<std::vector<double>> scurve_velocities(num_points + 1);
+  
+  for (int i = 0; i <= num_points; ++i) {
+    double t = i * dt;
+    scurve_positions[i].resize(start_positions.size());
+    scurve_velocities[i].resize(start_positions.size());
+    
+    for (size_t j = 0; j < start_positions.size(); ++j) {
+      auto [pos, vel] = GetSCurvePosition(start_positions[j], end_positions[j], t, scurve_duration);
+      scurve_positions[i][j] = pos;
+      scurve_velocities[i][j] = vel;
+    }
+  }
+  
+  auto start_time = std::chrono::steady_clock::now();
+  auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(
+        std::chrono::steady_clock::now() - start_time).count();
+  
+  while (elapsed < timeout_sec) {
+    elapsed = std::chrono::duration_cast<std::chrono::seconds>(
+        std::chrono::steady_clock::now() - start_time).count();
+    
+    double t_elapsed = elapsed;
+    if (t_elapsed > scurve_duration) t_elapsed = scurve_duration;
+    
+    int idx = static_cast<int>(t_elapsed / dt);
+    if (idx > num_points) idx = num_points;
+    
+    dummy_interface::msg::MotorControl scurve_cmd = cmd;
+    scurve_cmd.position = scurve_positions[idx];
+    scurve_cmd.velocity = scurve_velocities[idx];
+    
+    bool all_reached = true;
+    UpdateJointStates();
+    // RCLCPP_INFO(mylogger, "joint_states_.velocity: %f %f %f %f %f %f", joint_states_.velocity[0], joint_states_.velocity[1], joint_states_.velocity[2], joint_states_.velocity[3], joint_states_.velocity[4], joint_states_.velocity[5]);
+    for (size_t i = 0; i < joint_states_.position.size(); ++i) {
+      double pos_err = std::abs(joint_states_.position[i] - end_positions[i]);
+      if (pos_err > 0.2 or std::abs(joint_states_.velocity[i]) > 0.1) {
+        all_reached = false;
+        break;
+      }
+    } 
+    if (all_reached) return true;
+    SetMotorCommand(scurve_cmd);
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+  }
+  
+  return false;
 }
 
 bool AbsArm::SetJointStates(const sensor_msgs::msg::JointState& states) {
@@ -80,7 +167,7 @@ void AbsArm::UpdateJointStates() {
     joint_states_.temperature[i] = motor->GetTemperature();
   }
 }
-AbsArm::JointState& AbsArm::GetJointStates() {
+JointState& AbsArm::GetJointStates() {
   UpdateJointStates();
   return joint_states_;
 }

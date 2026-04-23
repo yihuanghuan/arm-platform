@@ -1,12 +1,12 @@
-#include <manipulator/robotics/controller/gravity_compensation_pinocchio.h>
+#include <manipulator/controller/gravity_controller.h>
 #include <pinocchio/parsers/urdf.hpp>
 #include <pinocchio/algorithm/rnea.hpp>
 #include <pinocchio/spatial/explog.hpp>
 #include <iostream>
 
-namespace manipulator {
+namespace manipulator::controller {
 
-GravityCompensationPinocchio::GravityCompensationPinocchio()
+GravityController::GravityController()
     : model_loaded_(false) {
   params_.MAX_TORQUE = 3.0;
   params_.GRAVITY = 9.81;
@@ -21,7 +21,7 @@ GravityCompensationPinocchio::GravityCompensationPinocchio()
   gravity_vector_ = Eigen::Vector3d(0, 0, -params_.GRAVITY);
 }
 
-bool GravityCompensationPinocchio::LoadModel(const std::string& urdf_path) {
+bool GravityController::LoadModel(const std::string& urdf_path) {
   try {
     pinocchio::urdf::buildModel(urdf_path, model_);
     data_ = pinocchio::Data(model_);
@@ -35,26 +35,26 @@ bool GravityCompensationPinocchio::LoadModel(const std::string& urdf_path) {
   }
 }
 
-void GravityCompensationPinocchio::SetParams(double MAX_TORQUE, double GRAVITY,
+void GravityController::SetParams(double MAX_TORQUE, double GRAVITY,
                                            double FORCE_FEEDBACK_THRESHOLD, double FORCE_FEEDBACK_GAIN) {
   params_.MAX_TORQUE = MAX_TORQUE;
   params_.GRAVITY = GRAVITY;
   params_.FORCE_FEEDBACK_THRESHOLD = FORCE_FEEDBACK_THRESHOLD;
   params_.FORCE_FEEDBACK_GAIN = FORCE_FEEDBACK_GAIN;
-  params_.collision_coeffs = {1.2, 1.0, 1.0, 0.3, 0.3, 0.3, 0.3};
+  params_.collision_coeffs = {1.0, 1.0, 1.0, 0.3, 0.3, 0.3, 0.3};
   UpdateGravityVector();
 }
 
-void GravityCompensationPinocchio::SetCollisionCoeffs(const std::array<double, 7>& coeffs) {
+void GravityController::SetCollisionCoeffs(const std::array<double, 7>& coeffs) {
   params_.collision_coeffs = coeffs;
 }
 
-void GravityCompensationPinocchio::SetUavPose(const geometry_msgs::msg::Point& pose) {
+void GravityController::SetUavPose(const geometry_msgs::msg::Point& pose) {
   uav_pose_ = pose;
   UpdateGravityVector();
 }
 
-void GravityCompensationPinocchio::SetRotationAngle(double roll, double pitch, double yaw) {
+void GravityController::SetRotationAngle(double roll, double pitch, double yaw) {
   Eigen::AngleAxisd roll_angle(roll, Eigen::Vector3d::UnitX());
   Eigen::AngleAxisd pitch_angle(pitch, Eigen::Vector3d::UnitY());
   Eigen::AngleAxisd yaw_angle(yaw, Eigen::Vector3d::UnitZ());
@@ -63,7 +63,7 @@ void GravityCompensationPinocchio::SetRotationAngle(double roll, double pitch, d
   UpdateGravityVector();
 }
 
-void GravityCompensationPinocchio::UpdateGravityVector() {
+void GravityController::UpdateGravityVector() {
   Eigen::Vector3d gravity_world(0, 0, -params_.GRAVITY);
   gravity_vector_ = rotation_matrix_ * gravity_world;
   
@@ -72,18 +72,25 @@ void GravityCompensationPinocchio::UpdateGravityVector() {
   }
 }
 
-std::array<double, 7> GravityCompensationPinocchio::Compute(const std::array<double, 7>& joint_positions) {
-  std::array<double, 7> tau_comp = {0, 0, 0, 0, 0, 0, 0};
+JointCommand GravityController::Compute(const JointStates& joint_states,
+    const JointSetPoint& joint_setpoint,
+    double dt) {
 
   if (!model_loaded_) {
-    std::cerr << "Warning: Model not loaded, returning zero torques" << std::endl;
-    return tau_comp;
+    throw std::runtime_error("Model not loaded");
   }
-
+  std::array<double, 7> tau_comp = {0, 0, 0, 0, 0, 0, 0};
+  JointCommand cmd;
+  size_t num_joints = joint_states.position.size();
+  cmd.position.clear();
+  cmd.velocity.clear();
+  cmd.current.resize(num_joints);
+  cmd.p.resize(num_joints);
+  cmd.d.resize(num_joints);
   try {
     Eigen::VectorXd q(model_.nq);
     for (int i = 0; i < std::min(7, static_cast<int>(model_.nq)); ++i) {
-      q(i) = joint_positions[i];
+      q(i) = joint_states.position[i];
     }
 
     pinocchio::computeGeneralizedGravity(model_, data_, q);
@@ -95,18 +102,22 @@ std::array<double, 7> GravityCompensationPinocchio::Compute(const std::array<dou
 
     for (int i = 0; i < 7; ++i) {
       tau_comp[i] = tau_gravity[i];
+      if(i==0) tau_comp[i] *= 1.5;
       if (tau_comp[i] > params_.MAX_TORQUE) tau_comp[i] = params_.MAX_TORQUE;
       else if (tau_comp[i] < -params_.MAX_TORQUE) tau_comp[i] = -params_.MAX_TORQUE;
+
+      cmd.current[i] = tau_comp[i];
     }
+  
     // tau_comp[2] *= -1;
   } catch (const std::exception& e) {
     std::cerr << "Error computing gravity compensation: " << e.what() << std::endl;
   }
 
-  return tau_comp;
+  return cmd;
 }
 
-std::array<double, 7> GravityCompensationPinocchio::collision_detection(
+std::array<double, 7> GravityController::collision_detection(
     const std::array<double, 7>& tau_comp,
     const std::array<double, 7>& joint_currents_,
     const std::array<double, 7>& compensation_torques) {

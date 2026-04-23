@@ -3,12 +3,14 @@
 #include <memory>
 #include <map>
 #include <string>
+#include <chrono>
 
 #include <sensor_msgs/msg/joint_state.hpp>
 #include <dummy_interface/msg/motor_control.hpp>
 #include <manipulator/robotics/arm/i_arm.h>
 #include <manipulator/robotics/motor/i_motor.h>
 #include <manipulator/robotics/bus/i_bus.h>
+#include <manipulator/common_types.h>
 
 namespace manipulator::arm {
 
@@ -22,20 +24,7 @@ namespace manipulator::arm {
 class AbsArm : public IArm {
  public:
   using UniPtr = std::unique_ptr<AbsArm>;
-   /**
-   * @brief Joint state structure for AL1Beta arm
-   * 
-   * Contains position, velocity, current, voltage, and temperature
-   * data for all 7 joints.
-   */
-  struct JointState {
-    std::vector<double> position;      ///< Joint positions in radians
-    std::vector<double> velocity;      ///< Joint velocities in rad/s
-    std::vector<double> current;       ///< Motor currents in Amperes
-    std::vector<double> voltage;       ///< Motor voltages in Volts
-    std::vector<double> temperature;   ///< Motor temperatures in Celsius
-    std::vector<std::string> name;
-  };
+
   /**
    * @brief Default constructor
    */
@@ -68,6 +57,11 @@ class AbsArm : public IArm {
    * @return True if command was sent successfully, false otherwise
    */
   bool SetMotorCommand(const dummy_interface::msg::MotorControl& cmd);
+  bool WaitUntilCommandReached(const dummy_interface::msg::MotorControl& cmd, 
+                                double timeout_sec = 5.0, double tolerance = 0.04);
+
+  std::pair<double, double> GetSCurvePosition(double start_pos, double end_pos, 
+                                               double t, double duration) const;
 
   /**
    * @brief Set joint states (for simulation or control)
@@ -76,7 +70,7 @@ class AbsArm : public IArm {
    */
   bool SetJointStates(const sensor_msgs::msg::JointState& state);
 
-  AbsArm::JointState& GetJointStates();
+  JointState& GetJointStates();
 
   virtual void Init(const std::string& port, uint32_t baud);
 
