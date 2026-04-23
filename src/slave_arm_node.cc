@@ -24,6 +24,8 @@ SlaveArmNode::SlaveArmNode()
   this->declare_parameter<bool>("publish_joint_feedback", false);
   this->declare_parameter<std::string>("urdf_path", "/home/iusl/huaben_ws/src/ti5-description/urdf/ARM_1KG_STD.urdf");
   this->declare_parameter<std::string>("arm_type", "a_l1_gamma");
+  this->declare_parameter<std::vector<double>>("p_gain", {30, 30, 30, 5, 5, 5, 1});
+  this->declare_parameter<std::vector<double>>("d_gain", {1, 1, 1, 0.1, 0.1, 0.1, 0.1});
 
   std::string port;
   this->get_parameter("port_name", port);
@@ -91,8 +93,12 @@ SlaveArmNode::SlaveArmNode()
   cmd_.current.resize(7);
   cmd_.position.resize(7);
   cmd_.velocity.resize(7);
-  cmd_.p = {10, 10, 10, 5, 1, 1, 1};
-  cmd_.d = {0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1};
+
+  std::vector<double> p_gain, d_gain;
+  this->get_parameter("p_gain", p_gain);
+  this->get_parameter("d_gain", d_gain);
+  cmd_.p = p_gain;
+  cmd_.d = d_gain;
 
   control_timer_ = this->create_wall_timer(
       std::chrono::milliseconds(10),
@@ -171,15 +177,15 @@ void SlaveArmNode::DebugInfoCallback() {
     return;
   }
 
-  // RCLCPP_INFO(this->get_logger(), "Joint positions (rad): [%.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f]",
-  //             arm_state_.position[0], arm_state_.position[1], arm_state_.position[2],
-  //             arm_state_.position[3], arm_state_.position[4], arm_state_.position[5], arm_state_.position[6]);
-  // RCLCPP_INFO(this->get_logger(), "Joint currents (A): [%.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f]",
-  //             arm_state_.current[0], arm_state_.current[1], arm_state_.current[2],
-  //             arm_state_.current[3], arm_state_.current[4], arm_state_.current[5], arm_state_.current[6]);
-  // RCLCPP_INFO(this->get_logger(), "Ground joint positions (rad): [%.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f]",
-  //             ground_joint_positions_[0], ground_joint_positions_[1], ground_joint_positions_[2],
-  //             ground_joint_positions_[3], ground_joint_positions_[4], ground_joint_positions_[5], ground_joint_positions_[6]);
+  RCLCPP_INFO(this->get_logger(), "Joint positions (rad): [%.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f]",
+              arm_state_.position[0], arm_state_.position[1], arm_state_.position[2],
+              arm_state_.position[3], arm_state_.position[4], arm_state_.position[5], arm_state_.position[6]);
+  RCLCPP_INFO(this->get_logger(), "Joint currents (A): [%.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f]",
+              arm_state_.current[0], arm_state_.current[1], arm_state_.current[2],
+              arm_state_.current[3], arm_state_.current[4], arm_state_.current[5], arm_state_.current[6]);
+  RCLCPP_INFO(this->get_logger(), "Ground joint positions (rad): [%.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f]",
+              ground_joint_positions_[0], ground_joint_positions_[1], ground_joint_positions_[2],
+              ground_joint_positions_[3], ground_joint_positions_[4], ground_joint_positions_[5], ground_joint_positions_[6]);
 }
 
 } // namespace manipulator

@@ -4,8 +4,12 @@ from launch.actions import DeclareLaunchArgument
 from launch.substitutions import LaunchConfiguration
 from launch_ros.substitutions import FindPackageShare
 from launch.substitutions import PathJoinSubstitution
+import os
 
 def generate_launch_description():
+    pkg_share = FindPackageShare('manipulator').find('manipulator')
+    config_file = os.path.join(pkg_share, 'config', 'slave_arm.yaml')
+
     publish_joint_state_arg = DeclareLaunchArgument(
         'publish_joint_state',
         default_value='True',
@@ -28,9 +32,10 @@ def generate_launch_description():
             output='screen',
             namespace='slave',
             parameters=[
+                config_file,
                 {'arm_type': 'a_l1_gamma'},
                 # 串口端口名
-                {'port_name': '/dev/ttyUSB0'},
+                {'port_name': '/dev/ttyTHS3'},
                 # 关节增益参数（0/1/2轴）
                 {'G_GAIN_0': 1.5},
                 {'G_GAIN_1': 0.5},
