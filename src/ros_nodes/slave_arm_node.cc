@@ -3,6 +3,7 @@
 #include <manipulator/controller/smooth_position_controller.h>
 #include <manipulator/planning/reset_motion_planner.h>
 #include <manipulator/planning/trajectory/scurve_generator.h>
+#include <manipulator/common_types.h>
 #include <chrono>
 #include <thread>
 
@@ -16,24 +17,15 @@ SlaveArmNode::SlaveArmNode()
   double debug_rate = GetParam<double>("debug_rate", 1.0);
   bool publish_joint_state = GetParam<bool>("publish_joint_state", true);
   bool publish_joint_feedback = GetParam<bool>("publish_joint_feedback", false);
-  
-  std::vector<double> p_gain = GetParam<std::vector<double>>("p_gain", {30, 30, 30, 5, 5, 5, 1});
-  std::vector<double> d_gain = GetParam<std::vector<double>>("d_gain", {1, 1, 1, 0.1, 0.1, 0.1, 0.1});
+
 
   pub_joint_state_ = this->create_publisher<sensor_msgs::msg::JointState>("joint_states", 10);
   pub_joint_feedback_ = this->create_publisher<dummy_interface::msg::MotorState>("joint_feedback", 10);
-  
 
   sub_master_state_ = this->create_subscription<sensor_msgs::msg::JointState>(
       "/master/joint_states", 10,
       [this](const sensor_msgs::msg::JointState::ConstSharedPtr& msg) {
-        if (msg->position.size() >= 7 && msg->velocity.size() >= 7) {
-          for (size_t i = 0; i < 7; ++i) {
-            master_joint_positions_[i] = msg->position[i];
-            master_joint_velocities_[i] = msg->velocity[i];
-          }
-          got_feedback_ = true;
-        }
+        MasterStateCallback(msg);
       });
 
   arm_platform_ = std::make_unique<ArmPlatform>();
@@ -52,6 +44,22 @@ SlaveArmNode::SlaveArmNode()
   RCLCPP_INFO(this->get_logger(), "SlaveArmNode initialized (controlled mode, 100Hz control loop)");
 }
 
+void SlaveArmNode::MasterStateCallback(const sensor_msgs::msg::JointState::ConstSharedPtr& msg) {
+  planning::JointSetPoint joint_setpoint;
+  size_t joint_num = msg->position.size();
+  joint_setpoint.q.resize(joint_num);
+  joint_setpoint.dq.resize(joint_num);
+  for (size_t i = 0; i < joint_num; ++i) {
+    joint_setpoint.q[i] = msg->position[i];
+    joint_setpoint.dq[i] = msg->velocity[i];
+  }
+  arm_platform_->SetJointSetPoint(joint_setpoint);
+
+  got_feedback_ = true;
+}
+
+
+
 void SlaveArmNode::SetArmPlatform() {  
   std::string port = GetParam<std::string>("port_name", "/dev/ttyUSB0");
   std::string arm_type = GetParam<std::string>("arm_type", "a_l1_gamma");
@@ -60,6 +68,9 @@ void SlaveArmNode::SetArmPlatform() {
   arm_platform_->SetArm(std::move(arm));
   RCLCPP_INFO(this->get_logger(), "Arm type '%s' initialized", arm_type.c_str());
   auto smooth_position_controller = std::make_unique<controller::SmoothPositionController>();
+  std::vector<double> p_gain = GetParam<std::vector<double>>("p_gain", {30, 30, 30, 5, 5, 5, 1});
+  std::vector<double> d_gain = GetParam<std::vector<double>>("d_gain", {1, 1, 1, 0.1, 0.1, 0.1, 0.1});
+  smooth_position_controller->SetKpKd(p_gain, d_gain);
   auto controller = std::move(smooth_position_controller);
   arm_platform_->SetController(std::move(controller));
 }

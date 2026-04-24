@@ -21,7 +21,8 @@ MasterArmNode::MasterArmNode()
   sub_slave_state_ = this->create_subscription<sensor_msgs::msg::JointState>(
     "/slave/joint_states", 10,
     [this](const sensor_msgs::msg::JointState::ConstSharedPtr& msg) { 
-      for (size_t i = 0; i < 7 && i < msg->effort.size(); ++i) {
+      size_t joint_num = msg->velocity.size();
+      for (size_t i = 0; i < joint_num; ++i) {
         uav_compensation_torques[i] = msg->effort[i];
         uav_joint_currents[i] = msg->velocity[i];
       }

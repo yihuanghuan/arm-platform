@@ -38,6 +38,7 @@ class SlaveArmNode : public rclcpp::Node, public IArmDataSubscriber {
 
   // void DebugInfoCallback();
   void SetArmPlatform();
+  void MasterStateCallback(const sensor_msgs::msg::JointState::ConstSharedPtr& msg);
 
   rclcpp::TimerBase::SharedPtr control_timer_;
   rclcpp::TimerBase::SharedPtr debug_timer_;
@@ -54,8 +55,6 @@ class SlaveArmNode : public rclcpp::Node, public IArmDataSubscriber {
   bool publish_joint_feedback_ = false;
   bool publish_joint_state_ = false;
   dummy_interface::msg::MotorControl cmd_;
-  std::array<double, 7> master_joint_positions_ = {0};
-  std::array<double, 7> master_joint_velocities_ = {0};
 };
 
 } // namespace manipulator
