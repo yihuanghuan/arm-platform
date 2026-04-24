@@ -122,23 +122,22 @@ ament_target_dependencies(master_arm_node
   dummy_interface
 )
 
-# add_executable(slave_arm_node
-#   src/ros_nodes/slave_arm_node.cc
-#   controller_lib
-#   planner_lib
-# )
+add_executable(slave_arm_node
+  src/ros_nodes/slave_arm_node.cc
+)
 
-# target_link_libraries(slave_arm_node
-#   manipulator_core
-#   gravity_controller
-# )
+target_link_libraries(slave_arm_node
+  manipulator_core
+  controller_lib
+  planner_lib
+)
 
-# ament_target_dependencies(slave_arm_node
-#   rclcpp
-#   sensor_msgs
-#   std_msgs
-#   dummy_interface
-# )
+ament_target_dependencies(slave_arm_node
+  rclcpp
+  sensor_msgs
+  std_msgs
+  dummy_interface
+)
 
 # ==============================
 # Install
@@ -147,7 +146,7 @@ install(TARGETS
   manipulator_core
   arm_hardware_node
   master_arm_node
-  # slave_arm_node
+  slave_arm_node
   EXPORT export_${PROJECT_NAME}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
