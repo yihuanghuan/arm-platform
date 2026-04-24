@@ -57,12 +57,7 @@ class AbsArm : public IArm {
    * @return True if command was sent successfully, false otherwise
    */
   bool SetMotorCommand(const dummy_interface::msg::MotorControl& cmd);
-  bool WaitUntilCommandReached(const dummy_interface::msg::MotorControl& cmd, 
-                                double timeout_sec = 5.0, double tolerance = 0.04);
-
-  std::pair<double, double> GetSCurvePosition(double start_pos, double end_pos, 
-                                               double t, double duration) const;
-
+  
   /**
    * @brief Set joint states (for simulation or control)
    * @param state Joint state message
@@ -72,7 +67,8 @@ class AbsArm : public IArm {
 
   JointState& GetJointStates();
 
-  virtual void Init(const std::string& port, uint32_t baud);
+  virtual void Init(const std::string& port, uint32_t baud) = 0;
+  std::vector<std::string> GetJointNames() const;
 
 protected:
 //     virtual bool CheckJointLimits() const;
@@ -94,7 +90,6 @@ protected:
    * @param bus Unique pointer to communication bus
    */
   void SetBus(bus::IBus::UniquePtr bus);
-
  private:
   /**
    * @brief Get current joint states from hardware
@@ -113,6 +108,7 @@ protected:
    * @brief Map of motor name to motor instance
    */
   std::map<std::string, motor::IMotor::SharedPtr> motor_map_;
+  std::vector<std::string> joint_names_;
   JointState joint_states_;
 
   // std::vector<JointLimit> joint_limits_;

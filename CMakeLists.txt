@@ -22,6 +22,7 @@ find_package(pinocchio REQUIRED)
 # Arm Platform Core Library
 # ==============================
 add_library(manipulator_core
+  src/robotics/arm_platform.cc
   src/robotics/arm/abs_arm.cc
   src/robotics/arm/a_l1_beta.cc
   src/robotics/arm/a_l1_gamma.cc

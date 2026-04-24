@@ -11,23 +11,21 @@
 #include <dummy_interface/msg/motor_control.hpp>
 #include <std_msgs/msg/float64_multi_array.hpp>
 #include <geometry_msgs/msg/point.hpp>
-#include <manipulator/robotics/arm/abs_arm.h>
-#include <manipulator/controller/i_arm_controller.h>
-#include <manipulator/planning/abs_motion_planner.h>
+#include <manipulator/robotics/arm_data_subscriber.h>
+#include <manipulator/robotics/arm_platform.h>
 
 namespace manipulator {
 
-static constexpr size_t kJointCount = 7;
-static constexpr double kDefaultTimeout = 5.0;
 static constexpr double kControlPeriodMs = 10.0;
 
-static const std::array<std::string, kJointCount> kJointNames = {
-    "joint1", "joint2", "joint3", "joint4", "joint5", "joint6", "joint7"};
-
-class SlaveArmNode : public rclcpp::Node {
+class SlaveArmNode : public rclcpp::Node, public IArmDataSubscriber {
  public:
   SlaveArmNode();
   ~SlaveArmNode();
+  void Init();
+
+  void UpdateJointState(const sensor_msgs::msg::JointState& msg) override;
+  void UpdateMotorFeedback(const dummy_interface::msg::MotorState& msg) override;
 
  private:
   template<typename T>
@@ -38,9 +36,8 @@ class SlaveArmNode : public rclcpp::Node {
     return this->get_parameter(name).get_value<T>();
   }
 
-  void ControlLoop();
-  void DebugInfoCallback();
-  void PublishJointState();
+  // void DebugInfoCallback();
+  void SetArmPlatform();
 
   rclcpp::TimerBase::SharedPtr control_timer_;
   rclcpp::TimerBase::SharedPtr debug_timer_;
@@ -51,17 +48,14 @@ class SlaveArmNode : public rclcpp::Node {
   rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr sub_master_state_;
   rclcpp::Subscription<geometry_msgs::msg::Point>::SharedPtr sub_uav_pose_;
   
-  arm::AbsArm::UniPtr arm_;
-  arm::JointState arm_state_;
-  
-  controller::IArmController::UniPtr controller_;
-  planning::AbsMotionPlanner::UniPtr planner_;
+  ArmPlatform::UniPtr arm_platform_;
 
   bool got_feedback_ = false;
+  bool publish_joint_feedback_ = false;
+  bool publish_joint_state_ = false;
   dummy_interface::msg::MotorControl cmd_;
-  std::array<double, kJointCount> master_joint_positions_ = {0};
-  std::array<double, kJointCount> master_joint_velocities_ = {0};
-  
+  std::array<double, 7> master_joint_positions_ = {0};
+  std::array<double, 7> master_joint_velocities_ = {0};
 };
 
 } // namespace manipulator
