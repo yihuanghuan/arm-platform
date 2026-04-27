@@ -1,39 +1,56 @@
 from launch import LaunchDescription
-from launch_ros.actions import Node
-from launch.actions import ExecuteProcess
+from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, OpaqueFunction
+from launch.substitutions import LaunchConfiguration
+from launch.launch_description_sources import PythonLaunchDescriptionSource
+from launch_ros.substitutions import FindPackageShare
+from launch.substitutions import PathJoinSubstitution
+
 
 def generate_launch_description():
-    return LaunchDescription([
-        # Node(package='ti5_arm', executable='ti5_arm_node', name='robot_arm',
-        #      parameters=[{'port_name': '/dev/ttyUSB0'}]),
-        # ExecuteProcess(
-        #     cmd=[
-        #         "gnome-terminal", "--",
-        #         "ros2", "run", "dummy_arm", "dummy_arm_node",
-        #         "--ros-args",
-        #         "-p", "port_name:=/dev/ttyUSB0"
-        #     ],
-        #     output="screen"
-        # ),
-        Node(
-            package='manipulator',
-            executable='arm_hardware_node',
-            name='arm_hardware_node',
-            output='screen',
-            parameters=[
-                {'port_name': '/dev/ttyUSB0'},
-            ]
+    manipulator_pkg = FindPackageShare('manipulator')
+    
+    loc_type_arg = DeclareLaunchArgument(
+        'loc_type',
+        default_value='mid360',
+        description='Choose localization type: vicon or mid360'
+    )
+    
+    use_slave_mode_arg = DeclareLaunchArgument(
+        'use_slave_mode',
+        default_value='True',
+        description='If true, use slave_arm + camera'
+    )
+
+    lidar_launch = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            PathJoinSubstitution([manipulator_pkg, 'lidar.launch.py'])
         ),
-        # Node(
-        #     package='v4l2_camera',
-        #     executable='v4l2_camera_node',
-        #     name='v4l2_camera_node',
-        #     output='screen',
-        #     parameters=[
-        #         {'video_device': '/dev/video1'},
-        #         {'image_width': 640},
-        #         {'image_height': 480},
-        #         {'framerate': 30}
-        #     ]
-        # ),
+    )
+    
+    slave_arm_launch = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            PathJoinSubstitution([manipulator_pkg, 'slave_arm.launch.py'])
+        ),
+    )
+    
+    camera_launch = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            PathJoinSubstitution([manipulator_pkg, 'camera.launch.py'])
+        ),
+    )
+    
+    localization_launch = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            PathJoinSubstitution([manipulator_pkg, 'localization.launch.py'])
+        ),
+        launch_arguments={'loc_type': LaunchConfiguration('loc_type')}.items()
+    )
+
+    return LaunchDescription([
+        use_slave_mode_arg,
+        loc_type_arg,
+        lidar_launch,
+        # slave_arm_launch,
+        # camera_launch,
+        localization_launch,
     ])

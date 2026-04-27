@@ -1,20 +1,24 @@
 #pragma once
 #include <memory>
-#include <arm_platform/arm_types.h>
+#include <dummy_interface/msg/motor_control.hpp>
+#include <manipulator/common_types.h>
 
-namespace arm_platform::controller {
-
+namespace manipulator::controller {
+    
+using JointStates = manipulator::arm::JointState;
+using JointCommand = dummy_interface::msg::MotorControl;
+using JointSetpoint = manipulator::planning::JointSetpoint;
 class IArmController {
-public:
-    virtual ~IArmController() = default;
+ public:
+  using UniPtr = std::unique_ptr<IArmController>;
+  IArmController() = default;
+  virtual ~IArmController() = default;
+  
+  virtual JointCommand Compute(
+      const JointStates& joint_states,
+      const JointSetpoint& joint_setpoint,
+      double dt
+      ) = 0;
 
-    // Set high-level command
-    virtual void SetCommand(const arm_platform::JointCommand& cmd) = 0;
-
-    // Update controller, generate low-level motor commands
-    virtual void Update(arm_platform::JointStateArray& state) = 0;
-
-    // Get current joint states
-    // virtual arm_platform::JointStateArray getState() const = 0;
 };
-} // namespace arm_platform::controller
+} // namespace manipulator::controller
