@@ -1,5 +1,6 @@
 #include <manipulator/robotics/motor/dm_motor.h>
 #include <rclcpp/rclcpp.hpp>
+#include <algorithm>
 
 auto logger = rclcpp::get_logger("Controller");
 namespace manipulator::motor {
@@ -46,6 +47,7 @@ void DMMotor::UpdateCommand(const dummy_interface::msg::MotorControl& cmd) {
   }
   protocol_->SetKp(cmd_ind, cmd.p[cmd_ind]);
   protocol_->SetKd(cmd_ind, cmd.d[cmd_ind]);
+  current = std::clamp(current, -rate_torque_, rate_torque_);
   protocol_->SetCurrent(cmd_ind, current);
 
   if(cmd.position.empty()) return;

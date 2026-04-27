@@ -8,7 +8,6 @@ namespace manipulator::controller {
 
 GravityController::GravityController()
     : model_loaded_(false) {
-  params_.MAX_TORQUE = 3.0;
   params_.GRAVITY = 9.81;
   params_.FORCE_FEEDBACK_THRESHOLD = 0.2;
   params_.FORCE_FEEDBACK_GAIN = 0.2;
@@ -35,9 +34,8 @@ bool GravityController::LoadModel(const std::string& urdf_path) {
   }
 }
 
-void GravityController::SetParams(double MAX_TORQUE, double GRAVITY,
-                                           double FORCE_FEEDBACK_THRESHOLD, double FORCE_FEEDBACK_GAIN) {
-  params_.MAX_TORQUE = MAX_TORQUE;
+void GravityController::SetParams(double GRAVITY,
+                                  double FORCE_FEEDBACK_THRESHOLD, double FORCE_FEEDBACK_GAIN) {
   params_.GRAVITY = GRAVITY;
   params_.FORCE_FEEDBACK_THRESHOLD = FORCE_FEEDBACK_THRESHOLD;
   params_.FORCE_FEEDBACK_GAIN = FORCE_FEEDBACK_GAIN;
@@ -102,10 +100,6 @@ JointCommand GravityController::Compute(const JointStates& joint_states,
 
     for (int i = 0; i < 7; ++i) {
       tau_comp[i] = tau_gravity[i];
-      if(i==0) tau_comp[i] *= 1.5;
-      if (tau_comp[i] > params_.MAX_TORQUE) tau_comp[i] = params_.MAX_TORQUE;
-      else if (tau_comp[i] < -params_.MAX_TORQUE) tau_comp[i] = -params_.MAX_TORQUE;
-
       cmd.current[i] = tau_comp[i];
     }
   

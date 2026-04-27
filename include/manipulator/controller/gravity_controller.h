@@ -20,7 +20,7 @@ class GravityController : public IArmController {
       double dt) override;
 
   bool LoadModel(const std::string& urdf_path);
-  void SetParams(double MAX_TORQUE, double GRAVITY, double FORCE_FEEDBACK_THRESHOLD, double FORCE_FEEDBACK_GAIN);
+  void SetParams(double GRAVITY, double FORCE_FEEDBACK_THRESHOLD, double FORCE_FEEDBACK_GAIN);
   void SetCollisionCoeffs(const std::array<double, 7>& coeffs);
   void SetUavPose(const geometry_msgs::msg::Point& pose);
   void SetRotationAngle(double roll, double pitch, double yaw);
@@ -34,7 +34,6 @@ class GravityController : public IArmController {
   pinocchio::Data data_;
 
   struct CompensationParams {
-    double MAX_TORQUE;
     double GRAVITY;
     double FORCE_FEEDBACK_THRESHOLD;
     double FORCE_FEEDBACK_GAIN;

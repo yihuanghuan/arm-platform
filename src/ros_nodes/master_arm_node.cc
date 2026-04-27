@@ -55,11 +55,10 @@ void MasterArmNode::SetArmPlatform() {
   if (!gravity_controller->LoadModel(urdf_path)) {
     RCLCPP_ERROR(this->get_logger(), "Failed to load URDF model from: %s", urdf_path.c_str());
   } 
-  double max_torque = GetParam<double>("MAX_TORQUE", 3.0);
   double gravity = GetParam<double>("GRAVITY", 9.81);
   double force_threshold = GetParam<double>("FORCE_FEEDBACK_THRESHOLD", 0.5);
   double force_gain = GetParam<double>("FORCE_FEEDBACK_GAIN", 0.5);
-  gravity_controller->SetParams(max_torque, gravity, force_threshold, force_gain);
+  gravity_controller->SetParams(gravity, force_threshold, force_gain);
   arm_platform_->SetController(std::move(gravity_controller));
   
   auto arm = arm::ArmFactory::Instance().Create(arm_type);
