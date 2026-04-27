@@ -19,8 +19,7 @@ public:
    * @param baud Baud rate for serial communication
    * @param protocol_factory Protocol factory for data encoding/decoding
    */
-  SerialBus(const std::string& port, uint32_t baud, 
-              protocol::ProtocolFactory::UniquePtr protocol_factory);
+  SerialBus(const std::string& port, uint32_t baud);
   
   /**
    * @brief Destructor - closes serial port

@@ -12,6 +12,6 @@ class IArmDataSubscriber {
   IArmDataSubscriber() = default;
   virtual ~IArmDataSubscriber() = default;
 
-  virtual void UpdateJointState(const sensor_msgs::msg::JointState& msg) = 0;
-  virtual void UpdateMotorFeedback(const dummy_interface::msg::MotorState& msg) = 0;
+  virtual void UpdateJointState(sensor_msgs::msg::JointState& msg) = 0;
+  virtual void UpdateMotorFeedback(dummy_interface::msg::MotorState& msg) = 0;
 };

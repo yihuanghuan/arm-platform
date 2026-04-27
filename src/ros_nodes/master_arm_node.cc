@@ -91,11 +91,13 @@ void MasterArmNode::Reset() {
   }
 }
 
-void MasterArmNode::UpdateJointState(const sensor_msgs::msg::JointState& msg) {
+void MasterArmNode::UpdateJointState(sensor_msgs::msg::JointState& msg) {
+  msg.header.stamp = rclcpp::Clock().now();
   pub_joint_state_->publish(msg);
 }
 
-void MasterArmNode::UpdateMotorFeedback(const dummy_interface::msg::MotorState& msg) {
+void MasterArmNode::UpdateMotorFeedback(dummy_interface::msg::MotorState& msg) {
+  msg.header.stamp = rclcpp::Clock().now();
   if (publish_joint_feedback_) {
     pub_joint_feedback_->publish(msg);
   }

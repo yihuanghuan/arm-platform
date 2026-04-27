@@ -12,7 +12,6 @@ class IMotor {
   virtual ~IMotor() = default;
 
   virtual void UpdateState() = 0;
-  virtual void SetState(const sensor_msgs::msg::JointState& state) = 0;
   virtual void UpdateCommand(const dummy_interface::msg::MotorControl& cmd) = 0;
 
   virtual double GetPosition() const = 0;

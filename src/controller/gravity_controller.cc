@@ -73,7 +73,7 @@ void GravityController::UpdateGravityVector() {
 }
 
 JointCommand GravityController::Compute(const JointStates& joint_states,
-    const JointSetPoint& joint_setpoint,
+    const JointSetpoint& joint_setpoint,
     double dt) {
 
   if (!model_loaded_) {

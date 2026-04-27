@@ -17,9 +17,8 @@ class AbsBus : public IBus {
  public:
   /**
    * @brief Constructor with protocol factory
-   * @param protocol_factory Unique pointer to protocol factory
    */
-  AbsBus(protocol::ProtocolFactory::UniquePtr protocol_factory);
+  AbsBus();
   
   /**
    * @brief Virtual destructor
@@ -41,6 +40,8 @@ class AbsBus : public IBus {
    * by calling ReadCore and decoding data with protocol.
    */
   void Read() override final;
+
+  void SetProtocol(protocol::IProtocol::SharedPtr protocol);
 
  protected:
   /**
@@ -65,7 +66,7 @@ class AbsBus : public IBus {
   /**
    * @brief Protocol factory for data encoding/decoding
    */
-  protocol::ProtocolFactory::UniquePtr protocol_factory_;
+  protocol::IProtocol::SharedPtr protocol_;
 };
 
 } // namespace manipulator::bus

@@ -24,8 +24,8 @@ class SlaveArmNode : public rclcpp::Node, public IArmDataSubscriber {
   ~SlaveArmNode();
   void Init();
 
-  void UpdateJointState(const sensor_msgs::msg::JointState& msg) override;
-  void UpdateMotorFeedback(const dummy_interface::msg::MotorState& msg) override;
+  void UpdateJointState(sensor_msgs::msg::JointState& msg) override;
+  void UpdateMotorFeedback(dummy_interface::msg::MotorState& msg) override;
 
  private:
   template<typename T>

@@ -10,7 +10,7 @@ class SmoothPositionController : public IArmController {
 
   JointCommand Compute(
       const JointStates& joint_states,
-      const JointSetPoint& joint_setpoint,
+      const JointSetpoint& joint_setpoint,
       double dt) override;
  private:
   std::vector<double> pos_set_;

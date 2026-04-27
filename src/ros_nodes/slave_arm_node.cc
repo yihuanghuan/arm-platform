@@ -45,7 +45,7 @@ SlaveArmNode::SlaveArmNode()
 }
 
 void SlaveArmNode::MasterStateCallback(const sensor_msgs::msg::JointState::ConstSharedPtr& msg) {
-  planning::JointSetPoint joint_setpoint;
+  planning::JointSetpoint joint_setpoint;
   size_t joint_num = msg->position.size();
   joint_setpoint.q.resize(joint_num);
   joint_setpoint.dq.resize(joint_num);
@@ -53,12 +53,10 @@ void SlaveArmNode::MasterStateCallback(const sensor_msgs::msg::JointState::Const
     joint_setpoint.q[i] = msg->position[i];
     joint_setpoint.dq[i] = msg->velocity[i];
   }
-  arm_platform_->SetJointSetPoint(joint_setpoint);
+  arm_platform_->SetJointSetpoint(joint_setpoint);
 
   got_feedback_ = true;
 }
-
-
 
 void SlaveArmNode::SetArmPlatform() {  
   std::string port = GetParam<std::string>("port_name", "/dev/ttyUSB0");
@@ -71,10 +69,8 @@ void SlaveArmNode::SetArmPlatform() {
   std::vector<double> p_gain = GetParam<std::vector<double>>("p_gain", {30, 30, 30, 5, 5, 5, 1});
   std::vector<double> d_gain = GetParam<std::vector<double>>("d_gain", {1, 1, 1, 0.1, 0.1, 0.1, 0.1});
   smooth_position_controller->SetKpKd(p_gain, d_gain);
-  auto controller = std::move(smooth_position_controller);
-  arm_platform_->SetController(std::move(controller));
+  arm_platform_->SetController(std::move(smooth_position_controller));
 }
-
 
 SlaveArmNode::~SlaveArmNode() {
   control_timer_->cancel();
@@ -83,11 +79,13 @@ SlaveArmNode::~SlaveArmNode() {
   }
 }
 
-void SlaveArmNode::UpdateJointState(const sensor_msgs::msg::JointState& msg) {
+void SlaveArmNode::UpdateJointState(sensor_msgs::msg::JointState& msg) {
+  msg.header.stamp = rclcpp::Clock().now();
   pub_joint_state_->publish(msg);
 }
 
-void SlaveArmNode::UpdateMotorFeedback(const dummy_interface::msg::MotorState& msg) {
+void SlaveArmNode::UpdateMotorFeedback(dummy_interface::msg::MotorState& msg) {
+  msg.header.stamp = rclcpp::Clock().now();
   pub_joint_feedback_->publish(msg);
 }
 

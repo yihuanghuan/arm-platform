@@ -5,9 +5,8 @@
 
 namespace manipulator::bus {
 
-SerialBus::SerialBus(const std::string& port_name, uint32_t baudrate,
-                     protocol::ProtocolFactory::UniquePtr protocol_factory) 
- : AbsBus(std::move(protocol_factory)) {
+SerialBus::SerialBus(const std::string& port_name, uint32_t baudrate) 
+ : AbsBus() {
     serial::Timeout to = serial::Timeout::simpleTimeout(100);
     serial_.setPort(port_name);
     serial_.setBaudrate(baudrate);

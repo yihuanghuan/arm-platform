@@ -17,7 +17,6 @@ class DMMotor final : public IMotor {
   virtual ~DMMotor() = default;
 
   void UpdateCommand(const dummy_interface::msg::MotorControl& cmd) override;
-  void SetState(const sensor_msgs::msg::JointState& state) override;
   void UpdateState() override;
 
   double GetPosition() const override;

@@ -2,6 +2,7 @@
 #include <map>
 #include <vector>
 #include <memory>
+#include <string>
 #include <manipulator/robotics/protocol/i_protocol.h>
 
 namespace manipulator::protocol {
@@ -10,18 +11,9 @@ class ProtocolFactory {
   using UniquePtr = std::unique_ptr<ProtocolFactory>;
 
   ProtocolFactory() = default;
-  IProtocol::SharedPtr GetProtocol(const std::string& protocol_name,
-                                   const std::vector<uint8_t>& header);
-  void Add(std::vector<uint8_t> header, IProtocol::SharedPtr protocol);
-
-  template <typename F>
-  void IterateEach(F&& f) {
-    for (auto& [name, protocol] : protocols_) {
-      f(name, protocol);
-    }
-  }
-  
+  IProtocol::SharedPtr GetProtocol(const std::string& protocol_name);
+  void Add(const std::string& protocol_name, IProtocol::SharedPtr protocol);  
  private:
-  std::map<std::vector<uint8_t>, IProtocol::SharedPtr> protocols_;
+  std::map<std::string, IProtocol::SharedPtr> protocols_;
 }; 
 }

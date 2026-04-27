@@ -22,7 +22,7 @@ void ArmPlatform::SetPlanner(planning::AbsMotionPlanner::UniPtr planner) {
   planner_->Plan(arm_state_);
 }
 
-void ArmPlatform::SetJointSetPoint(const planning::JointSetPoint& setpoint) {
+void ArmPlatform::SetJointSetpoint(const planning::JointSetpoint& setpoint) {
   joint_setpoint_ = setpoint;
 }
 
@@ -59,7 +59,7 @@ bool ArmPlatform::ExecuteControlCycle(double dt) {
       return false;
     }
     cmd_ = controller_->Compute(arm_state_, joint_setpoint_, dt);
-
+    
     arm_->SetMotorCommand(cmd_);
   } else {
     return false;

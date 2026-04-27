@@ -95,6 +95,8 @@ add_executable(arm_hardware_node
 
 target_link_libraries(arm_hardware_node
   manipulator_core
+  controller_lib
+  planner_lib
 )
 
 add_executable(master_arm_node

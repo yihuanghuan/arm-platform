@@ -20,7 +20,7 @@ class AbsMotionPlanner {
   virtual void Plan(const JointStates& joint_states) = 0;
 
   void SetTrajectoryGenerator(ITrajectoryGenerator::UniPtr trajectory_generator);
-  JointSetPoint GetTrajectoryPoint();
+  JointSetpoint GetTrajectoryPoint();
   bool IsDone() const;
 
  protected:

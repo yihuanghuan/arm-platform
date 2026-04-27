@@ -24,8 +24,8 @@ void AbsMotionPlanner::PlanCore(const std::vector<double>& start,
   std::cout << "=======================================================" << std::endl;
 }
 
-JointSetPoint AbsMotionPlanner::GetTrajectoryPoint() {
-  JointSetPoint result;
+JointSetpoint AbsMotionPlanner::GetTrajectoryPoint() {
+  JointSetpoint result;
   current_index_ = std::min(current_index_, trajectory_.q.cols() - 1);
   result.q = trajectory_.q.col(current_index_);
   result.dq = trajectory_.dq.col(current_index_);

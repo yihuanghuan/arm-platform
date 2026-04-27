@@ -22,7 +22,7 @@ struct JointTrajectory {
   Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> dq;
 };
 
-struct JointSetPoint {
+struct JointSetpoint {
   Eigen::Matrix<double, Eigen::Dynamic, 1> q;
   Eigen::Matrix<double, Eigen::Dynamic, 1> dq;
 };

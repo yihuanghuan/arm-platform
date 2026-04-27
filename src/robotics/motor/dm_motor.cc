@@ -24,25 +24,6 @@ void DMMotor::UpdateState() {
   is_received_ = true;
 }
 
-void DMMotor::SetState(const sensor_msgs::msg::JointState& state) {
-  dummy_interface::msg::MotorControl cmd;
-
-  double pos = state.position[0];
-  double vel = state.velocity[0];
-  
-  if (coord_system_ == CoordinateSystem::LeftHand) {
-    pos = -pos;
-    vel = -vel;
-  }
-
-  cmd.position.push_back(pos);
-  cmd.velocity.push_back(vel);
-  cmd.p.push_back(default_kp_);
-  cmd.d.push_back(default_kd_);
-  cmd.current.push_back(0.1);
-  UpdateCommand(cmd);
-}
-
 void DMMotor::UpdateCommand(const dummy_interface::msg::MotorControl& cmd) {
   if (not is_received_) return;
 

@@ -131,7 +131,7 @@ class ProtocolV1 : public AbsProtocol {
     uint8_t addr = 0x55;
     uint8_t cmd = 0;
     uint8_t dataLen = 0;
-    uint8_t dataBuf[128];
+    uint8_t dataBuf[256];
     uint8_t sumCheck = 0;
     uint8_t addCheck = 0;
   };

@@ -7,7 +7,7 @@ namespace manipulator::controller {
     
 using JointStates = manipulator::arm::JointState;
 using JointCommand = dummy_interface::msg::MotorControl;
-using JointSetPoint = manipulator::planning::JointSetPoint;
+using JointSetpoint = manipulator::planning::JointSetpoint;
 class IArmController {
  public:
   using UniPtr = std::unique_ptr<IArmController>;
@@ -16,7 +16,7 @@ class IArmController {
   
   virtual JointCommand Compute(
       const JointStates& joint_states,
-      const JointSetPoint& joint_setpoint,
+      const JointSetpoint& joint_setpoint,
       double dt
       ) = 0;
 

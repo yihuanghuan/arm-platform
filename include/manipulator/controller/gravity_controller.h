@@ -16,7 +16,7 @@ class GravityController : public IArmController {
   ~GravityController() = default;
 
   JointCommand Compute(const JointStates& joint_states,
-      const JointSetPoint& joint_set_point,
+      const JointSetpoint& joint_set_point,
       double dt) override;
 
   bool LoadModel(const std::string& urdf_path);

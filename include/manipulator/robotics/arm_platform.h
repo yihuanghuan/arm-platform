@@ -28,7 +28,7 @@ class ArmPlatform {
   void SetArm(arm::AbsArm::UniPtr arm);
   void SetController(controller::IArmController::UniPtr controller);
   void SetPlanner(planning::AbsMotionPlanner::UniPtr planner);
-  void SetJointSetPoint(const planning::JointSetPoint& setpoint);
+  void SetJointSetpoint(const planning::JointSetpoint& setpoint);
 
   bool ExecuteControlCycle(double dt);
   void AddSubscribe(IArmDataSubscriber::SharedPtr subscriber);
@@ -43,7 +43,7 @@ class ArmPlatform {
   controller::IArmController::UniPtr controller_;
   planning::AbsMotionPlanner::UniPtr planner_;
   dummy_interface::msg::MotorControl cmd_;
-  planning::JointSetPoint joint_setpoint_;
+  planning::JointSetpoint joint_setpoint_;
 
   std::vector<IArmDataSubscriber::WeakPtr> subscribers_;
   std::vector<std::string> joint_names_;

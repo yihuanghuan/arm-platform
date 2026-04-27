@@ -36,9 +36,8 @@ void AL1Beta::Init(const std::string& port, uint32_t baud) {
   protocol_->Attach(joint6);
   protocol_->Attach(joint7);
 
-  auto protocol_factory = std::make_unique<protocol::ProtocolFactory>();
-  protocol_factory->Add(std::vector<uint8_t>{0xFE, 0x55}, protocol_);
-
-  SetBus(std::make_unique<bus::SerialBus>(port, baud, std::move(protocol_factory)));
+  auto bus = std::make_unique<bus::SerialBus>(port, baud);
+  bus->SetProtocol(protocol_);
+  SetBus(std::move(bus));
 }
 }

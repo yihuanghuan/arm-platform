@@ -8,7 +8,7 @@ SmoothPositionController::SmoothPositionController() {
 }
 JointCommand SmoothPositionController::Compute(
   const JointStates& joint_states,
-  const JointSetPoint& joint_setpoint,
+  const JointSetpoint& joint_setpoint,
   double dt) {
     JointCommand cmd;
     size_t num_joints = joint_states.position.size();

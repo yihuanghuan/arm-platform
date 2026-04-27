@@ -57,13 +57,6 @@ class AbsArm : public IArm {
    * @return True if command was sent successfully, false otherwise
    */
   bool SetMotorCommand(const dummy_interface::msg::MotorControl& cmd);
-  
-  /**
-   * @brief Set joint states (for simulation or control)
-   * @param state Joint state message
-   * @return True if states were set successfully, false otherwise
-   */
-  bool SetJointStates(const sensor_msgs::msg::JointState& state);
 
   JointState& GetJointStates();
 
