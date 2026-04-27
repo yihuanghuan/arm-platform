@@ -13,19 +13,19 @@ AL1Gamma::AL1Gamma() {
 void AL1Gamma::Init(const std::string& port, uint32_t baud) {
   protocol_ = std::make_shared<protocol::ProtocolV1>();
 
-  auto joint1 = std::make_shared<motor::DMMotor>(protocol_, 0, 30, 0.2, motor::CoordinateSystem::RightHand);
+  auto joint1 = std::make_shared<motor::DMMotor>(protocol_, 0, motor::CoordinateSystem::RightHand);
   AddMotor("joint1", joint1);
-  auto joint2 = std::make_shared<motor::DMMotor>(protocol_, 1, 50, 0.2, motor::CoordinateSystem::RightHand);
+  auto joint2 = std::make_shared<motor::DMMotor>(protocol_, 1, motor::CoordinateSystem::RightHand);
   AddMotor("joint2", joint2);
-  auto joint3 = std::make_shared<motor::DMMotor>(protocol_, 2, 50, 0.2, motor::CoordinateSystem::RightHand);
+  auto joint3 = std::make_shared<motor::DMMotor>(protocol_, 2, motor::CoordinateSystem::RightHand);   
   AddMotor("joint3", joint3);
-  auto joint4 = std::make_shared<motor::DMMotor>(protocol_, 3, 10, 0.2, motor::CoordinateSystem::LeftHand);
+  auto joint4 = std::make_shared<motor::DMMotor>(protocol_, 3, motor::CoordinateSystem::LeftHand);
   AddMotor("joint4", joint4);
-  auto joint5 = std::make_shared<motor::DMMotor>(protocol_, 4, 2, 0.5, motor::CoordinateSystem::LeftHand);
+  auto joint5 = std::make_shared<motor::DMMotor>(protocol_, 4, motor::CoordinateSystem::LeftHand);
   AddMotor("joint5", joint5);
-  auto joint6 = std::make_shared<motor::DMMotor>(protocol_, 5, 5, 0.2, motor::CoordinateSystem::LeftHand);
+  auto joint6 = std::make_shared<motor::DMMotor>(protocol_, 5, motor::CoordinateSystem::LeftHand);
   AddMotor("joint6", joint6);
-  auto joint7 = std::make_shared<motor::DMMotor>(protocol_, 6, 1, 0.2, motor::CoordinateSystem::RightHand);
+  auto joint7 = std::make_shared<motor::DMMotor>(protocol_, 6, motor::CoordinateSystem::RightHand);
   AddMotor("joint7", joint7);
 
   protocol_->Attach(joint1);

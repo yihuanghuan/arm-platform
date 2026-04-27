@@ -3,10 +3,18 @@
 
 auto logger = rclcpp::get_logger("Controller");
 namespace manipulator::motor {
-DMMotor::DMMotor(protocol::ProtocolV1::SharedPtr protocol, uint8_t id, 
-                 float kp, float kd, CoordinateSystem coord_system)
- : protocol_(protocol), id_(id), default_kp_(kp), default_kd_(kd), vel_set_(0), coord_system_(coord_system) {
 
+DMMotor::DMMotor(protocol::ProtocolV1::SharedPtr protocol, uint8_t id, 
+                 CoordinateSystem coord_system)
+ : protocol_(protocol), id_(id), vel_set_(0), coord_system_(coord_system) {
+}
+
+void DMMotor::SetRateTorque(double rate_torque) {
+  rate_torque_ = rate_torque;
+}
+
+double DMMotor::GetRatedTorque() const {
+  return rate_torque_;
 }
 
 void DMMotor::UpdateState() {
@@ -41,9 +49,6 @@ void DMMotor::UpdateCommand(const dummy_interface::msg::MotorControl& cmd) {
   if(cmd.position.empty()) return;
 
   double pos_err = cmd.position[cmd_ind] - position_;
-  // if (abs(pos_err) < 0.01) {
-  //   return;
-  // }
 
   pos_set_ = cmd.position[cmd_ind];
   

@@ -19,6 +19,9 @@ class IMotor {
   virtual double GetCurrent() const = 0;
   virtual double GetTemperature() const = 0;
   virtual double GetVoltage() const = 0;
+
+  virtual double GetRatedTorque() const = 0;
+  virtual void SetRateTorque(double rate_torque) = 0;
 };
 
 } // namespace manipulator::motor

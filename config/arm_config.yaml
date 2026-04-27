@@ -1,0 +1,25 @@
+arms:
+  al1_gamma:
+    joints:
+      - name: "joint1"
+        model: "DM4340-48V"
+        id: 0
+      - name: "joint2"
+        model: "DM4340-48V"
+        id: 1
+      - name: "joint3"
+        model: "DM4340-48V"
+        id: 2
+      - name: "joint4"
+        model: "RS05"
+        id: 3
+        coord_system: "left_hand"
+      - name: "joint5"
+        model: "RS05"
+        id: 4
+      - name: "joint6"
+        model: "RS05"
+        id: 5
+      - name: "joint7"
+        model: "RS05"
+        id: 6

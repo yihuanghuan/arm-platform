@@ -24,7 +24,7 @@ find_package(pinocchio REQUIRED)
 add_library(manipulator_core
   src/robotics/arm_platform.cc
   src/robotics/arm/abs_arm.cc
-  src/robotics/arm/a_l1_beta.cc
+  src/robotics/arm/a_l1.cc
   src/robotics/arm/a_l1_gamma.cc
   src/robotics/arm/arm_factory.cc
   src/robotics/bus/abs_bus.cc
@@ -33,6 +33,7 @@ add_library(manipulator_core
   src/robotics/protocol/abs_protocol.cc
   src/robotics/protocol/protocol_factory.cc
   src/robotics/protocol/protocol_v1.cc
+  src/robotics/config/arm_config.cc
 )
 
 add_library(controller_lib
@@ -69,6 +70,7 @@ target_link_libraries(controller_lib
 
 target_link_libraries(manipulator_core
   Eigen3::Eigen
+  yaml-cpp
 )
 
 target_include_directories(manipulator_core PUBLIC

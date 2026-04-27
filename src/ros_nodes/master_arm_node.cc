@@ -29,7 +29,6 @@ MasterArmNode::MasterArmNode()
   });
   arm_platform_ = std::make_unique<ArmPlatform>();
   SetArmPlatform();
-  // set arm platform first then start control loop
   control_timer_ = this->create_wall_timer(
       std::chrono::milliseconds(static_cast<int>(kControlPeriodMs)),
       [this]() { return arm_platform_->ExecuteControlCycle(kControlPeriodMs); });
@@ -45,24 +44,30 @@ MasterArmNode::MasterArmNode()
 
 void MasterArmNode::SetArmPlatform() {
   std::string port = GetParam<std::string>("port_name", "/dev/ttyUSB0");
-  std::string arm_type = GetParam<std::string>("arm_type", "a_l1_beta");
+  std::string arm_type = GetParam<std::string>("arm_type", "a_l1");
+  std::string motor_config_path = GetParam<std::string>("motor_config_path", "");
+  std::string arm_config_path = GetParam<std::string>("arm_config_path", "");
   std::string urdf_path = GetParam<std::string>("urdf_path", "");
-  // Initialize gravity controller
+  
   auto gravity_controller = std::make_unique<manipulator::controller::GravityController>();
   if (!gravity_controller->LoadModel(urdf_path)) {
     RCLCPP_ERROR(this->get_logger(), "Failed to load URDF model from: %s", urdf_path.c_str());
   } 
-  // Set gravity controller 
   double max_torque = GetParam<double>("MAX_TORQUE", 3.0);
   double gravity = GetParam<double>("GRAVITY", 9.81);
   double force_threshold = GetParam<double>("FORCE_FEEDBACK_THRESHOLD", 0.5);
   double force_gain = GetParam<double>("FORCE_FEEDBACK_GAIN", 0.5);
   gravity_controller->SetParams(max_torque, gravity, force_threshold, force_gain);
   arm_platform_->SetController(std::move(gravity_controller));
-  // Set arm
+  
   auto arm = arm::ArmFactory::Instance().Create(arm_type);
-  arm->Init(port, 921600);
-  RCLCPP_INFO(this->get_logger(), "Arm type '%s' initialized", arm_type.c_str());
+  if (!motor_config_path.empty() && !arm_config_path.empty()) {
+    arm->InitFromConfig(port, 921600, motor_config_path, arm_config_path);
+    RCLCPP_INFO(this->get_logger(), "Arm type '%s' initialized with config", arm_type.c_str());
+  } else {
+    arm->Init(port, 921600);
+    RCLCPP_INFO(this->get_logger(), "Arm type '%s' initialized", arm_type.c_str());
+  }
   arm_platform_->SetArm(std::move(arm));
 }
 
@@ -85,7 +90,6 @@ void MasterArmNode::Reset() {
 
   arm_platform_->SetController(std::move(controller));
   arm_platform_->SetPlanner(std::move(planner));
-  // when planner is done, exit the loop
   while (!arm_platform_->ExecuteControlCycle(kControlPeriodMs)) {
     std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(kControlPeriodMs)));
   }

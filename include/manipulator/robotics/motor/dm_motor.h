@@ -13,17 +13,21 @@ enum class CoordinateSystem {
 class DMMotor final : public IMotor {
  public:
   DMMotor(protocol::ProtocolV1::SharedPtr protocol, uint8_t id, 
-          float kp, float kd, CoordinateSystem coord_system = CoordinateSystem::RightHand);
+          CoordinateSystem coord_system = CoordinateSystem::RightHand);
+    
   virtual ~DMMotor() = default;
 
   void UpdateCommand(const dummy_interface::msg::MotorControl& cmd) override;
   void UpdateState() override;
+  void SetRateTorque(double rate_torque) override;
 
   double GetPosition() const override;
   double GetVelocity() const override;
   double GetCurrent() const override;
   double GetTemperature() const override;
   double GetVoltage() const override;
+  
+  double GetRatedTorque() const override;
  
  private:
   protocol::ProtocolV1::SharedPtr protocol_;
@@ -33,8 +37,7 @@ class DMMotor final : public IMotor {
   double torque_;
   double temperature_;
   double voltage_;
-  float default_kp_;
-  float default_kd_;
+  double rate_torque_;
 
   double pos_set_;
   double vel_set_;
@@ -43,4 +46,4 @@ class DMMotor final : public IMotor {
   CoordinateSystem coord_system_;
 };
 
-} // namespace manipulator::motor
+}

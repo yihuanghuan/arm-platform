@@ -53,8 +53,8 @@ bool ArmPlatform::ExecuteControlCycle(double dt) {
   }
 
   if (controller_) {
-    if (joint_setpoint_.q.size() != arm_state_.position.size()) {
-      std::cout << "Joint setpoint size" << joint_setpoint_.q.size() 
+    if (joint_names_.size() > 0 and joint_setpoint_.q.size() != arm_state_.position.size()) {
+      std::cout << "Joint setpoint size " << joint_setpoint_.q.size() 
         << " is not equal than joint position size " << arm_state_.position.size() << std::endl;
       return false;
     }

@@ -1,0 +1,45 @@
+#include <manipulator/robotics/arm/a_l1.h>
+#include <manipulator/robotics/protocol/protocol_factory.h>
+#include <manipulator/robotics/protocol/protocol_v1.h>
+#include <manipulator/robotics/bus/serial_bus.h>
+#include <manipulator/robotics/motor/dm_motor.h>
+#include <manipulator/robotics/config/arm_config.h>
+#include <yaml-cpp/yaml.h>
+
+namespace manipulator::arm {
+
+AL1::AL1() {
+
+}
+
+void AL1::Init(const std::string& port, uint32_t baud) {
+  throw std::runtime_error("AL1::Init is not implemented");
+}
+
+void AL1::InitFromConfig(const std::string& port, uint32_t baud,
+                             const std::string& motor_config_path, 
+                             const std::string& arm_config_path) {
+  YAML::Node yaml = YAML::LoadFile(motor_config_path);
+  YAML::Node arm_yaml = YAML::LoadFile(arm_config_path);
+  
+  auto motor_models = config::ConfigLoader::LoadMotorModels(yaml);
+  auto arm_config = config::ConfigLoader::LoadArmConfig(arm_yaml, "al1_beta");
+  
+  protocol_ = std::make_shared<protocol::ProtocolV1>();
+  
+  for (const auto& joint : arm_config.joints) {
+    auto& model_config = motor_models[joint.model];
+    auto coord_system = model_config.coord_system == "right_hand" ? 
+      motor::CoordinateSystem::RightHand : motor::CoordinateSystem::LeftHand;
+    auto motor = std::make_shared<motor::DMMotor>(protocol_, joint.id, coord_system);
+    motor->SetRateTorque(model_config.rated_torque);
+    AddMotor(joint.name, motor);
+    protocol_->Attach(motor);
+  }
+  
+  auto bus = std::make_unique<bus::SerialBus>(port, baud);
+  bus->SetProtocol(protocol_);
+  SetBus(std::move(bus));
+}
+
+}

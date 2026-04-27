@@ -1,12 +1,12 @@
 #include <manipulator/robotics/arm/arm_factory.h>
-#include <manipulator/robotics/arm/a_l1_beta.h>
+#include <manipulator/robotics/arm/a_l1.h>
 #include <manipulator/robotics/arm/a_l1_gamma.h>
 #include <stdexcept>
 
 namespace manipulator::arm {
 
 ArmFactory::ArmFactory() {
-  arms_.emplace("a_l1_beta", std::make_unique<AL1Beta>());
+  arms_.emplace("a_l1", std::make_unique<AL1>());
   arms_.emplace("a_l1_gamma", std::make_unique<AL1Gamma>());
 }
 
@@ -23,4 +23,4 @@ AbsArm::UniPtr ArmFactory::Create(const std::string& arm_name) {
   return std::move(it->second);
 }
 
-}  // namespace manipulator::arm
+}
