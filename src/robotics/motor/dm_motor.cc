@@ -33,6 +33,7 @@ void DMMotor::UpdateState() {
 }
 
 void DMMotor::UpdateCommand(const dummy_interface::msg::MotorControl& cmd) {
+
   if (not is_received_) return;
 
   uint8_t cmd_ind = id_;

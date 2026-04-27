@@ -20,7 +20,8 @@ def generate_launch_description():
             namespace='arm',
             parameters=[
                 config_file,
-                {'arm_type': 'a_l1_gamma'},
+                {'arm_type': 'a_l1'},
+                {'arm_version': 'gamma'},
                 # 串口端口名
                 {'port_name': '/dev/ttyTHS3'},     
             ]

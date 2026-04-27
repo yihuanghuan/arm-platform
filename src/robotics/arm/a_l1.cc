@@ -13,18 +13,23 @@ AL1::AL1() {
 }
 
 void AL1::Init(const std::string& port, uint32_t baud) {
-  throw std::runtime_error("AL1::Init is not implemented");
+  throw std::runtime_error("AL1::Init is not implemented, use InitFromConfig instead");
 }
 
 void AL1::InitFromConfig(const std::string& port, uint32_t baud,
-                             const std::string& motor_config_path, 
-                             const std::string& arm_config_path) {
+                         const std::string& motor_config_path, 
+                         const std::string& arm_config_path,
+                         const std::string& arm_name) {
   YAML::Node yaml = YAML::LoadFile(motor_config_path);
   YAML::Node arm_yaml = YAML::LoadFile(arm_config_path);
   
   auto motor_models = config::ConfigLoader::LoadMotorModels(yaml);
-  auto arm_config = config::ConfigLoader::LoadArmConfig(arm_yaml, "al1_beta");
+  auto arm_config = config::ConfigLoader::LoadArmConfig(arm_yaml, "a_l1_" + arm_name);
   
+  if (arm_config.joints.empty()) {
+    throw std::runtime_error("Arm config is empty");
+  }
+
   protocol_ = std::make_shared<protocol::ProtocolV1>();
   
   for (const auto& joint : arm_config.joints) {

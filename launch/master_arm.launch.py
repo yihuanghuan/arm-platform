@@ -33,6 +33,7 @@ def generate_launch_description():
         sigkill_timeout='20',
         parameters=[
             {'arm_type': 'a_l1'},
+            {'arm_version': 'gamma'},
             {'auto_reset': False},
             {'port_name': '/dev/ttyUSB0'},
             {'motor_config_path': motor_config_path},

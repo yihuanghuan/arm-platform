@@ -53,13 +53,12 @@ bool ArmPlatform::ExecuteControlCycle(double dt) {
   }
 
   if (controller_) {
-    if (joint_names_.size() > 0 and joint_setpoint_.q.size() != arm_state_.position.size()) {
+    if (joint_setpoint_.q.size() > 0 and joint_setpoint_.q.size() != arm_state_.position.size()) {
       std::cout << "Joint setpoint size " << joint_setpoint_.q.size() 
         << " is not equal than joint position size " << arm_state_.position.size() << std::endl;
       return false;
     }
     cmd_ = controller_->Compute(arm_state_, joint_setpoint_, dt);
-    
     arm_->SetMotorCommand(cmd_);
   } else {
     return false;

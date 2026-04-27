@@ -12,8 +12,9 @@ class AL1 final : public AbsArm {
   void Init(const std::string& port, uint32_t baud) override;
   
   void InitFromConfig(const std::string& port, uint32_t baud,
-                      const std::string& config_path, 
-                      const std::string& arm_config_path) override;
+                      const std::string& motor_config_path, 
+                      const std::string& arm_config_path,
+                      const std::string& arm_name) override;
 
  private:
   protocol::ProtocolV1::SharedPtr protocol_;

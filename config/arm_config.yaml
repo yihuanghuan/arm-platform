@@ -1,5 +1,5 @@
 arms:
-  al1_gamma:
+  a_l1_gamma:
     joints:
       - name: "joint1"
         model: "DM4340-48V"

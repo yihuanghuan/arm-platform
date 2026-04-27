@@ -29,13 +29,13 @@ ArmHardwareNode::~ArmHardwareNode() {
 void ArmHardwareNode::SetArmPlatform() {
   std::string port = GetParam<std::string>("port_name", "/dev/ttyUSB0");
   std::string arm_type = GetParam<std::string>("arm_type", "a_l1");
+  std::string arm_version = GetParam<std::string>("arm_version", "gamma");
   std::string motor_config_path = GetParam<std::string>("motor_config_path", "");
   std::string arm_config_path = GetParam<std::string>("arm_config_path", "");
   
   auto arm = arm::ArmFactory::Instance().Create(arm_type);
   if (!motor_config_path.empty() && !arm_config_path.empty()) {
-    arm->InitFromConfig(port, 921600, motor_config_path, arm_config_path);
-    RCLCPP_INFO(this->get_logger(), "Arm type '%s' initialized with config", arm_type.c_str());
+    arm->InitFromConfig(port, 921600, motor_config_path, arm_config_path, arm_version);
   } else {
     arm->Init(port, 921600);
     RCLCPP_INFO(this->get_logger(), "Arm type '%s' initialized", arm_type.c_str());
@@ -51,6 +51,7 @@ void ArmHardwareNode::SetArmPlatform() {
 }
 
 void ArmHardwareNode::MoveItCallback(const sensor_msgs::msg::JointState::ConstSharedPtr msg) {
+  RCLCPP_INFO(this->get_logger(), "ArmHardwareNode MoveItCallback");
   if (msg->name.empty()) {
     return;
   }

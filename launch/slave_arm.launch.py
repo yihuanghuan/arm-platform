@@ -8,8 +8,8 @@ from launch.substitutions import PathJoinSubstitution
 def generate_launch_description():
     pkg_share = FindPackageShare('manipulator')
     
-    motor_config_path = PathJoinSubstitution([pkg_share, 'config', 'motor_config.yaml'])
-    arm_config_path = PathJoinSubstitution([pkg_share, 'config', 'arm_config.yaml'])
+    motor_config_path = PathJoinSubstitution([pkg_share, 'motor_config.yaml'])
+    arm_config_path = PathJoinSubstitution([pkg_share, 'arm_config.yaml'])
     
     publish_joint_state_arg = DeclareLaunchArgument(
         'publish_joint_state',
@@ -34,6 +34,7 @@ def generate_launch_description():
             namespace='slave',
             parameters=[
                 {'arm_type': 'a_l1'},
+                {'arm_version': 'gamma'},
                 {'port_name': '/dev/ttyTHS3'},
                 {'motor_config_path': motor_config_path},
                 {'arm_config_path': arm_config_path},
