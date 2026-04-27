@@ -13,6 +13,11 @@ JointCommand SmoothPositionController::Compute(
     JointCommand cmd;
     size_t num_joints = joint_states.position.size();
 
+    if(joint_setpoint.q.size() == 0) {
+      // return zero command if no setpoint
+      return cmd;
+    }
+
     if(pos_set_.empty()) {
       pos_set_ = joint_states.position;
     }
