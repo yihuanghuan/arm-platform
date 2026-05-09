@@ -2,6 +2,7 @@
 #include <sstream>
 #include <iomanip>
 #include <cstring>
+#include <iostream>
 
 namespace manipulator::bus {
 
@@ -36,7 +37,6 @@ void SerialBus::ReadCore(std::vector<uint8_t>& data) {
     data.resize(avail);
     // serial_.read(buf.data(), avail);
     serial_.read(data.data(), avail);
-
     // return buf;
 }
 

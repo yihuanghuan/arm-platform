@@ -31,7 +31,7 @@ MasterArmNode::MasterArmNode()
   SetArmPlatform();
   control_timer_ = this->create_wall_timer(
       std::chrono::milliseconds(static_cast<int>(kControlPeriodMs)),
-      [this]() { return arm_platform_->ExecuteControlCycle(kControlPeriodMs); });
+      [this]() { return arm_platform_->ExecuteControlCycle(kControlPeriodMs/1000.0f); });
 
   if (debug_info) {
     auto debug_period = std::chrono::duration<double>(1.0 / debug_rate);
@@ -90,7 +90,7 @@ void MasterArmNode::Reset() {
 
   arm_platform_->SetController(std::move(controller));
   arm_platform_->SetPlanner(std::move(planner));
-  while (!arm_platform_->ExecuteControlCycle(kControlPeriodMs)) {
+  while (!arm_platform_->ExecuteControlCycle(kControlPeriodMs/1000.0f)) {
     std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(kControlPeriodMs)));
   }
 }

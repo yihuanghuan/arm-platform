@@ -38,6 +38,7 @@ class SlaveArmNode : public rclcpp::Node, public IArmDataSubscriber {
 
   // void DebugInfoCallback();
   void SetArmPlatform();
+  void SetCollisionAvoidance();
   void MasterStateCallback(const sensor_msgs::msg::JointState::ConstSharedPtr& msg);
 
   rclcpp::TimerBase::SharedPtr control_timer_;

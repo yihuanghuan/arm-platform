@@ -26,6 +26,14 @@ void ArmPlatform::SetJointSetpoint(const planning::JointSetpoint& setpoint) {
   joint_setpoint_ = setpoint;
 }
 
+void ArmPlatform::SetCollisionAvoidance(collision::CollisionAvoidance::Ptr collision_avoidance) {
+  collision_avoidance_ = collision_avoidance;
+}
+
+void ArmPlatform::EnableCollisionAvoidance(bool enable) {
+  collision_avoidance_enabled_ = enable;
+}
+
 void ArmPlatform::AddSubscribe(IArmDataSubscriber::SharedPtr subscriber) {
   if (!subscriber) return;
 
@@ -41,6 +49,9 @@ void ArmPlatform::AddSubscribe(IArmDataSubscriber::SharedPtr subscriber) {
 }
 
 bool ArmPlatform::ExecuteControlCycle(double dt) {
+  if (dt < 0.01) {
+    throw std::runtime_error("Control cycle dt must be greater than 0.01");
+  }
   if (!arm_) {
     throw std::runtime_error("Arm not set");
   }
@@ -51,6 +62,10 @@ bool ArmPlatform::ExecuteControlCycle(double dt) {
   if (planner_) {
     joint_setpoint_ = planner_->GetTrajectoryPoint();
   }
+  bool has_collision_risk = false;
+  if (collision_avoidance_enabled_ && collision_avoidance_) {
+    has_collision_risk = ApplyCollisionAvoidance();
+  }
 
   if (controller_) {
     if (joint_setpoint_.q.size() > 0 and joint_setpoint_.q.size() != arm_state_.position.size()) {
@@ -58,8 +73,12 @@ bool ArmPlatform::ExecuteControlCycle(double dt) {
         << " is not equal than joint position size " << arm_state_.position.size() << std::endl;
       return false;
     }
-    cmd_ = controller_->Compute(arm_state_, joint_setpoint_, dt);
-    arm_->SetMotorCommand(cmd_);
+
+    if (not has_collision_risk) {
+      cmd_ = controller_->Compute(arm_state_, joint_setpoint_, dt);
+      arm_->SetMotorCommand(cmd_);
+    }
+
   } else {
     return false;
   }
@@ -104,6 +123,33 @@ void ArmPlatform::NotifyMotorFeedback() {
       shared_subscriber->UpdateMotorFeedback(joint_feedback_msg);
     }
   }
+}
+
+bool ArmPlatform::ApplyCollisionAvoidance() const {
+  if (!collision_avoidance_ || joint_setpoint_.q.size() == 0) {
+    return false;
+  }
+
+  Eigen::VectorXd current_q(arm_state_.position.size());
+  for (size_t i = 0; i < arm_state_.position.size(); ++i) {
+    current_q[i] = arm_state_.position[i];
+  }
+
+  Eigen::VectorXd target_q = joint_setpoint_.q;
+
+  collision::CollisionResult result = collision_avoidance_->CheckCollision(target_q);
+  
+  if (result.has_collision_risk) {
+    // DO NOT MOVE when collision risk detected, consider adjusting target position later
+    // Eigen::VectorXd adjusted_q = collision_avoidance_->AdjustTarget(current_q, target_q);
+    // joint_setpoint_.q = adjusted_q;
+    
+    std::cout << "Collision risk detected! Min distance: " << result.min_distance 
+              << ", adjusted target." << std::endl;
+    return true;
+  }
+  
+  return false;
 }
 
 void ArmPlatform::PrintDebugInfo() {

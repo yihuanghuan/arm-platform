@@ -46,6 +46,10 @@ add_library(planner_lib
   src/planning/reset_motion_planner.cc
 )
 
+add_library(collision_lib
+  src/collision/collision_avoidance.cc
+)
+
 ament_target_dependencies(planner_lib
   rclcpp
   std_msgs
@@ -68,9 +72,20 @@ target_link_libraries(controller_lib
   pinocchio::pinocchio
 )
 
+target_link_libraries(collision_lib
+  Eigen3::Eigen
+  pinocchio::pinocchio
+)
+
+target_include_directories(collision_lib PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>
+)
+
 target_link_libraries(manipulator_core
   Eigen3::Eigen
   yaml-cpp
+  collision_lib
 )
 
 target_include_directories(manipulator_core PUBLIC
@@ -149,6 +164,9 @@ ament_target_dependencies(slave_arm_node
 # ==============================
 install(TARGETS
   manipulator_core
+  collision_lib
+  controller_lib
+  planner_lib
   arm_hardware_node
   master_arm_node
   slave_arm_node

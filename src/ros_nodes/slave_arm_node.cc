@@ -3,6 +3,7 @@
 #include <manipulator/controller/smooth_position_controller.h>
 #include <manipulator/planning/reset_motion_planner.h>
 #include <manipulator/planning/trajectory/scurve_generator.h>
+#include <manipulator/collision/collision_avoidance.h>
 #include <manipulator/common_types.h>
 #include <chrono>
 #include <thread>
@@ -29,9 +30,10 @@ SlaveArmNode::SlaveArmNode()
 
   arm_platform_ = std::make_unique<ArmPlatform>();
   SetArmPlatform();
+  SetCollisionAvoidance();
   control_timer_ = this->create_wall_timer(
       std::chrono::milliseconds(static_cast<int>(kControlPeriodMs)),
-      [this]() { return arm_platform_->ExecuteControlCycle(kControlPeriodMs); });
+      [this]() { return arm_platform_->ExecuteControlCycle(kControlPeriodMs/1000.0f); });
 
   if (debug_info) {
     auto debug_period = std::chrono::duration<double>(1.0 / debug_rate);
@@ -75,10 +77,72 @@ void SlaveArmNode::SetArmPlatform() {
   arm_platform_->SetArm(std::move(arm));
   
   auto smooth_position_controller = std::make_unique<controller::SmoothPositionController>();
+  double max_velocity = GetParam<double>("max_velocity", 2);
+  smooth_position_controller->SetMaxVelocity(max_velocity);
   std::vector<double> p_gain = GetParam<std::vector<double>>("p_gain", {30, 30, 30, 5, 5, 5, 1});
   std::vector<double> d_gain = GetParam<std::vector<double>>("d_gain", {1, 1, 1, 0.1, 0.1, 0.1, 0.1});
   smooth_position_controller->SetKpKd(p_gain, d_gain);
   arm_platform_->SetController(std::move(smooth_position_controller));
+}
+
+void SlaveArmNode::SetCollisionAvoidance() {
+  std::string urdf_path = GetParam<std::string>("urdf_path", "");
+  bool enable_collision_avoidance = GetParam<bool>("enable_collision_avoidance", false);
+  double safety_distance = GetParam<double>("safety_distance", 0.1);
+  if (enable_collision_avoidance && !urdf_path.empty()) {
+    auto collision_avoidance = std::make_shared<collision::CollisionAvoidance>();
+    if (collision_avoidance->LoadModel(urdf_path)) {
+      collision_avoidance->SetSafetyDistance(safety_distance);
+      
+      std::vector<double> cylinder1_center = GetParam<std::vector<double>>("cylinder1_center", {0.0, -0.15, 0.0});
+      double cylinder1_radius = GetParam<double>("cylinder1_radius", 0.05);
+      double cylinder1_height = GetParam<double>("cylinder1_height", 0.1);
+      std::vector<double> cylinder1_axis = GetParam<std::vector<double>>("cylinder1_axis", {0, 0, 1});
+      
+      std::vector<double> cylinder2_center = GetParam<std::vector<double>>("cylinder2_center", {0.0, 0.15, 0.0});
+      double cylinder2_radius = GetParam<double>("cylinder2_radius", 0.05);
+      double cylinder2_height = GetParam<double>("cylinder2_height", 0.1);
+      std::vector<double> cylinder2_axis = GetParam<std::vector<double>>("cylinder2_axis", {0, 0, 1});
+      
+      if (cylinder1_center.size() == 3) {
+        collision::Vec3 axis1 = (cylinder1_axis.size() == 3) 
+          ? collision::Vec3(cylinder1_axis[0], cylinder1_axis[1], cylinder1_axis[2]) 
+          : collision::Vec3(0, 0, 1);
+        collision::Cylinder cyl1(
+          collision::Vec3(cylinder1_center[0], cylinder1_center[1], cylinder1_center[2]),
+          cylinder1_radius,
+          cylinder1_height,
+          axis1
+        );
+        collision_avoidance->AddCylinder(cyl1);
+        RCLCPP_INFO(this->get_logger(), "Cylinder1: center=[%.2f, %.2f, %.2f], r=%.2f, h=%.2f",
+          cylinder1_center[0], cylinder1_center[1], cylinder1_center[2],
+          cylinder1_radius, cylinder1_height);
+      }
+      
+      if (cylinder2_center.size() == 3) {
+        collision::Vec3 axis2 = (cylinder2_axis.size() == 3) 
+          ? collision::Vec3(cylinder2_axis[0], cylinder2_axis[1], cylinder2_axis[2]) 
+          : collision::Vec3(0, 0, 1);
+        collision::Cylinder cyl2(
+          collision::Vec3(cylinder2_center[0], cylinder2_center[1], cylinder2_center[2]),
+          cylinder2_radius,
+          cylinder2_height,
+          axis2
+        );
+        collision_avoidance->AddCylinder(cyl2);
+        RCLCPP_INFO(this->get_logger(), "Cylinder2: center=[%.2f, %.2f, %.2f], r=%.2f, h=%.2f",
+          cylinder2_center[0], cylinder2_center[1], cylinder2_center[2],
+          cylinder2_radius, cylinder2_height);
+      }
+      
+      arm_platform_->SetCollisionAvoidance(collision_avoidance);
+      arm_platform_->EnableCollisionAvoidance(true);
+      RCLCPP_INFO(this->get_logger(), "Collision avoidance enabled with safety distance: %.2f", safety_distance);
+    } else {
+      RCLCPP_WARN(this->get_logger(), "Failed to load URDF for collision avoidance, disabled");
+    }
+  }
 }
 
 SlaveArmNode::~SlaveArmNode() {

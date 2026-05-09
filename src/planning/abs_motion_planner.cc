@@ -21,7 +21,6 @@ void AbsMotionPlanner::PlanCore(const std::vector<double>& start,
     throw std::runtime_error("Trajectory generator is not set");
   }
   trajectory_generator_->Generate(trajectory_, start, goal, v_max, a_max, j_max);
-  std::cout << "=======================================================" << std::endl;
 }
 
 JointSetpoint AbsMotionPlanner::GetTrajectoryPoint() {

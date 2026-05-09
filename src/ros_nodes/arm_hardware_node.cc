@@ -19,7 +19,7 @@ ArmHardwareNode::ArmHardwareNode() : Node("robot_arm_node") {
 
   control_timer_ = this->create_wall_timer(
       std::chrono::milliseconds(static_cast<int>(kControlPeriodMs)),
-      [this]() { return arm_platform_->ExecuteControlCycle(kControlPeriodMs); });
+      [this]() { return arm_platform_->ExecuteControlCycle(kControlPeriodMs/1000.0f); });
 }
 
 ArmHardwareNode::~ArmHardwareNode() {
@@ -95,7 +95,6 @@ void ArmHardwareNode::Init() {
     arm_platform_->AddSubscribe(sub);
   }
 }
-
 } // namespace manipulator
 
 int main(int argc, char * argv[]) {
