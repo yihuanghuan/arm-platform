@@ -10,7 +10,7 @@ arms:
         model: "DM4340-48V"
         id: 1
         lower_limit: -3.1415
-        upper_limit: 1.5708
+        upper_limit: 2
       - name: "joint3"
         model: "DM4340-48V"
         id: 2

@@ -33,7 +33,6 @@ class DMMotor final : public IMotor {
  private:
   void SetPositionAndVelocity(double pos, double vel, uint8_t id);
   void SetCurrent(double current, uint8_t id) const;
-  void StopMotor(uint8_t id) const;
 
   protocol::ProtocolV1::SharedPtr protocol_;
   uint8_t id_;

@@ -53,19 +53,16 @@ void DMMotor::UpdateCommand(const dummy_interface::msg::MotorControl& cmd) {
   // safe torque limit
   SetCurrent(cmd.current[cmd_ind], cmd_ind);
 
-  if(position_ < lower_limit_) {
-    pos_limit_ = lower_limit_;
-    StopMotor(cmd_ind);
-    return;
+  double desired_pos = position_;
+
+  if(position_ < lower_limit_+0.05) {
+    SetPositionAndVelocity(lower_limit_, 0, cmd_ind);
   }
-  if(position_ > upper_limit_) {
-    pos_limit_ = upper_limit_;
-    StopMotor(cmd_ind);
-    return;
+  if(position_ > upper_limit_-0.05) {
+    SetPositionAndVelocity(upper_limit_, 0, cmd_ind);
   }
 
   if(cmd.position.empty() or cmd.velocity.empty()) return;
-
   // set position to current position if limit is reached
   SetPositionAndVelocity(cmd.position[cmd_ind], cmd.velocity[cmd_ind], cmd_ind);
   
