@@ -34,10 +34,11 @@ void AL1::InitFromConfig(const std::string& port, uint32_t baud,
   
   for (const auto& joint : arm_config.joints) {
     auto& model_config = motor_models[joint.model];
-    auto coord_system = model_config.coord_system == "right_hand" ? 
+    auto coord_system = model_config.coord_system == "right_hand" ?
       motor::CoordinateSystem::RightHand : motor::CoordinateSystem::LeftHand;
     auto motor = std::make_shared<motor::DMMotor>(protocol_, joint.id, coord_system);
     motor->SetRateTorque(model_config.rated_torque);
+    motor->SetJointLimit(joint.lower_limit, joint.upper_limit);
     AddMotor(joint.name, motor);
     protocol_->Attach(motor);
   }

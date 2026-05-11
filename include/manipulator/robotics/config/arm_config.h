@@ -21,6 +21,8 @@ struct JointConfig {
     std::string name;
     std::string model;
     uint8_t id{0};
+    double lower_limit{0.0};
+    double upper_limit{0.0};
 };
 
 struct ArmConfig {

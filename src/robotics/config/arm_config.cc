@@ -39,6 +39,9 @@ ArmConfig ConfigLoader::LoadArmConfig(const YAML::Node& yaml, const std::string&
             if (joint["name"]) jc.name = joint["name"].as<std::string>();
             if (joint["model"]) jc.model = joint["model"].as<std::string>();
             if (joint["id"]) jc.id = joint["id"].as<uint8_t>();
+            if (joint["lower_limit"]) jc.lower_limit = joint["lower_limit"].as<double>();
+            if (joint["upper_limit"]) jc.upper_limit = joint["upper_limit"].as<double>();
+
             config.joints.push_back(jc);
         }
     }

@@ -12,6 +12,11 @@ GravityController::GravityController()
   params_.FORCE_FEEDBACK_THRESHOLD = 0.2;
   params_.FORCE_FEEDBACK_GAIN = 0.2;
 
+  soft_limit_params_.margin = 0.02;
+  soft_limit_params_.stiffness = {20.0, 20.0, 20.0, 5, 5, 5, 5};
+  soft_limit_params_.damping = {2.0, 2.0, 2.0, 3.0, 3.0, 3.0, 3.0};
+  soft_limit_params_.tau_max = {9.0, 9.0, 9.0, 1.5, 1.5, 1.5, 1.5};
+
   uav_pose_.x = 0.0;
   uav_pose_.y = 0.0;
   uav_pose_.z = 0.0;
@@ -61,6 +66,15 @@ void GravityController::SetRotationAngle(double roll, double pitch, double yaw) 
   UpdateGravityVector();
 }
 
+void GravityController::SetSoftLimitParams(double margin, const std::array<double, 7>& stiffness,
+                                            const std::array<double, 7>& damping,
+                                            const std::array<double, 7>& tau_max) {
+  soft_limit_params_.margin = margin;
+  soft_limit_params_.stiffness = stiffness;
+  soft_limit_params_.damping = damping;
+  soft_limit_params_.tau_max = tau_max;
+}
+
 void GravityController::UpdateGravityVector() {
   Eigen::Vector3d gravity_world(0, 0, -params_.GRAVITY);
   gravity_vector_ = rotation_matrix_ * gravity_world;
@@ -100,10 +114,19 @@ JointCommand GravityController::Compute(const JointStates& joint_states,
 
     for (int i = 0; i < 7; ++i) {
       tau_comp[i] = tau_gravity[i];
+    }
+
+    if (force_feedback_available_) {
+      tau_comp = CollisionDetection(tau_comp, uav_joint_currents_, uav_compensation_torques_);
+    }
+
+    // tau_comp = apply_soft_limit(tau_comp, joint_states.position, joint_states.velocity);
+    // tau_comp = clamp_torque(tau_comp);
+
+    for (int i = 0; i < 7; ++i) {
       cmd.current[i] = tau_comp[i];
     }
   
-    // tau_comp[2] *= -1;
   } catch (const std::exception& e) {
     std::cerr << "Error computing gravity compensation: " << e.what() << std::endl;
   }
@@ -111,7 +134,7 @@ JointCommand GravityController::Compute(const JointStates& joint_states,
   return cmd;
 }
 
-std::array<double, 7> GravityController::collision_detection(
+std::array<double, 7> GravityController::CollisionDetection(
     const std::array<double, 7>& tau_comp,
     const std::array<double, 7>& joint_currents_,
     const std::array<double, 7>& compensation_torques) {

@@ -28,8 +28,13 @@ class DMMotor final : public IMotor {
   double GetVoltage() const override;
   
   double GetRatedTorque() const override;
+  void SetJointLimit(double lower_limit, double upper_limit) override;
  
  private:
+  void SetPositionAndVelocity(double pos, double vel, uint8_t id);
+  void SetCurrent(double current, uint8_t id) const;
+  void StopMotor(uint8_t id) const;
+
   protocol::ProtocolV1::SharedPtr protocol_;
   uint8_t id_;
   double position_;
@@ -43,6 +48,9 @@ class DMMotor final : public IMotor {
   double vel_set_;
   bool is_received_;
   const double DT_ = 0.005;
+  double lower_limit_;
+  double upper_limit_;
+  double pos_limit_;
   CoordinateSystem coord_system_;
 };
 
