@@ -39,6 +39,7 @@ void AL1::InitFromConfig(const std::string& port, uint32_t baud,
     auto motor = std::make_shared<motor::DMMotor>(protocol_, joint.id, coord_system);
     motor->SetRateTorque(model_config.rated_torque);
     motor->SetJointLimit(joint.lower_limit, joint.upper_limit);
+    motor->SetDefaultGains(model_config.p_gain_default, model_config.d_gain_default);
     AddMotor(joint.name, motor);
     protocol_->Attach(motor);
   }

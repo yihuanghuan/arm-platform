@@ -7,8 +7,10 @@ namespace manipulator::motor {
 
 DMMotor::DMMotor(protocol::ProtocolV1::SharedPtr protocol, uint8_t id, 
                  CoordinateSystem coord_system)
- : protocol_(protocol), id_(id), vel_set_(0), coord_system_(coord_system),
-   lower_limit_(0), upper_limit_(0), pos_limit_(0) {
+ : protocol_(protocol), id_(id), position_(0), velocity_(0), torque_(0),
+   temperature_(0), voltage_(0), rate_torque_(0), pos_set_(0), vel_set_(0),
+   is_received_(false), lower_limit_(0), upper_limit_(0), pos_limit_(0),
+   coord_system_(coord_system) {
 }
 
 void DMMotor::SetRateTorque(double rate_torque) {
@@ -18,6 +20,11 @@ void DMMotor::SetRateTorque(double rate_torque) {
 void DMMotor::SetJointLimit(double lower_limit, double upper_limit) {
   lower_limit_ = lower_limit;
   upper_limit_ = upper_limit;
+}
+
+void DMMotor::SetDefaultGains(double kp, double kd) {
+  p_gain_default_ = kp;
+  d_gain_default_ = kd;
 }
 
 double DMMotor::GetRatedTorque() const {
@@ -40,43 +47,41 @@ void DMMotor::UpdateState() {
 }
 
 void DMMotor::UpdateCommand(const dummy_interface::msg::MotorControl& cmd) {
-  // Motor is not ready if not received state
   if (not is_received_) return;
-  if (cmd.position.empty() and cmd.current.empty()) return;
 
-  // set cmd indx to 0 if only one position or current is given
-  uint8_t cmd_ind = id_;
-  if (cmd.position.size() == 1) cmd_ind = 0;
-
-  protocol_->SetKp(cmd_ind, cmd.p[cmd_ind]);
-  protocol_->SetKd(cmd_ind, cmd.d[cmd_ind]);
-  // safe torque limit
-  SetCurrent(cmd.current[cmd_ind], cmd_ind);
-
-  double desired_pos = position_;
-
-  if(position_ < lower_limit_+0.05) {
-    SetPositionAndVelocity(lower_limit_, 0, cmd_ind);
-  }
-  if(position_ > upper_limit_-0.05) {
-    SetPositionAndVelocity(upper_limit_, 0, cmd_ind);
+  if (id_ >= cmd.p.size() or id_ >= cmd.d.size() or id_ >= cmd.current.size()) {
+    throw std::runtime_error("ID out of range");
   }
 
-  if(cmd.position.empty() or cmd.velocity.empty()) return;
-  // set position to current position if limit is reached
-  SetPositionAndVelocity(cmd.position[cmd_ind], cmd.velocity[cmd_ind], cmd_ind);
+  protocol_->SetKp(id_, cmd.p[id_]);
+  protocol_->SetKd(id_, cmd.d[id_]);
+  SetCurrent(cmd.current[id_]);
+
+  double desired_pos = cmd.position[id_];
   
+  // set kp kd to default value and set position to limit if position is out of range
+  if (position_ < lower_limit_+0.05 or position_ > upper_limit_-0.05) {
+    if (cmd.p[id_] == 0) {
+      protocol_->SetKp(id_, p_gain_default_);
+      protocol_->SetKd(id_, d_gain_default_);
+    }
+    desired_pos = std::clamp(position_, lower_limit_+0.05, upper_limit_-0.05);
+  }
+  
+  // set position to current position if limit is reached
+  SetPositionAndVelocity(desired_pos, cmd.velocity[id_]);
+
 }
 
-void DMMotor::SetCurrent(double current, uint8_t id) const {
+void DMMotor::SetCurrent(double current) const {
   if (coord_system_ == CoordinateSystem::LeftHand) {
     current = -current;
   }
   current = std::clamp(current, -rate_torque_, rate_torque_);
-  protocol_->SetCurrent(id, current);
+  protocol_->SetCurrent(id_, current);
 }
 
-void DMMotor::SetPositionAndVelocity(double pos, double vel, uint8_t id) {
+void DMMotor::SetPositionAndVelocity(double pos, double vel) {
 
   double pos_err = pos - position_;
   pos_set_ = pos;
@@ -88,8 +93,8 @@ void DMMotor::SetPositionAndVelocity(double pos, double vel, uint8_t id) {
     pos_set_send = -pos_set_;
   }
   
-  protocol_->SetPosition(id, pos_set_send);
-  protocol_->SetVelocity(id, vel_cmd);
+  protocol_->SetPosition(id_, pos_set_send);
+  protocol_->SetVelocity(id_, vel_cmd);
 }
 
 double DMMotor::GetPosition() const {

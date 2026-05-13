@@ -26,16 +26,19 @@ class DMMotor final : public IMotor {
   double GetCurrent() const override;
   double GetTemperature() const override;
   double GetVoltage() const override;
-  
   double GetRatedTorque() const override;
   void SetJointLimit(double lower_limit, double upper_limit) override;
+  void SetDefaultGains(double kp, double kd);
  
  private:
-  void SetPositionAndVelocity(double pos, double vel, uint8_t id);
-  void SetCurrent(double current, uint8_t id) const;
+  void SetPositionAndVelocity(double pos, double vel);
+  void SetCurrent(double current) const;
 
   protocol::ProtocolV1::SharedPtr protocol_;
   uint8_t id_;
+  double p_gain_default_;
+  double d_gain_default_;
+
   double position_;
   double velocity_;
   double torque_;

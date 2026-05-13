@@ -23,6 +23,7 @@ class IMotor {
   virtual double GetRatedTorque() const = 0;
   virtual void SetRateTorque(double rate_torque) = 0;
   virtual void SetJointLimit(double lower_limit, double upper_limit) = 0;
+  virtual void SetDefaultGains(double kp, double kd) = 0;
 };
 
 } // namespace manipulator::motor

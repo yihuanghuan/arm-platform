@@ -11,7 +11,9 @@
 
   <build_depend>dummy_interface</build_depend>
   <build_depend>geometry_msgs</build_depend>
+  <build_depend>pinocchio</build_depend>
 
+  <exec_depend>pinocchio</exec_depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>

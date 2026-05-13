@@ -94,8 +94,8 @@ JointCommand GravityController::Compute(const JointStates& joint_states,
   std::array<double, 7> tau_comp = {0, 0, 0, 0, 0, 0, 0};
   JointCommand cmd;
   size_t num_joints = joint_states.position.size();
-  cmd.position.clear();
-  cmd.velocity.clear();
+  cmd.position.resize(num_joints);
+  cmd.velocity.resize(num_joints);
   cmd.current.resize(num_joints);
   cmd.p.resize(num_joints);
   cmd.d.resize(num_joints);
