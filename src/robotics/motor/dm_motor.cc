@@ -92,18 +92,6 @@ void DMMotor::SetPositionAndVelocity(double pos, double vel, uint8_t id) {
   protocol_->SetVelocity(id, vel_cmd);
 }
 
-void DMMotor::StopMotor(uint8_t id) const {
-  protocol_->SetKp(id, 10);
-  protocol_->SetKd(id, 0.1);
-  if (id >2) {
-    protocol_->SetKp(id, 0.3);
-    protocol_->SetKd(id, 0.5);
-  }
-  protocol_->SetPosition(id, pos_limit_);
-  protocol_->SetCurrent(id, 0);
-  protocol_->SetVelocity(id, 0);
-}
-
 double DMMotor::GetPosition() const {
   return position_;
 }

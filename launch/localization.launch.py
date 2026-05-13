@@ -18,7 +18,7 @@ def get_localization_launch(context, *args, **kwargs):
     )
     
     odom_to_mavros = Node(
-        package="fastlio2",
+        package="vrpn_listener",
         executable="odom_to_mavros.py",
         name="odom_to_mavros",
         output="screen",
@@ -26,8 +26,8 @@ def get_localization_launch(context, *args, **kwargs):
     
     vicon_to_mavros = Node(
         package="vrpn_listener",
-        executable="vrpn_to_mavros_test.py",
-        name="vrpn_to_mavros_test",
+        executable="vrpn_to_mavros.py",
+        name="vrpn_to_mavros",
         output="screen",
     )
     
@@ -45,7 +45,7 @@ def get_localization_launch(context, *args, **kwargs):
 
 def generate_launch_description():
     mavros_launch = ExecuteProcess(
-        cmd=['ros2', 'launch', 'mavros', 'px4.launch', 'gcs_url:=udp://:14550@'],
+        cmd=['ros2', 'launch', 'mavros', 'px4.launch', 'gcs_url:=udp://:14550@', 'fcu_url:=/dev/ttyTHS1'],
         output='screen'
     )
     
