@@ -15,6 +15,7 @@ find_package(std_msgs REQUIRED)
 find_package(dummy_interface REQUIRED)
 find_package(serial REQUIRED)
 find_package(geometry_msgs REQUIRED)
+find_package(visualization_msgs REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(pinocchio REQUIRED)
 
@@ -157,6 +158,7 @@ ament_target_dependencies(slave_arm_node
   sensor_msgs
   std_msgs
   dummy_interface
+  visualization_msgs
 )
 
 # ==============================
@@ -193,7 +195,7 @@ install(DIRECTORY config/
 # ==============================
 ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
 ament_export_include_directories(include)
-ament_export_dependencies(rclcpp sensor_msgs std_msgs dummy_interface)
+ament_export_dependencies(rclcpp sensor_msgs std_msgs dummy_interface visualization_msgs)
 
 # ==============================
 # Tests & Lint

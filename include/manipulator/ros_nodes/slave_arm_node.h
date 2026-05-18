@@ -11,6 +11,8 @@
 #include <dummy_interface/msg/motor_control.hpp>
 #include <std_msgs/msg/float64_multi_array.hpp>
 #include <geometry_msgs/msg/point.hpp>
+#include <visualization_msgs/msg/marker_array.hpp>
+#include <manipulator/collision/aabb.h>
 #include <manipulator/robotics/arm_data_subscriber.h>
 #include <manipulator/robotics/arm_platform.h>
 
@@ -39,18 +41,23 @@ class SlaveArmNode : public rclcpp::Node, public IArmDataSubscriber {
   // void DebugInfoCallback();
   void SetArmPlatform();
   void SetCollisionAvoidance();
+  void PublishCollisionMarkers();
   void MasterStateCallback(const sensor_msgs::msg::JointState::ConstSharedPtr& msg);
 
   rclcpp::TimerBase::SharedPtr control_timer_;
   rclcpp::TimerBase::SharedPtr debug_timer_;
+  rclcpp::TimerBase::SharedPtr collision_marker_timer_;
   
   rclcpp::Publisher<dummy_interface::msg::MotorState>::SharedPtr pub_joint_feedback_;
   rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr pub_joint_state_;
+  rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr pub_collision_markers_;
   
   rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr sub_master_state_;
   rclcpp::Subscription<geometry_msgs::msg::Point>::SharedPtr sub_uav_pose_;
   
   ArmPlatform::UniPtr arm_platform_;
+  std::vector<collision::Cylinder> collision_marker_cylinders_;
+  std::string collision_marker_frame_ = "base_link";
 
   bool got_feedback_ = false;
   bool publish_joint_feedback_ = false;

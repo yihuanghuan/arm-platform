@@ -73,12 +73,12 @@ def generate_launch_description():
                 {'urdf_path': PathJoinSubstitution([pkg_share, 'arm.urdf'])},
                 {'enable_collision_avoidance': LaunchConfiguration('enable_collision_avoidance')},
                 {'safety_distance': LaunchConfiguration('safety_distance')},
-                {'cylinder1_center': [-0.15, -0.50, 0.0]}, # right cylinder
-                {'cylinder1_radius': 0.30},
+                {'cylinder1_center': [-0.15, -0.37, -0.1]}, # right cylinder
+                {'cylinder1_radius': 0.27},
                 {'cylinder1_height': 0.1},
                 {'cylinder1_axis': [0.0, 0.0, 1.0]},
-                {'cylinder2_center': [-0.15, 0.37, 0.0]}, # left cylinder
-                {'cylinder2_radius': 0.30},
+                {'cylinder2_center': [-0.15, 0.37, -0.1]}, # left cylinder
+                {'cylinder2_radius': 0.27},
                 {'cylinder2_height': 0.1},
                 {'cylinder2_axis': [0.0, 0.0, 1.0]}
             ]

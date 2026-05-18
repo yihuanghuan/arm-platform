@@ -50,7 +50,7 @@ void DMMotor::UpdateCommand(const dummy_interface::msg::MotorControl& cmd) {
   if (not is_received_) return;
 
   if (id_ >= cmd.p.size() or id_ >= cmd.d.size() or id_ >= cmd.current.size()) {
-    throw std::runtime_error("ID out of range");
+    return;
   }
 
   protocol_->SetKp(id_, cmd.p[id_]);

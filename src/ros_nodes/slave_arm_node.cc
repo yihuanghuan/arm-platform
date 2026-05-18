@@ -5,6 +5,7 @@
 #include <manipulator/planning/trajectory/scurve_generator.h>
 #include <manipulator/collision/collision_avoidance.h>
 #include <manipulator/common_types.h>
+#include <Eigen/Geometry>
 #include <chrono>
 #include <thread>
 
@@ -16,11 +17,13 @@ SlaveArmNode::SlaveArmNode()
   
   bool debug_info = GetParam<bool>("debug_info", false);
   double debug_rate = GetParam<double>("debug_rate", 1.0);
-  bool publish_joint_state = GetParam<bool>("publish_joint_state", true);
-  bool publish_joint_feedback = GetParam<bool>("publish_joint_feedback", false);
+  publish_joint_state_ = GetParam<bool>("publish_joint_state", true);
+  publish_joint_feedback_ = GetParam<bool>("publish_joint_feedback", false);
 
   pub_joint_state_ = this->create_publisher<sensor_msgs::msg::JointState>("joint_states", 10);
   pub_joint_feedback_ = this->create_publisher<dummy_interface::msg::MotorState>("joint_feedback", 10);
+  auto marker_qos = rclcpp::QoS(1).transient_local();
+  pub_collision_markers_ = this->create_publisher<visualization_msgs::msg::MarkerArray>("collision_obstacles", marker_qos);
 
   sub_master_state_ = this->create_subscription<sensor_msgs::msg::JointState>(
       "/master/joint_states", 10,
@@ -89,6 +92,7 @@ void SlaveArmNode::SetCollisionAvoidance() {
   std::string urdf_path = GetParam<std::string>("urdf_path", "");
   bool enable_collision_avoidance = GetParam<bool>("enable_collision_avoidance", false);
   double safety_distance = GetParam<double>("safety_distance", 0.1);
+  std::string collision_marker_frame = GetParam<std::string>("collision_marker_frame", "base_link");
   if (enable_collision_avoidance && !urdf_path.empty()) {
     auto collision_avoidance = std::make_shared<collision::CollisionAvoidance>();
     if (collision_avoidance->LoadModel(urdf_path)) {
@@ -136,6 +140,12 @@ void SlaveArmNode::SetCollisionAvoidance() {
           cylinder2_radius, cylinder2_height);
       }
       
+      collision_marker_cylinders_ = collision_avoidance->GetCylinders();
+      collision_marker_frame_ = collision_marker_frame;
+      PublishCollisionMarkers();
+      collision_marker_timer_ = this->create_wall_timer(
+          std::chrono::milliseconds(500),
+          [this]() { return PublishCollisionMarkers(); });
       arm_platform_->SetCollisionAvoidance(collision_avoidance);
       arm_platform_->EnableCollisionAvoidance(true);
       RCLCPP_INFO(this->get_logger(), "Collision avoidance enabled with safety distance: %.2f", safety_distance);
@@ -145,10 +155,59 @@ void SlaveArmNode::SetCollisionAvoidance() {
   }
 }
 
+void SlaveArmNode::PublishCollisionMarkers() {
+  if (collision_marker_cylinders_.empty()) {
+    return;
+  }
+
+  visualization_msgs::msg::MarkerArray marker_array;
+  auto stamp = this->now();
+
+  for (size_t i = 0; i < collision_marker_cylinders_.size(); ++i) {
+    const auto& cylinder = collision_marker_cylinders_[i];
+    visualization_msgs::msg::Marker marker;
+    marker.header.frame_id = collision_marker_frame_;
+    marker.header.stamp = stamp;
+    marker.ns = "collision_cylinders";
+    marker.id = static_cast<int>(i);
+    marker.type = visualization_msgs::msg::Marker::CYLINDER;
+    marker.action = visualization_msgs::msg::Marker::ADD;
+    marker.pose.position.x = cylinder.center.x();
+    marker.pose.position.y = cylinder.center.y();
+    marker.pose.position.z = cylinder.center.z();
+
+    collision::Vec3 axis = cylinder.axis;
+    if (axis.norm() < 1e-9) {
+      axis = collision::Vec3(0, 0, 1);
+    }
+    axis.normalize();
+    Eigen::Quaterniond orientation = Eigen::Quaterniond::FromTwoVectors(collision::Vec3(0, 0, 1), axis);
+    orientation.normalize();
+    marker.pose.orientation.x = orientation.x();
+    marker.pose.orientation.y = orientation.y();
+    marker.pose.orientation.z = orientation.z();
+    marker.pose.orientation.w = orientation.w();
+
+    marker.scale.x = cylinder.radius * 2.0;
+    marker.scale.y = cylinder.radius * 2.0;
+    marker.scale.z = cylinder.height;
+    marker.color.r = 1.0;
+    marker.color.g = 0.2;
+    marker.color.b = 0.1;
+    marker.color.a = 0.45;
+    marker_array.markers.push_back(marker);
+  }
+
+  pub_collision_markers_->publish(marker_array);
+}
+
 SlaveArmNode::~SlaveArmNode() {
   control_timer_->cancel();
   if (debug_timer_) {
     debug_timer_->cancel();
+  }
+  if (collision_marker_timer_) {
+    collision_marker_timer_->cancel();
   }
 }
 
