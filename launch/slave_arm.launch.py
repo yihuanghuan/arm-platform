@@ -49,7 +49,7 @@ def generate_launch_description():
             parameters=[
                 {'arm_type': 'a_l1'},
                 {'arm_version': 'gamma'},
-                {'port_name': '/dev/ttyTHS1'},
+                {'port_name': '/dev/ttyTHS3'},
                 {'max_velocity': 3.0},
                 {'motor_config_path': motor_config_path},
                 {'arm_config_path': arm_config_path},

@@ -10,7 +10,7 @@ import os
 def get_localization_launch(context, *args, **kwargs):
     loc_type = context.launch_configurations.get('loc_type', 'mid360')
     
-    fastlio2_path = get_package_share_directory('fastlio2')
+    fastlio2_path = get_package_share_directory('fast_lio')
     
     vicon_launch = ExecuteProcess(
         cmd=['ros2', 'launch', 'vrpn_listener', 'vrpn_client.launch'],
@@ -33,19 +33,22 @@ def get_localization_launch(context, *args, **kwargs):
     
     lio_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
-            fastlio2_path + '/launch/lio_launch1.py'
+            fastlio2_path + '/launch/mapping.launch.py'
         )
     )
     
     if loc_type == 'vicon':
         return [vicon_launch, vicon_to_mavros]
     else:
-        return [lio_launch, odom_to_mavros, vicon_launch]
+        return [
+            # lio_launch,
+            odom_to_mavros, 
+            vicon_launch]
 
 
 def generate_launch_description():
     mavros_launch = ExecuteProcess(
-        cmd=['ros2', 'launch', 'mavros', 'px4.launch', 'gcs_url:=udp://:14550@', 'fcu_url:=/dev/ttyTHS1'],
+        cmd=['ros2', 'launch', 'mavros', 'px4.launch', 'gcs_url:=udp://:14550@', 'fcu_url:=/dev/ttyTHS1:921600'],
         output='screen'
     )
     

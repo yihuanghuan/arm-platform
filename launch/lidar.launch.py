@@ -3,6 +3,7 @@ from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
 from ament_index_python.packages import get_package_share_directory
+from launch_ros.actions import Node
 
 
 def generate_launch_description():
@@ -22,7 +23,7 @@ def generate_launch_description():
     
     left_lidar_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
-            livox_driver_path + '/launch_ROS2/msg_MID360_launch.py'
+            livox_driver_path + '/launch_ROS2/msg_MID360s_launch.py'
         ),
         launch_arguments={
             'lidar_config': 'left',
@@ -33,7 +34,7 @@ def generate_launch_description():
     
     right_lidar_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
-            livox_driver_path + '/launch_ROS2/msg_MID360_launch.py'
+            livox_driver_path + '/launch_ROS2/msg_MID360s_launch.py'
         ),
         launch_arguments={
             'lidar_config': 'right',
@@ -42,10 +43,9 @@ def generate_launch_description():
         }.items()
     )
 
-
     return LaunchDescription([
         xfer_format_arg,
         multi_topic_arg,
         # left_lidar_launch,
-        right_lidar_launch
+        right_lidar_launch,
     ])
