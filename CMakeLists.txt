@@ -147,6 +147,10 @@ add_executable(slave_arm_node
   src/ros_nodes/slave_arm_node.cc
 )
 
+add_executable(robot_health_aggregator
+  src/ros_nodes/robot_health_aggregator.cc
+)
+
 target_link_libraries(slave_arm_node
   manipulator_core
   controller_lib
@@ -161,6 +165,16 @@ ament_target_dependencies(slave_arm_node
   visualization_msgs
 )
 
+ament_target_dependencies(robot_health_aggregator
+  rclcpp
+  std_msgs
+)
+
+target_include_directories(robot_health_aggregator PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>
+)
+
 # ==============================
 # Install
 # ==============================
@@ -172,6 +186,7 @@ install(TARGETS
   arm_hardware_node
   master_arm_node
   slave_arm_node
+  robot_health_aggregator
   EXPORT export_${PROJECT_NAME}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
@@ -188,6 +203,22 @@ install(DIRECTORY launch/
 
 install(DIRECTORY config/
   DESTINATION share/${PROJECT_NAME}/
+)
+
+install(PROGRAMS
+  scripts/set_camera_ip.sh
+  scripts/get_camera_ip.sh
+  scripts/set_livox_lidar_ip.sh
+  scripts/get_livox_lidar_ip.sh
+  scripts/start.sh
+  scripts/stop.sh
+  scripts/clean.sh
+  DESTINATION share/${PROJECT_NAME}
+)
+
+install(FILES
+  scripts/robot.service
+  DESTINATION lib/systemd/system
 )
 
 # ==============================

@@ -41,9 +41,10 @@ def get_localization_launch(context, *args, **kwargs):
         return [vicon_launch, vicon_to_mavros]
     else:
         return [
-            # lio_launch,
+            lio_launch,
             odom_to_mavros, 
-            vicon_launch]
+            # vicon_launch
+        ]
 
 
 def generate_launch_description():

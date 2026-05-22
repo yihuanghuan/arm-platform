@@ -7,6 +7,7 @@
 
 #include <rclcpp/rclcpp.hpp>
 #include <std_msgs/msg/float64_multi_array.hpp>
+#include <std_msgs/msg/string.hpp>
 #include <sensor_msgs/msg/joint_state.hpp>
 #include <dummy_interface/msg/motor_state.hpp>
 #include <dummy_interface/msg/motor_control.hpp>
@@ -39,12 +40,15 @@ class MasterArmNode : public rclcpp::Node, public IArmDataSubscriber {
   // void DebugInfoCallback();
   void Reset();
   void SetArmPlatform();
+  void PublishHealth();
 
   rclcpp::TimerBase::SharedPtr control_timer_;
   rclcpp::TimerBase::SharedPtr debug_timer_;
+  rclcpp::TimerBase::SharedPtr health_timer_;
 
   rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr pub_joint_state_;
   rclcpp::Publisher<dummy_interface::msg::MotorState>::SharedPtr pub_joint_feedback_;
+  rclcpp::Publisher<std_msgs::msg::String>::SharedPtr pub_health_;
   rclcpp::Subscription<geometry_msgs::msg::Point>::SharedPtr sub_uav_pose_;
   rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr sub_slave_state_;
 

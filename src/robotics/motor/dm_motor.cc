@@ -64,8 +64,14 @@ void DMMotor::UpdateCommand(const dummy_interface::msg::MotorControl& cmd) {
     if (cmd.p[id_] == 0) {
       protocol_->SetKp(id_, p_gain_default_);
       protocol_->SetKd(id_, d_gain_default_);
+      desired_pos = std::clamp(position_, lower_limit_+0.05, upper_limit_-0.05);
     }
-    desired_pos = std::clamp(position_, lower_limit_+0.05, upper_limit_-0.05);
+    // if position is in range, set desired position to position
+    else if(cmd.position[id_] >= lower_limit_+0.05 and cmd.position[id_] <= upper_limit_-0.05) {
+      desired_pos = cmd.position[id_];
+    } else {
+      desired_pos = std::clamp(position_, lower_limit_+0.05, upper_limit_-0.05);
+    }
   }
   
   // set position to current position if limit is reached

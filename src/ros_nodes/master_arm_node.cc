@@ -4,6 +4,7 @@
 #include <manipulator/controller/smooth_position_controller.h>
 #include <manipulator/planning/reset_motion_planner.h>
 #include <manipulator/planning/trajectory/scurve_generator.h>
+#include <sstream>
 
 namespace manipulator {
 
@@ -17,6 +18,10 @@ MasterArmNode::MasterArmNode()
   
   pub_joint_state_ = this->create_publisher<sensor_msgs::msg::JointState>("joint_states", 10); 
   pub_joint_feedback_ = this->create_publisher<dummy_interface::msg::MotorState>("joint_feedback", 10);
+  pub_health_ = this->create_publisher<std_msgs::msg::String>("/health/master_arm", 10);
+  health_timer_ = this->create_wall_timer(
+      std::chrono::seconds(1),
+      [this]() { PublishHealth(); });
   
   sub_slave_state_ = this->create_subscription<sensor_msgs::msg::JointState>(
     "/slave/joint_states", 10,
@@ -112,6 +117,20 @@ void MasterArmNode::Init() {
   if (sub) {
     arm_platform_->AddSubscribe(sub);
   }
+}
+
+void MasterArmNode::PublishHealth() {
+  std_msgs::msg::String msg;
+  std::ostringstream payload;
+  payload << "{";
+  payload << "\"module\":\"master_arm\",";
+  payload << "\"status\":\"OK\",";
+  payload << "\"code\":\"OK\",";
+  payload << "\"message\":\"running\",";
+  payload << "\"stamp\":" << now().seconds();
+  payload << "}";
+  msg.data = payload.str();
+  pub_health_->publish(msg);
 }
 } // namespace manipulator
 

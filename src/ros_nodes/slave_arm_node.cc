@@ -8,6 +8,7 @@
 #include <Eigen/Geometry>
 #include <chrono>
 #include <thread>
+#include <sstream>
 
 namespace manipulator {
 
@@ -24,6 +25,10 @@ SlaveArmNode::SlaveArmNode()
   pub_joint_feedback_ = this->create_publisher<dummy_interface::msg::MotorState>("joint_feedback", 10);
   auto marker_qos = rclcpp::QoS(1).transient_local();
   pub_collision_markers_ = this->create_publisher<visualization_msgs::msg::MarkerArray>("collision_obstacles", marker_qos);
+  pub_health_ = this->create_publisher<std_msgs::msg::String>("/health/slave_arm", 10);
+  health_timer_ = this->create_wall_timer(
+      std::chrono::seconds(1),
+      [this]() { PublishHealth(); });
 
   sub_master_state_ = this->create_subscription<sensor_msgs::msg::JointState>(
       "/master/joint_states", 10,
@@ -226,6 +231,23 @@ void SlaveArmNode::Init() {
   if (sub) {
     arm_platform_->AddSubscribe(sub);
   }
+}
+
+void SlaveArmNode::PublishHealth() {
+  std_msgs::msg::String msg;
+  std::ostringstream payload;
+  const char* status = got_feedback_ ? "OK" : "WARN";
+  const char* code = got_feedback_ ? "OK" : "NO_MASTER_FEEDBACK";
+  const char* message = got_feedback_ ? "running" : "waiting for master feedback";
+  payload << "{";
+  payload << "\"module\":\"slave_arm\",";
+  payload << "\"status\":\"" << status << "\",";
+  payload << "\"code\":\"" << code << "\",";
+  payload << "\"message\":\"" << message << "\",";
+  payload << "\"stamp\":" << now().seconds();
+  payload << "}";
+  msg.data = payload.str();
+  pub_health_->publish(msg);
 }
 } // namespace manipulator
 

@@ -35,5 +35,5 @@ arms:
       - name: "joint7"
         model: "RS05"
         id: 6
-        lower_limit: -1.5708
-        upper_limit: 1.5708
+        lower_limit: -4
+        upper_limit: 4

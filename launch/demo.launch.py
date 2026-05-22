@@ -3,6 +3,7 @@ from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, Opaq
 from launch.substitutions import LaunchConfiguration
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch_ros.substitutions import FindPackageShare
+from launch_ros.actions import Node
 from launch.substitutions import PathJoinSubstitution
 
 
@@ -46,11 +47,29 @@ def generate_launch_description():
         launch_arguments={'loc_type': LaunchConfiguration('loc_type')}.items()
     )
 
+    health_aggregator_node = Node(
+        package='manipulator',
+        executable='robot_health_aggregator',
+        name='robot_health_aggregator',
+        output='screen',
+        parameters=[{
+            'health_topics': [
+                '/health/master_arm',
+                '/health/slave_arm',
+                '/health/lidar',
+                '/health/localization'
+            ],
+            'timeout_sec': 3.0,
+            'publish_rate': 1.0
+        }]
+    )
+
     return LaunchDescription([
         use_slave_mode_arg,
         loc_type_arg,
         lidar_launch,
-        # slave_arm_launch,
-        # camera_launch,
+        slave_arm_launch,
+        camera_launch,
         localization_launch,
+        health_aggregator_node,
     ])
