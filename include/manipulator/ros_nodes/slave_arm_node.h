@@ -64,6 +64,8 @@ class SlaveArmNode : public rclcpp::Node, public IArmDataSubscriber {
   std::string collision_marker_frame_ = "base_link";
 
   bool got_feedback_ = false;
+  double last_master_feedback_stamp_ = 0.0;
+  double master_feedback_timeout_sec_ = 1.0;
   bool publish_joint_feedback_ = false;
   bool publish_joint_state_ = false;
   dummy_interface::msg::MotorControl cmd_;

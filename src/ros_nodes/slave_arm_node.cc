@@ -20,6 +20,7 @@ SlaveArmNode::SlaveArmNode()
   double debug_rate = GetParam<double>("debug_rate", 1.0);
   publish_joint_state_ = GetParam<bool>("publish_joint_state", true);
   publish_joint_feedback_ = GetParam<bool>("publish_joint_feedback", false);
+  master_feedback_timeout_sec_ = GetParam<double>("master_feedback_timeout_sec", 1.0);
 
   pub_joint_state_ = this->create_publisher<sensor_msgs::msg::JointState>("joint_states", 10);
   pub_joint_feedback_ = this->create_publisher<dummy_interface::msg::MotorState>("joint_feedback", 10);
@@ -65,6 +66,7 @@ void SlaveArmNode::MasterStateCallback(const sensor_msgs::msg::JointState::Const
   arm_platform_->SetJointSetpoint(joint_setpoint);
 
   got_feedback_ = true;
+  last_master_feedback_stamp_ = now().seconds();
 }
 
 void SlaveArmNode::SetArmPlatform() {  
@@ -234,6 +236,10 @@ void SlaveArmNode::Init() {
 }
 
 void SlaveArmNode::PublishHealth() {
+  if (got_feedback_ && now().seconds() - last_master_feedback_stamp_ > master_feedback_timeout_sec_) {
+    got_feedback_ = false;
+  }
+
   std_msgs::msg::String msg;
   std::ostringstream payload;
   const char* status = got_feedback_ ? "OK" : "WARN";

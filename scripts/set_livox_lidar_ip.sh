@@ -41,6 +41,7 @@ try:
     with os.fdopen(fd, "w", encoding="utf-8") as f:
         json.dump(config, f, indent=2)
         f.write("\n")
+    os.chmod(tmp_path, 0o644)
     os.replace(tmp_path, path)
 finally:
     if os.path.exists(tmp_path):

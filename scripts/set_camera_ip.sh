@@ -39,6 +39,7 @@ fd, tmp_path = tempfile.mkstemp(prefix=".camera.yaml.", dir=dirname, text=True)
 try:
     with os.fdopen(fd, "w", encoding="utf-8") as f:
         f.write(content)
+    os.chmod(tmp_path, 0o644)
     os.replace(tmp_path, path)
 finally:
     if os.path.exists(tmp_path):
