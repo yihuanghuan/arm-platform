@@ -156,6 +156,9 @@ package-deb:
       docker cp ${CONTAINER_ID}:/ros_ws/src/arm-platform/dist ./dist
       cleanup_container
       trap - EXIT
+    - echo "Expected deb file dist/${DEB_FILE}"
+    - find dist -maxdepth 1 -type f -printf '%f\n' | sort
+    - test -f "dist/${DEB_FILE}"
     - dpkg-deb --info dist/${DEB_FILE}
     - dpkg-deb --contents dist/${DEB_FILE}
   artifacts:
@@ -195,7 +198,7 @@ release:
       ### Install
 
       ```bash
-      sudo dpkg -i ${DEB_FILE}
+      sudo dpkg -i dist/${DEB_FILE}
       ```
     assets:
       links:
