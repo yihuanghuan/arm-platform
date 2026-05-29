@@ -3,9 +3,25 @@
 #include <manipulator/controller/smooth_position_controller.h>
 #include <manipulator/common_types.h>
 
+#include <sstream>
+
 using namespace std::chrono_literals;
 
 namespace manipulator {
+namespace {
+std::string FormatVector(const std::vector<double>& values) {
+  std::ostringstream stream;
+  stream << "[";
+  for (size_t i = 0; i < values.size(); ++i) {
+    if (i > 0) {
+      stream << ", ";
+    }
+    stream << values[i];
+  }
+  stream << "]";
+  return stream.str();
+}
+}
 
 ArmHardwareNode::ArmHardwareNode() : Node("robot_arm_node") {
   arm_platform_ = std::make_unique<ArmPlatform>();
@@ -46,7 +62,9 @@ void ArmHardwareNode::SetArmPlatform() {
   std::vector<double> p_gain = GetParam<std::vector<double>>("p_gain", {30, 30, 30, 5, 5, 5, 1});
   std::vector<double> d_gain = GetParam<std::vector<double>>("d_gain", {1, 1, 1, 0.1, 0.1, 0.1, 0.1});
   smooth_position_controller->SetKpKd(p_gain, d_gain);
-  RCLCPP_INFO(this->get_logger(), "ArmHardwareNode set p_gain: %s, d_gain: %s", p_gain.data(), d_gain.data());
+  const auto p_gain_text = FormatVector(p_gain);
+  const auto d_gain_text = FormatVector(d_gain);
+  RCLCPP_INFO(this->get_logger(), "ArmHardwareNode set p_gain: %s, d_gain: %s", p_gain_text.c_str(), d_gain_text.c_str());
   arm_platform_->SetController(std::move(smooth_position_controller));
 }
 

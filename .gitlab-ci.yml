@@ -1,5 +1,15 @@
 stages:
   - build
+  - package
+  - release
+
+variables:
+  DEB_PACKAGE_NAME: windshape-manipulator
+  ROS_PACKAGE_NAME: manipulator
+  DEFAULT_PACKAGE_VERSION: "0.1.0"
+  PACKAGE_ARCH: arm64
+  ROS_DISTRO: humble
+  DEBIAN_FRONTEND: noninteractive
 
 build-verify:
   stage: build
@@ -66,3 +76,70 @@ build-verify:
     expire_in: 1 week
     reports:
       junit: docker-run.log
+
+package-deb:
+  stage: package
+  tags:
+    - manipulator
+  script:
+    - |
+      if [ -n "${CI_COMMIT_TAG:-}" ]; then
+        export PACKAGE_VERSION="${CI_COMMIT_TAG#v}"
+      else
+        export PACKAGE_VERSION="${DEFAULT_PACKAGE_VERSION}"
+      fi
+      export DEB_FILE="${DEB_PACKAGE_NAME}_${PACKAGE_VERSION}_${PACKAGE_ARCH}.deb"
+      echo "PACKAGE_VERSION=${PACKAGE_VERSION}" > build.env
+      echo "DEB_FILE=${DEB_FILE}" >> build.env
+    - bash -n scripts/package_deb.sh
+    - docker build -f docker/Dockerfile.verify -t manipulator:package-${CI_COMMIT_SHORT_SHA} . --progress=plain
+    - rm -rf dist
+    - CONTAINER_ID=$(docker create manipulator:package-${CI_COMMIT_SHORT_SHA} bash -lc "cd /ros_ws/src/arm-platform && PACKAGE_VERSION=${PACKAGE_VERSION} PACKAGE_ARCH=${PACKAGE_ARCH} DEB_PACKAGE_NAME=${DEB_PACKAGE_NAME} DUMMY_INTERFACE_DIR=/ros_ws/src/dummy-interface ./scripts/package_deb.sh")
+    - docker start -a ${CONTAINER_ID}
+    - docker cp ${CONTAINER_ID}:/ros_ws/src/arm-platform/dist ./dist
+    - docker rm ${CONTAINER_ID}
+    - dpkg-deb --info dist/${DEB_FILE}
+    - dpkg-deb --contents dist/${DEB_FILE}
+  artifacts:
+    name: "${DEB_PACKAGE_NAME}-${CI_COMMIT_REF_SLUG}-${CI_COMMIT_SHORT_SHA}"
+    paths:
+      - dist/*.deb
+      - dist/*.sha256
+    reports:
+      dotenv: build.env
+    expire_in: 1 week
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master"
+    - if: $CI_COMMIT_TAG
+
+release:
+  stage: release
+  image: registry.gitlab.com/gitlab-org/release-cli:latest
+  tags:
+    - manipulator
+  needs:
+    - job: package-deb
+      artifacts: true
+  rules:
+    - if: $CI_COMMIT_TAG
+  script:
+    - echo "Creating release ${CI_COMMIT_TAG}"
+  release:
+    tag_name: "$CI_COMMIT_TAG"
+    name: "Windshape Manipulator ${CI_COMMIT_TAG}"
+    description: |
+      ## Windshape Manipulator ${CI_COMMIT_TAG}
+
+      ROS 2 manipulator runtime package for Windshape robot systems.
+
+      ### Install
+
+      ```bash
+      sudo dpkg -i ${DEB_FILE}
+      ```
+    assets:
+      links:
+        - name: "${DEB_FILE}"
+          url: "${CI_PROJECT_URL}/-/jobs/artifacts/${CI_COMMIT_TAG}/raw/dist/${DEB_FILE}?job=package-deb"
+        - name: "${DEB_FILE}.sha256"
+          url: "${CI_PROJECT_URL}/-/jobs/artifacts/${CI_COMMIT_TAG}/raw/dist/${DEB_FILE}.sha256?job=package-deb"
