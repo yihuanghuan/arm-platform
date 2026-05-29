@@ -11,9 +11,10 @@ variables:
   ROS_DISTRO: humble
   DEBIAN_FRONTEND: noninteractive
 
-hooks:
-  pre_get_sources_script:
-    - git config --global --add safe.directory "${CI_PROJECT_DIR}"
+default:
+  hooks:
+    pre_get_sources_script:
+      - git config --global --add safe.directory "${CI_PROJECT_DIR}"
 
 .check-docker-access: &check-docker-access |
   docker --version
