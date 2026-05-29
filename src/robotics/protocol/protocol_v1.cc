@@ -25,7 +25,7 @@ void ProtocolV1::Pop(std::vector<uint8_t>& out) {
     std::vector<uint8_t> data;
     for (int i = 0; i < 7; i++) buf[i] = static_cast<float>(desired_velocities_[i]);
     MakeFrame(0x11, buf, 28, data);
-    // out.insert(out.end(), data.begin(), data.end());
+    out.insert(out.end(), data.begin(), data.end());
     vel_cmd_updated_ = false;
   } 
   
@@ -59,7 +59,6 @@ void ProtocolV1::Pop(std::vector<uint8_t>& out) {
 
 void ProtocolV1::Feed(const uint8_t byte) {
   uint8_t* raw = reinterpret_cast<uint8_t*>(&recv_);
-
   if (recv_step_ < 2) {
     if (byte == raw[recv_step_]) {
       recv_step_++;

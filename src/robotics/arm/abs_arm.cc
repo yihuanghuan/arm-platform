@@ -28,6 +28,8 @@ bool AbsArm::SetMotorCommand(const dummy_interface::msg::MotorControl& cmd) {
 }
 
 void AbsArm::AddMotor(const std::string& name, motor::IMotor::SharedPtr motor) {
+  std::cout << "add motor" << std::endl;
+
   motor_map_.emplace(name, motor);
   joint_names_.push_back(name);
   joint_states_.position.push_back(0.0);
@@ -56,6 +58,7 @@ void AbsArm::RemoveMotor(const std::string& name) {
 
 void AbsArm::UpdateJointStates() {
   bus_->Read();
+
   for (uint8_t i = 0; i < motor_map_.size(); i++) {
     std::string name = joint_states_.name[i];
     auto motor = motor_map_[name];

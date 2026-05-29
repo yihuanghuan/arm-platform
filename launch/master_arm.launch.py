@@ -6,6 +6,11 @@ from launch.substitutions import PathJoinSubstitution
 from launch_ros.substitutions import FindPackageShare
 
 def generate_launch_description():
+    pkg_share = FindPackageShare('manipulator')
+    
+    motor_config_path = PathJoinSubstitution([pkg_share, 'motor_config.yaml'])
+    arm_config_path = PathJoinSubstitution([pkg_share, 'arm_config.yaml'])
+    
     publish_joint_state_arg = DeclareLaunchArgument(
         'publish_joint_state',
         default_value='False',
@@ -27,28 +32,21 @@ def generate_launch_description():
         sigterm_timeout='20',
         sigkill_timeout='20',
         parameters=[
-            {'arm_type': 'a_l1_gamma'},
-            {'auto_reset': False},
-            # 串口端口名
-            {'port_name': '/dev/ttyUSB0'},        
-            # 最大扭矩限制
+            {'arm_type': 'a_l1'},
+            {'arm_version': 'gamma'},
+            {'auto_reset': True},
+            {'port_name': '/dev/ttyUSB0'},
+            {'motor_config_path': motor_config_path},
+            {'arm_config_path': arm_config_path},
             {'MAX_TORQUE': 3.0},
-            # 重力加速度
             {'GRAVITY': 9.81},
-            # 无人机姿态补偿（roll/pitch/yaw）
-            # 调试信息开关
             {'debug_info': True},
-            # 调试信息打印频率（Hz）
             {'debug_rate': 1.0},
-            # 力反馈阈值
             {'FORCE_FEEDBACK_THRESHOLD': 0.5},
-            # 力反馈增益
             {'FORCE_FEEDBACK_GAIN': 0.5},
-            # 是否发布joint_state
             {'publish_joint_state': LaunchConfiguration('publish_joint_state')},
-            # 是否发布joint_feedback
             {'publish_joint_feedback': LaunchConfiguration('publish_joint_feedback')},
-            {'urdf_path': PathJoinSubstitution([FindPackageShare('manipulator'), 'arm.urdf'])}
+            {'urdf_path': PathJoinSubstitution([pkg_share, 'arm.urdf'])}
         ]
     )
     

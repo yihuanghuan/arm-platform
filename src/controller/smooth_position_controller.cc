@@ -13,9 +13,15 @@ JointCommand SmoothPositionController::Compute(
     JointCommand cmd;
     size_t num_joints = joint_states.position.size();
 
+    if(joint_setpoint.q.size() == 0) {
+      // return zero command if no setpoint
+      return cmd;
+    }
+
     if(pos_set_.empty()) {
       pos_set_ = joint_states.position;
     }
+
     cmd.position.resize(num_joints);
     cmd.velocity.resize(num_joints);
     cmd.current.resize(num_joints);
@@ -37,12 +43,13 @@ JointCommand SmoothPositionController::Compute(
     }
     for (size_t i = 0; i < num_joints; ++i) {
       double pos_err = joint_setpoint.q[i] - joint_states.position[i];
-      double delta = pos_err * dt;
-      // 最小步长限制
-      if (std::abs(delta) < 0.01) {
-          delta = (delta >= 0) ? 0.01 : -0.01;
-      }
-      pos_set_[i] += delta;
+      pos_err = std::clamp(pos_err, -max_velocity_ * dt, max_velocity_ * dt);
+      // double delta = pos_err * dt;
+      // // 最小步长限制
+      // if (std::abs(delta) < 0.01) {
+      //     delta = (delta >= 0) ? 0.01 : -0.01;
+      // }
+      pos_set_[i] += pos_err;
       // clamp（防止超调）
       pos_set_[i] = std::clamp(
         pos_set_[i],
@@ -57,5 +64,9 @@ JointCommand SmoothPositionController::Compute(
 void SmoothPositionController::SetKpKd(const std::vector<double>& kp, const std::vector<double>& kd) {
   kp_ = kp;
   kd_ = kd;
+}
+
+void SmoothPositionController::SetMaxVelocity(double max_velocity) {
+  max_velocity_ = max_velocity;
 }
 } // namespace manipulator::controller

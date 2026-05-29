@@ -12,6 +12,10 @@ RUN apt-get update && apt-get install -y \
     build-essential \
     cmake \
     git \
+    rsync \
+    bash \
+    coreutils \
+    dpkg-dev \
     python3-colcon-common-extensions \
     python3-rosdep \
     libeigen3-dev \
@@ -26,9 +30,18 @@ RUN apt-get update && apt-get install -y \
     liburdfdom-headers-dev \
     && rm -rf /var/lib/apt/lists/*
 
+RUN apt-get update && apt-get install -y ros-humble-pinocchio
+
 WORKDIR /tmp
 # Clone serial package dependency to workspace
-RUN git clone https://github.com/ZhaoXiangBox/serial.git
+RUN git config --global http.version HTTP/1.1 && \
+    for attempt in 1 2 3; do \
+      git clone --depth 1 https://github.com/ZhaoXiangBox/serial.git && break; \
+      rm -rf serial; \
+      echo "serial clone failed, retry ${attempt}/3"; \
+      sleep 5; \
+    done && \
+    test -d serial/.git
 RUN /bin/bash -c "source /opt/ros/humble/setup.bash && cd serial && mkdir build && cd build && cmake .. && make && make install"
 
 # Create workspace directory

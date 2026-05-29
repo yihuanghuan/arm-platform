@@ -3,26 +3,39 @@
 #include <manipulator/controller/smooth_position_controller.h>
 #include <manipulator/common_types.h>
 
+#include <sstream>
+
 using namespace std::chrono_literals;
 
 namespace manipulator {
+namespace {
+std::string FormatVector(const std::vector<double>& values) {
+  std::ostringstream stream;
+  stream << "[";
+  for (size_t i = 0; i < values.size(); ++i) {
+    if (i > 0) {
+      stream << ", ";
+    }
+    stream << values[i];
+  }
+  stream << "]";
+  return stream.str();
+}
+}
 
 ArmHardwareNode::ArmHardwareNode() : Node("robot_arm_node") {
   arm_platform_ = std::make_unique<ArmPlatform>();
   SetArmPlatform();
-  // ------------------- ROS interfaces -------------------
   pub_joint_feedback_ = this->create_publisher<dummy_interface::msg::MotorState>(
     "arm/joint_feedback", 10);
-  //TODO: use motor control instead of jointstate
   sub_joint_ctrl_ = this->create_subscription<sensor_msgs::msg::JointState>(
     "/joint_states", 10, [this](const sensor_msgs::msg::JointState::SharedPtr msg) {
       MoveItCallback(msg);
     });
 
-  // ------------------- Control loop timer -------------------
   control_timer_ = this->create_wall_timer(
       std::chrono::milliseconds(static_cast<int>(kControlPeriodMs)),
-      [this]() { return arm_platform_->ExecuteControlCycle(kControlPeriodMs); });
+      [this]() { return arm_platform_->ExecuteControlCycle(kControlPeriodMs/1000.0f); });
 }
 
 ArmHardwareNode::~ArmHardwareNode() {
@@ -31,17 +44,27 @@ ArmHardwareNode::~ArmHardwareNode() {
 
 void ArmHardwareNode::SetArmPlatform() {
   std::string port = GetParam<std::string>("port_name", "/dev/ttyUSB0");
-  std::string arm_type = GetParam<std::string>("arm_type", "a_l1_gamma");
+  std::string arm_type = GetParam<std::string>("arm_type", "a_l1");
+  std::string arm_version = GetParam<std::string>("arm_version", "gamma");
+  std::string motor_config_path = GetParam<std::string>("motor_config_path", "");
+  std::string arm_config_path = GetParam<std::string>("arm_config_path", "");
   
   auto arm = arm::ArmFactory::Instance().Create(arm_type);
-  arm->Init(port, 921600);
+  if (!motor_config_path.empty() && !arm_config_path.empty()) {
+    arm->InitFromConfig(port, 921600, motor_config_path, arm_config_path, arm_version);
+  } else {
+    arm->Init(port, 921600);
+    RCLCPP_INFO(this->get_logger(), "Arm type '%s' initialized", arm_type.c_str());
+  }
 
   arm_platform_->SetArm(std::move(arm));
   auto smooth_position_controller = std::make_unique<controller::SmoothPositionController>();
   std::vector<double> p_gain = GetParam<std::vector<double>>("p_gain", {30, 30, 30, 5, 5, 5, 1});
   std::vector<double> d_gain = GetParam<std::vector<double>>("d_gain", {1, 1, 1, 0.1, 0.1, 0.1, 0.1});
   smooth_position_controller->SetKpKd(p_gain, d_gain);
-  RCLCPP_INFO(this->get_logger(), "ArmHardwareNode set p_gain: %s, d_gain: %s", p_gain.data(), d_gain.data());
+  const auto p_gain_text = FormatVector(p_gain);
+  const auto d_gain_text = FormatVector(d_gain);
+  RCLCPP_INFO(this->get_logger(), "ArmHardwareNode set p_gain: %s, d_gain: %s", p_gain_text.c_str(), d_gain_text.c_str());
   arm_platform_->SetController(std::move(smooth_position_controller));
 }
 
@@ -90,7 +113,6 @@ void ArmHardwareNode::Init() {
     arm_platform_->AddSubscribe(sub);
   }
 }
-
 } // namespace manipulator
 
 int main(int argc, char * argv[]) {

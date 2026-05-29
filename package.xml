@@ -11,7 +11,13 @@
 
   <build_depend>dummy_interface</build_depend>
   <build_depend>geometry_msgs</build_depend>
+  <build_depend>visualization_msgs</build_depend>
+  <build_depend>pinocchio</build_depend>
 
+  <build_export_depend>visualization_msgs</build_export_depend>
+
+  <exec_depend>visualization_msgs</exec_depend>
+  <exec_depend>pinocchio</exec_depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>

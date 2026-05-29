@@ -15,6 +15,7 @@ find_package(std_msgs REQUIRED)
 find_package(dummy_interface REQUIRED)
 find_package(serial REQUIRED)
 find_package(geometry_msgs REQUIRED)
+find_package(visualization_msgs REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(pinocchio REQUIRED)
 
@@ -24,7 +25,7 @@ find_package(pinocchio REQUIRED)
 add_library(manipulator_core
   src/robotics/arm_platform.cc
   src/robotics/arm/abs_arm.cc
-  src/robotics/arm/a_l1_beta.cc
+  src/robotics/arm/a_l1.cc
   src/robotics/arm/a_l1_gamma.cc
   src/robotics/arm/arm_factory.cc
   src/robotics/bus/abs_bus.cc
@@ -33,6 +34,7 @@ add_library(manipulator_core
   src/robotics/protocol/abs_protocol.cc
   src/robotics/protocol/protocol_factory.cc
   src/robotics/protocol/protocol_v1.cc
+  src/robotics/config/arm_config.cc
 )
 
 add_library(controller_lib
@@ -43,6 +45,10 @@ add_library(controller_lib
 add_library(planner_lib
   src/planning/abs_motion_planner.cc
   src/planning/reset_motion_planner.cc
+)
+
+add_library(collision_lib
+  src/collision/collision_avoidance.cc
 )
 
 ament_target_dependencies(planner_lib
@@ -67,8 +73,20 @@ target_link_libraries(controller_lib
   pinocchio::pinocchio
 )
 
+target_link_libraries(collision_lib
+  Eigen3::Eigen
+  pinocchio::pinocchio
+)
+
+target_include_directories(collision_lib PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>
+)
+
 target_link_libraries(manipulator_core
   Eigen3::Eigen
+  yaml-cpp
+  collision_lib
 )
 
 target_include_directories(manipulator_core PUBLIC
@@ -129,6 +147,10 @@ add_executable(slave_arm_node
   src/ros_nodes/slave_arm_node.cc
 )
 
+add_executable(robot_health_aggregator
+  src/ros_nodes/robot_health_aggregator.cc
+)
+
 target_link_libraries(slave_arm_node
   manipulator_core
   controller_lib
@@ -140,6 +162,17 @@ ament_target_dependencies(slave_arm_node
   sensor_msgs
   std_msgs
   dummy_interface
+  visualization_msgs
+)
+
+ament_target_dependencies(robot_health_aggregator
+  rclcpp
+  std_msgs
+)
+
+target_include_directories(robot_health_aggregator PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>
 )
 
 # ==============================
@@ -147,9 +180,13 @@ ament_target_dependencies(slave_arm_node
 # ==============================
 install(TARGETS
   manipulator_core
+  collision_lib
+  controller_lib
+  planner_lib
   arm_hardware_node
   master_arm_node
   slave_arm_node
+  robot_health_aggregator
   EXPORT export_${PROJECT_NAME}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
@@ -168,12 +205,28 @@ install(DIRECTORY config/
   DESTINATION share/${PROJECT_NAME}/
 )
 
+install(PROGRAMS
+  scripts/set_camera_ip.sh
+  scripts/get_camera_ip.sh
+  scripts/set_livox_lidar_ip.sh
+  scripts/get_livox_lidar_ip.sh
+  scripts/start.sh
+  scripts/stop.sh
+  scripts/clean.sh
+  DESTINATION share/${PROJECT_NAME}
+)
+
+install(FILES
+  scripts/robot.service
+  DESTINATION lib/systemd/system
+)
+
 # ==============================
 # Export
 # ==============================
 ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
 ament_export_include_directories(include)
-ament_export_dependencies(rclcpp sensor_msgs std_msgs dummy_interface)
+ament_export_dependencies(rclcpp sensor_msgs std_msgs dummy_interface visualization_msgs)
 
 # ==============================
 # Tests & Lint

@@ -4,12 +4,25 @@ from launch.actions import DeclareLaunchArgument
 from launch.substitutions import LaunchConfiguration
 from launch_ros.substitutions import FindPackageShare
 from launch.substitutions import PathJoinSubstitution
-import os
 
 def generate_launch_description():
-    pkg_share = FindPackageShare('manipulator').find('manipulator')
-    config_file = os.path.join(pkg_share, 'config', 'slave_arm.yaml')
-
+    pkg_share = FindPackageShare('manipulator')
+    
+    motor_config_path = PathJoinSubstitution([pkg_share, 'motor_config.yaml'])
+    arm_config_path = PathJoinSubstitution([pkg_share, 'arm_config.yaml'])
+    
+    enable_collision_avoidance_arg = DeclareLaunchArgument(
+        'enable_collision_avoidance',
+        default_value='True',
+        description='Enable collision avoidance with propellers'
+    )
+    
+    safety_distance_arg = DeclareLaunchArgument(
+        'safety_distance',
+        default_value='0.05',
+        description='Safety distance for collision avoidance'
+    )
+    
     publish_joint_state_arg = DeclareLaunchArgument(
         'publish_joint_state',
         default_value='True',
@@ -23,6 +36,8 @@ def generate_launch_description():
     )
     
     return LaunchDescription([
+        enable_collision_avoidance_arg,
+        safety_distance_arg,
         publish_joint_state_arg,
         publish_joint_feedback_arg,
         Node(
@@ -32,39 +47,40 @@ def generate_launch_description():
             output='screen',
             namespace='slave',
             parameters=[
-                config_file,
-                {'arm_type': 'a_l1_gamma'},
-                # 串口端口名
+                {'arm_type': 'a_l1'},
+                {'arm_version': 'gamma'},
                 {'port_name': '/dev/ttyTHS3'},
-                # 关节增益参数（0/1/2轴）
+                {'max_velocity': 3.0},
+                {'motor_config_path': motor_config_path},
+                {'arm_config_path': arm_config_path},
                 {'G_GAIN_0': 1.5},
                 {'G_GAIN_1': 0.5},
                 {'G_GAIN_2': 1.5},
-                # 最大扭矩限制
                 {'MAX_TORQUE': 3.0},
-                # 重力加速度
                 {'GRAVITY': 9.81},
-                # 无人机姿态补偿（roll/pitch/yaw）
                 {'uav_roll': 0.0},
                 {'uav_pitch': 0.0},
                 {'uav_yaw': 0.0},
-                # 机械臂旋转角度（弧度制，roll/pitch/yaw）
                 {'arm_roll': 0.0},
                 {'arm_pitch': 0.0},
                 {'arm_yaw': 0.0},
-                # 调试信息开关
                 {'debug_info': True},
-                # 调试信息打印频率（Hz）
                 {'debug_rate': 1.0},
-                # 力反馈阈值
                 {'FORCE_FEEDBACK_THRESHOLD': 0.5},
-                # 力反馈增益
                 {'FORCE_FEEDBACK_GAIN': 0.5},
-                # 是否发布joint_state
                 {'publish_joint_state': LaunchConfiguration('publish_joint_state')},
-                # 是否发布joint_feedback
                 {'publish_joint_feedback': LaunchConfiguration('publish_joint_feedback')},
-                {'urdf_path': PathJoinSubstitution([FindPackageShare('manipulator'), 'arm.urdf'])}
+                {'urdf_path': PathJoinSubstitution([pkg_share, 'arm.urdf'])},
+                {'enable_collision_avoidance': LaunchConfiguration('enable_collision_avoidance')},
+                {'safety_distance': LaunchConfiguration('safety_distance')},
+                {'cylinder1_center': [-0.15, -0.37, -0.1]}, # right cylinder
+                {'cylinder1_radius': 0.27},
+                {'cylinder1_height': 0.1},
+                {'cylinder1_axis': [0.0, 0.0, 1.0]},
+                {'cylinder2_center': [-0.15, 0.37, -0.1]}, # left cylinder
+                {'cylinder2_radius': 0.27},
+                {'cylinder2_height': 0.1},
+                {'cylinder2_axis': [0.0, 0.0, 1.0]}
             ]
         ),
     ])
