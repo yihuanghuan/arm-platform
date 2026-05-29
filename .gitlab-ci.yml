@@ -145,7 +145,13 @@ package-deb:
         fi
       }
       trap cleanup_container EXIT
-      CONTAINER_ID=$(docker create ${PACKAGE_IMAGE} bash -lc "cd /ros_ws/src/arm-platform && PACKAGE_VERSION=${PACKAGE_VERSION} PACKAGE_ARCH=${PACKAGE_ARCH} DEB_PACKAGE_NAME=${DEB_PACKAGE_NAME} DUMMY_INTERFACE_DIR=/ros_ws/src/dummy-interface ./scripts/package_deb.sh")
+      CONTAINER_ID=$(docker create \
+        -e PACKAGE_VERSION="${PACKAGE_VERSION}" \
+        -e PACKAGE_ARCH="${PACKAGE_ARCH}" \
+        -e DEB_PACKAGE_NAME="${DEB_PACKAGE_NAME}" \
+        -e DUMMY_INTERFACE_DIR="/ros_ws/src/dummy-interface" \
+        ${PACKAGE_IMAGE} \
+        bash -lc "cd /ros_ws/src/arm-platform && ./scripts/package_deb.sh")
       docker start -a ${CONTAINER_ID}
       docker cp ${CONTAINER_ID}:/ros_ws/src/arm-platform/dist ./dist
       cleanup_container
