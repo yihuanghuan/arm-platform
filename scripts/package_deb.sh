@@ -145,7 +145,7 @@ find "${STAGING_DIR}" -type f ! -path "${STAGING_DIR}/DEBIAN/*" -exec chmod 0644
 find "${STAGING_DIR}${INSTALL_PREFIX}/install/${ROS_PACKAGE_NAME}/share/${ROS_PACKAGE_NAME}" -maxdepth 1 -type f -name '*.sh' -exec chmod 0755 {} +
 
 rm -f "${DEB_PATH}" "${SHA256_PATH}"
-dpkg-deb --build --root-owner-group "${STAGING_DIR}" "${DEB_PATH}"
+dpkg-deb --build --root-owner-group -Zxz "${STAGING_DIR}" "${DEB_PATH}"
 sha256sum "${DEB_PATH}" > "${SHA256_PATH}"
 
 echo "Built ${DEB_PATH}"
