@@ -112,19 +112,53 @@ package-deb:
       echo "DEB_FILE=${DEB_FILE}" >> build.env
     - bash -n scripts/package_deb.sh
     - PACKAGE_DOCKERFILE_SHA=$(sha256sum docker/Dockerfile.verify | awk '{print $1}')
-    - docker build -f docker/Dockerfile.verify --label windshape.dockerfile.sha256=${PACKAGE_DOCKERFILE_SHA} -t manipulator:package-${CI_COMMIT_SHORT_SHA} . --progress=plain
+    - PACKAGE_IMAGE=manipulator:package-${CI_COMMIT_SHORT_SHA}
+    - |
+      IMAGE_DOCKERFILE_SHA=""
+      if docker image inspect ${PACKAGE_IMAGE} >/dev/null 2>&1; then
+        IMAGE_DOCKERFILE_SHA=$(docker image inspect ${PACKAGE_IMAGE} --format '{{ index .Config.Labels "windshape.dockerfile.sha256" }}' 2>/dev/null || true)
+        if [ "${IMAGE_DOCKERFILE_SHA}" = "${PACKAGE_DOCKERFILE_SHA}" ]; then
+          echo "Package docker image already exists for this commit and Dockerfile is unchanged, skipping build"
+          SKIP_PACKAGE_BUILD=true
+        else
+          echo "Package docker image exists but Dockerfile changed, will rebuild"
+          echo "Current Dockerfile sha ${PACKAGE_DOCKERFILE_SHA}"
+          echo "Image Dockerfile sha ${IMAGE_DOCKERFILE_SHA:-none}"
+          SKIP_PACKAGE_BUILD=false
+        fi
+      else
+        echo "Package docker image not found, will build"
+        SKIP_PACKAGE_BUILD=false
+      fi
+    - |
+      if [ "${SKIP_PACKAGE_BUILD}" = true ]; then
+        echo "Skipping package docker image build"
+      else
+        docker build -f docker/Dockerfile.verify --label windshape.dockerfile.sha256=${PACKAGE_DOCKERFILE_SHA} -t ${PACKAGE_IMAGE} . --progress=plain 2>&1 | tee docker-package-build.log
+      fi
     - rm -rf dist
-    - CONTAINER_ID=$(docker create manipulator:package-${CI_COMMIT_SHORT_SHA} bash -lc "cd /ros_ws/src/arm-platform && PACKAGE_VERSION=${PACKAGE_VERSION} PACKAGE_ARCH=${PACKAGE_ARCH} DEB_PACKAGE_NAME=${DEB_PACKAGE_NAME} DUMMY_INTERFACE_DIR=/ros_ws/src/dummy-interface ./scripts/package_deb.sh")
-    - docker start -a ${CONTAINER_ID}
-    - docker cp ${CONTAINER_ID}:/ros_ws/src/arm-platform/dist ./dist
-    - docker rm ${CONTAINER_ID}
+    - |
+      CONTAINER_ID=""
+      cleanup_container() {
+        if [ -n "${CONTAINER_ID}" ]; then
+          docker rm -f "${CONTAINER_ID}" >/dev/null 2>&1 || true
+        fi
+      }
+      trap cleanup_container EXIT
+      CONTAINER_ID=$(docker create ${PACKAGE_IMAGE} bash -lc "cd /ros_ws/src/arm-platform && PACKAGE_VERSION=${PACKAGE_VERSION} PACKAGE_ARCH=${PACKAGE_ARCH} DEB_PACKAGE_NAME=${DEB_PACKAGE_NAME} DUMMY_INTERFACE_DIR=/ros_ws/src/dummy-interface ./scripts/package_deb.sh")
+      docker start -a ${CONTAINER_ID}
+      docker cp ${CONTAINER_ID}:/ros_ws/src/arm-platform/dist ./dist
+      cleanup_container
+      trap - EXIT
     - dpkg-deb --info dist/${DEB_FILE}
     - dpkg-deb --contents dist/${DEB_FILE}
   artifacts:
     name: "${DEB_PACKAGE_NAME}-${CI_COMMIT_REF_SLUG}-${CI_COMMIT_SHORT_SHA}"
+    when: always
     paths:
       - dist/*.deb
       - dist/*.sha256
+      - docker-package-build.log
     reports:
       dotenv: build.env
     expire_in: 1 week
