@@ -11,6 +11,18 @@ variables:
   ROS_DISTRO: humble
   DEBIAN_FRONTEND: noninteractive
 
+hooks:
+  pre_get_sources_script:
+    - git config --global --add safe.directory "${CI_PROJECT_DIR}"
+
+.check-docker-access: &check-docker-access |
+  docker --version
+  if ! docker info >/dev/null 2>&1; then
+    echo "ERROR: Docker daemon is not accessible from this GitLab Runner."
+    echo "Please make sure the runner user can access /var/run/docker.sock, or run this job on a Docker-capable runner."
+    exit 1
+  fi
+
 build-verify:
   stage: build
   before_script:
@@ -22,14 +34,23 @@ build-verify:
     - df -h
     - free -h
     - echo "Docker information:"
-    - docker --version
-    - docker info || echo "Docker info failed"
+    - *check-docker-access
     - echo "=========================================="
     - echo "Checking for existing Docker image..."
     - |
+      DOCKERFILE_SHA=$(sha256sum docker/Dockerfile.verify | awk '{print $1}')
+      IMAGE_DOCKERFILE_SHA=""
       if docker image inspect manipulator:verify >/dev/null 2>&1; then
-        echo "Docker image already exists, skipping build"
-        SKIP_BUILD=true
+        IMAGE_DOCKERFILE_SHA=$(docker image inspect manipulator:verify --format '{{ index .Config.Labels "windshape.dockerfile.sha256" }}' 2>/dev/null || true)
+        if [ "${IMAGE_DOCKERFILE_SHA}" = "${DOCKERFILE_SHA}" ]; then
+          echo "Docker image already exists and Dockerfile is unchanged, skipping build"
+          SKIP_BUILD=true
+        else
+          echo "Docker image exists but Dockerfile changed, will rebuild"
+          echo "Current Dockerfile sha ${DOCKERFILE_SHA}"
+          echo "Image Dockerfile sha ${IMAGE_DOCKERFILE_SHA:-none}"
+          SKIP_BUILD=false
+        fi
       else
         echo "Docker image not found, will build"
         SKIP_BUILD=false
@@ -44,7 +65,7 @@ build-verify:
         echo "=========================================="
         echo "Building docker image..."
         echo "=========================================="
-        docker build -f docker/Dockerfile.verify -t manipulator:verify . --progress=plain 2>&1 | tee docker-build.log
+        docker build -f docker/Dockerfile.verify --label windshape.dockerfile.sha256=${DOCKERFILE_SHA} -t manipulator:verify . --progress=plain 2>&1 | tee docker-build.log
         echo "=========================================="
         echo "Docker build completed"
         echo "=========================================="
@@ -81,6 +102,8 @@ package-deb:
   stage: package
   tags:
     - manipulator
+  before_script:
+    - *check-docker-access
   script:
     - |
       if [ -n "${CI_COMMIT_TAG:-}" ]; then
@@ -92,7 +115,8 @@ package-deb:
       echo "PACKAGE_VERSION=${PACKAGE_VERSION}" > build.env
       echo "DEB_FILE=${DEB_FILE}" >> build.env
     - bash -n scripts/package_deb.sh
-    - docker build -f docker/Dockerfile.verify -t manipulator:package-${CI_COMMIT_SHORT_SHA} . --progress=plain
+    - PACKAGE_DOCKERFILE_SHA=$(sha256sum docker/Dockerfile.verify | awk '{print $1}')
+    - docker build -f docker/Dockerfile.verify --label windshape.dockerfile.sha256=${PACKAGE_DOCKERFILE_SHA} -t manipulator:package-${CI_COMMIT_SHORT_SHA} . --progress=plain
     - rm -rf dist
     - CONTAINER_ID=$(docker create manipulator:package-${CI_COMMIT_SHORT_SHA} bash -lc "cd /ros_ws/src/arm-platform && PACKAGE_VERSION=${PACKAGE_VERSION} PACKAGE_ARCH=${PACKAGE_ARCH} DEB_PACKAGE_NAME=${DEB_PACKAGE_NAME} DUMMY_INTERFACE_DIR=/ros_ws/src/dummy-interface ./scripts/package_deb.sh")
     - docker start -a ${CONTAINER_ID}

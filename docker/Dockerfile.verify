@@ -30,6 +30,8 @@ RUN apt-get update && apt-get install -y \
     liburdfdom-headers-dev \
     && rm -rf /var/lib/apt/lists/*
 
+RUN apt-get update && apt-get install -y ros-humble-pinocchio
+
 WORKDIR /tmp
 # Clone serial package dependency to workspace
 RUN git clone https://github.com/ZhaoXiangBox/serial.git
