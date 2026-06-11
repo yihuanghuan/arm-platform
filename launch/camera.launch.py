@@ -18,7 +18,7 @@ def generate_launch_description():
     gst_command = [
         'gst-launch-1.0',
         'v4l2src', 'device=' + camera_params['device'],
-        '!', 'image/jpeg,framerate=' + str(camera_params['framerate']) + '/1',
+        '!', 'image/jpeg,framerate=' + str(camera_params['framerate']) + '/1,widht=640,height=360',
         '!', 'jpegdec',
         '!', 'nvvidconv',
         '!', 'nvv4l2h264enc', 'bitrate=' + str(camera_params['bitrate']), 'preset-level=1', 'insert-sps-pps=1',

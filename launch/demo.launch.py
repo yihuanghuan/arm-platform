@@ -47,6 +47,13 @@ def generate_launch_description():
         launch_arguments={'loc_type': LaunchConfiguration('loc_type')}.items()
     )
 
+    flight_status_bridge_node = Node(
+        package='manipulator',
+        executable='flight_status_bridge',
+        name='flight_status_bridge',
+        output='screen',
+    )
+
     health_aggregator_node = Node(
         package='manipulator',
         executable='robot_health_aggregator',
@@ -71,5 +78,6 @@ def generate_launch_description():
         slave_arm_launch,
         camera_launch,
         localization_launch,
+        flight_status_bridge_node,
         health_aggregator_node,
     ])

@@ -12,6 +12,7 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
+find_package(mavros_msgs REQUIRED)
 find_package(dummy_interface REQUIRED)
 find_package(serial REQUIRED)
 find_package(geometry_msgs REQUIRED)
@@ -151,6 +152,10 @@ add_executable(robot_health_aggregator
   src/ros_nodes/robot_health_aggregator.cc
 )
 
+add_executable(flight_status_bridge
+  src/ros_nodes/flight_status_bridge.cc
+)
+
 target_link_libraries(slave_arm_node
   manipulator_core
   controller_lib
@@ -170,6 +175,13 @@ ament_target_dependencies(robot_health_aggregator
   std_msgs
 )
 
+ament_target_dependencies(flight_status_bridge
+  rclcpp
+  std_msgs
+  sensor_msgs
+  mavros_msgs
+)
+
 target_include_directories(robot_health_aggregator PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>
@@ -187,6 +199,7 @@ install(TARGETS
   master_arm_node
   slave_arm_node
   robot_health_aggregator
+  flight_status_bridge
   EXPORT export_${PROJECT_NAME}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
@@ -226,7 +239,7 @@ install(FILES
 # ==============================
 ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
 ament_export_include_directories(include)
-ament_export_dependencies(rclcpp sensor_msgs std_msgs dummy_interface visualization_msgs)
+ament_export_dependencies(rclcpp sensor_msgs std_msgs mavros_msgs dummy_interface visualization_msgs)
 
 # ==============================
 # Tests & Lint

@@ -26,5 +26,5 @@ def generate_launch_description():
 
     return LaunchDescription([
         right_lidar_launch,
-        delayed_left_lidar_launch,
+        #delayed_left_lidar_launch,
     ])

@@ -9,13 +9,20 @@
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
+  <depend>rclcpp</depend>
+  <depend>sensor_msgs</depend>
+  <depend>std_msgs</depend>
+
   <build_depend>dummy_interface</build_depend>
   <build_depend>geometry_msgs</build_depend>
+  <build_depend>mavros_msgs</build_depend>
   <build_depend>visualization_msgs</build_depend>
   <build_depend>pinocchio</build_depend>
 
+  <build_export_depend>mavros_msgs</build_export_depend>
   <build_export_depend>visualization_msgs</build_export_depend>
 
+  <exec_depend>mavros_msgs</exec_depend>
   <exec_depend>visualization_msgs</exec_depend>
   <exec_depend>pinocchio</exec_depend>
 
