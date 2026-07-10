@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<robot name="arm" xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <xacro:arg name="camera_enabled" default="true"/>
+  <xacro:arg name="camera_name" default="camera"/>
+  <xacro:arg name="camera_parent_link" default="link6"/>
+  <xacro:arg name="camera_xyz" default="0.06 0 0.04"/>
+  <xacro:arg name="camera_rpy" default="0 0 0"/>
+  <xacro:arg name="camera_use_nominal_extrinsics" default="true"/>
+
+  <xacro:include filename="$(find manipulator)/arm.urdf"/>
+  <xacro:include filename="$(find manipulator)/sensors/d435i_mount.xacro"/>
+
+  <xacro:windylab_d435i_mount
+      camera_enabled="$(arg camera_enabled)"
+      camera_name="$(arg camera_name)"
+      camera_parent_link="$(arg camera_parent_link)"
+      camera_xyz="$(arg camera_xyz)"
+      camera_rpy="$(arg camera_rpy)"
+      camera_use_nominal_extrinsics="$(arg camera_use_nominal_extrinsics)"/>
+</robot>

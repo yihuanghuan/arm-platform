@@ -250,3 +250,74 @@ dedicated Gazebo package is introduced:
 Before Phase 1 sensor work, install `ros-humble-gazebo-plugins` and re-run the
 plugin path check above. The D435i integration should connect to the active
 `robot_description` chain instead of creating a parallel display-only robot.
+
+## Phase 1 D435i Description Baseline
+
+Phase 1 uses the ROS package `realsense2_description` from
+`ros-humble-realsense2-description`. Official RealSense files are not copied
+into this repository and are not modified. The project-side wrapper includes
+the official `_d435i.urdf.xacro` macro and mounts the camera on the active
+end-effector link `link6`.
+
+Installed dependencies for this phase:
+
+```bash
+sudo apt-get install -y ros-humble-xacro ros-humble-realsense2-description
+```
+
+New project description files:
+
+- `config/sensors/d435i_mount.xacro`
+- `config/arm_with_d435i.urdf.xacro`
+
+Default mount parameters:
+
+- `camera_name:=camera`
+- `camera_parent_link:=link6`
+- `camera_xyz:="0.06 0 0.04"`
+- `camera_rpy:="0 0 0"`
+- `camera_use_nominal_extrinsics:=true`
+
+Static validation command:
+
+```bash
+source setup_env.bash
+xacro $(ros2 pkg prefix manipulator)/share/manipulator/arm_with_d435i.urdf.xacro \
+  camera_enabled:=true > /tmp/robot_with_d435i.urdf
+check_urdf /tmp/robot_with_d435i.urdf
+```
+
+Result:
+
+- `check_urdf` parsed successfully.
+- Expanded model contains 21 links and 20 joints.
+- No duplicate link or joint names were found.
+- The generated TF chain includes:
+  `link6 -> camera_bottom_screw_frame -> camera_link -> camera_depth_frame -> camera_depth_optical_frame`.
+- Nominal color, infrared, accel, and gyro frames are also generated.
+
+Runtime validation:
+
+- `ros2 launch manipulator student_arm.launch.py use_rviz:=False camera_enabled:=false`
+  still starts the original six-joint arm description.
+- `ros2 launch manipulator student_arm.launch.py use_rviz:=False camera_enabled:=true`
+  starts with the D435i frames in `robot_state_publisher`.
+- Publishing one joint command to `/student/joint_command` moved joint1 to
+  `0.3 rad`; `base_link -> camera_depth_optical_frame` changed consistently,
+  while `link6 -> camera_depth_optical_frame` stayed fixed.
+- `ros2 launch manipulator gazebo_arm.launch.py gui:=true camera_enabled:=true`
+  spawned `windylab_arm` successfully and displayed the D435i mesh at the arm
+  end in Gazebo Classic.
+
+Evidence screenshots:
+
+- RViz: `/tmp/d435i_phase1_rviz.png`
+- Gazebo window: `/tmp/d435i_phase1_gazebo_window.png`
+
+Regression:
+
+- `colcon build` completed for all four workspace packages.
+- Existing CMake cache path warnings remain for `dummy_description`,
+  `dummy_interface`, and `serial`.
+- `python3 src/arm-platform/demo/pinocchio_ik_6dof.py` still reports
+  convergence on 8 of 10 random FK/IK targets, matching the previous baseline.

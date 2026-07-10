@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <xacro:include filename="$(find realsense2_description)/urdf/_d435i.urdf.xacro"/>
+
+  <xacro:macro name="windylab_d435i_mount"
+               params="camera_enabled:=true
+                       camera_name:=camera
+                       camera_parent_link:=link6
+                       camera_xyz:='0.06 0 0.04'
+                       camera_rpy:='0 0 0'
+                       camera_use_nominal_extrinsics:=true">
+    <xacro:if value="${camera_enabled}">
+      <xacro:sensor_d435i
+          parent="${camera_parent_link}"
+          name="${camera_name}"
+          use_nominal_extrinsics="${camera_use_nominal_extrinsics}">
+        <origin xyz="${camera_xyz}" rpy="${camera_rpy}"/>
+      </xacro:sensor_d435i>
+    </xacro:if>
+  </xacro:macro>
+</robot>
