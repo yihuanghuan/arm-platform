@@ -195,6 +195,14 @@ The launch starts Gazebo Classic through `gazebo_ros`, publishes the existing
 `windylab_arm` from that topic. This baseline is for visual/model spawn
 verification only. It does not add Gazebo joint control.
 
+The launch rewrites `dummy_description` mesh URIs in the spawned Gazebo
+description to `file://` paths, so Gazebo does not query the online model
+database for project meshes. It sets `GAZEBO_MODEL_PATH` to include Gazebo
+Classic's local `sun` and `ground_plane` models, and disables the Gazebo Classic
+online model database by setting `GAZEBO_MODEL_DATABASE_URI` to an empty value.
+The spawned model is marked static for this visual baseline, avoiding unstable
+free-body physics before a Gazebo joint-control stack exists.
+
 The launch strips the leading XML encoding declaration from the published URDF
 string before handing it to `spawn_entity.py`. This works around the ROS 2
 Humble `spawn_entity.py`/lxml behavior where Unicode strings with an XML
