@@ -1,53 +1,46 @@
-# D435i Gazebo Classic Integration Report - Phase 0
+# D435i Gazebo Classic 集成报告
 
-## Scope
+## 阶段 0：仓库与运行环境调查
 
-Phase 0 records the existing repository and runtime baseline, then adds a
-minimal Gazebo Classic launch entry that displays the current six-joint arm in
-an empty Gazebo world. This phase does not add D435i files, Gazebo sensors,
-AprilTags, SLAM, visual servoing, or any changes to IK, dynamics, or low-level
-control.
+阶段 0 的目标是在不改动机械臂控制逻辑的前提下，确认当前仓库结构、ROS/Gazebo 环境和原有机械臂基线，并新增一个最小 Gazebo Classic 启动入口，让当前六关节机械臂可以在 Gazebo 中显示。
 
-## Environment
+本阶段不引入 D435i、不添加 Gazebo 传感器、不添加 AprilTag，也不实现 SLAM、视觉伺服或 Base 扰动补偿。
 
-- Command workspace:
-  `/home/yihuang/westlake/windylab-arm-for6/windylab_ws`
-- Gazebo Classic: `11.10.2`
-- ROS version: `2`
-- ROS distribution: `humble`
-- Kernel: `Linux JIAOLONG-Series 6.8.0-124-generic #124~22.04.1-Ubuntu SMP PREEMPT_DYNAMIC Tue May 26 21:05:19 UTC x86_64`
-- Build system: ROS 2 `ament_cmake` packages built with `colcon build`
-- Workspace packages:
-  - `manipulator` from `src/arm-platform`
-  - `dummy_interface` from `src/dummy-interface`
-  - `dummy_description` from `src/dummy_description`
-  - `serial` from `src/serial`
+### 环境
 
-## Gazebo ROS Packages And Plugins
+- 工作空间：`/home/yihuang/westlake/windylab-arm-for6/windylab_ws`
+- Gazebo Classic：`11.10.2`
+- ROS：ROS 2 Humble，`ROS_VERSION=2`，`ROS_DISTRO=humble`
+- 内核：`Linux JIAOLONG-Series 6.8.0-124-generic #124~22.04.1-Ubuntu SMP PREEMPT_DYNAMIC Tue May 26 21:05:19 UTC x86_64`
+- 构建方式：ROS 2 `ament_cmake` 包，通过 `colcon build` 构建
+- 工作空间包：
+  - `manipulator`：`src/arm-platform`
+  - `dummy_interface`：`src/dummy-interface`
+  - `dummy_description`：`src/dummy_description`
+  - `serial`：`src/serial`
 
-Installed ROS packages found before this phase:
+### Gazebo ROS 包与插件
+
+阶段 0 初始检查时已安装：
 
 - `gazebo_dev`
 - `gazebo_msgs`
 - `gazebo_ros`
 
-`gazebo_ros` provides the core Gazebo ROS libraries needed for the Phase 0
-model spawn baseline, including:
+`gazebo_ros` 提供阶段 0 模型 spawn 所需的核心库：
 
 - `/opt/ros/humble/lib/libgazebo_ros_factory.so`
 - `/opt/ros/humble/lib/libgazebo_ros_init.so`
 - `/opt/ros/humble/lib/libgazebo_ros_force_system.so`
 
-The generic Gazebo ROS sensor plugins needed by later D435i phases were not
-installed in the current non-root session. The required install command is:
+后续 D435i RGB-D/IMU 阶段需要的通用 Gazebo ROS sensor 插件通过以下命令补齐：
 
 ```bash
 sudo apt-get update
 sudo apt-get install -y ros-humble-gazebo-ros-pkgs ros-humble-gazebo-plugins
 ```
 
-The following check produced no camera/depth/IMU plugin paths before package
-installation:
+插件检查命令：
 
 ```bash
 source setup_env.bash
@@ -59,77 +52,58 @@ find /opt/ros/"$ROS_DISTRO" \
   2>/dev/null | sort
 ```
 
-Attempting to install from this Codex session was blocked because `sudo`
-requires an interactive password. No system package changes were made by Codex.
+### 当前机器人描述
 
-## Current Robot Description
+- 当前主机器人描述：`src/arm-platform/config/arm.urdf`
+- 安装后 launch 使用的描述：`share/manipulator/arm.urdf`
+- `robot_description` 入口：`src/arm-platform/launch/student_arm.launch.py`
+- 当前主模型类型：直接读取纯 URDF 文件，不是原生 xacro 生成链
+- Base link：`base_link`
+- 当前代码使用的第六关节末端 link：`link6`
+- 当前活动 URDF 中没有 `tool0`、flange 或额外 end-effector fixed link
+- 当前 TF 链：`base_link -> link1 -> link2 -> link3 -> link4 -> link5 -> link6`
+- 当前活动 URDF 中没有 `world -> base_link` 固定关节
+- `base_link` 作为 root link 带 inertial，会触发 `robot_state_publisher` 的 KDL root inertial warning
 
-- Main active robot description source:
-  `src/arm-platform/config/arm.urdf`
-- Installed description used by launches:
-  `share/manipulator/arm.urdf`
-- `robot_description` generation entry:
-  `src/arm-platform/launch/student_arm.launch.py`
-- Current description type: plain URDF file read directly into the
-  `robot_description` parameter
-- Base link: `base_link`
-- Sixth joint/end-effector link used by current code: `link6`
-- No active `tool0`, flange, or explicit end-effector fixed link is present in
-  the active `arm.urdf`
-- Current TF chain:
-  `base_link -> link1 -> link2 -> link3 -> link4 -> link5 -> link6`
-- No active `world -> base_link` fixed joint is present in the active URDF
-- The root link `base_link` has inertial data, which triggers the standard KDL
-  warning in `robot_state_publisher`
+`dummy_description` 下存在部分 effector xacro 定义了 `tool0`，但它们没有接入当前 `student_arm.launch.py` 使用的 `robot_description` 路径。
 
-There are separate effector xacro files under `dummy_description` that define
-`tool0`, but they are not part of the current `student_arm.launch.py`
-`robot_description` path.
+### 控制与模型加载
 
-## Control And Model Loading
+- 当前学生仿真是自定义虚拟臂节点，不是 Gazebo 物理控制。
+- `/joint_states` 由 `student_arm_node` 发布。
+- TF 由 `robot_state_publisher` 发布。
+- 学生命令入口：`/student/joint_command`，类型为 `sensor_msgs/msg/JointState`
+- 可选反馈：`/student/joint_feedback`，类型为 `dummy_interface/msg/MotorState`
+- 学生模式控制器：自定义 `SmoothPositionController`
+- 当前没有启用 `ros2_control`、`ros_control`、`gazebo_ros_control`、transmission 或 controller yaml 链路。
+- IK 模块：`src/arm-platform/demo/pinocchio_ik_6dof.py`
+- IK 读取模型：`src/arm-platform/config/arm.urdf`
+- IK 末端 frame：`link6`
+- 重力控制和碰撞检查也通过 Pinocchio 从配置的 URDF 路径加载模型。
 
-- Current student simulation mode is a custom virtual arm node, not Gazebo
-  physics control.
-- `/joint_states` is published by `student_arm_node`.
-- TF is published by `robot_state_publisher`.
-- Student command input:
-  `/student/joint_command` with `sensor_msgs/msg/JointState`
-- Optional feedback:
-  `/student/joint_feedback` with `dummy_interface/msg/MotorState`
-- Controller type in student mode: custom `SmoothPositionController`
-- No `ros2_control`, `ros_control`, `gazebo_ros_control`, transmission, or
-  controller YAML chain is currently active.
-- IK module:
-  `src/arm-platform/demo/pinocchio_ik_6dof.py`
-- IK URDF input:
-  `src/arm-platform/config/arm.urdf`
-- IK end-effector frame:
-  `link6`
-- Gravity control and collision checking also load URDF models through
-  Pinocchio from configured URDF paths.
+### 原始基线验证
 
-## Baseline Verification
-
-Build command:
+构建命令：
 
 ```bash
 source setup_env.bash
 colcon build
 ```
 
-Result: all four packages finished. Existing CMake cache warnings were observed
-for `dummy_description`, `dummy_interface`, and `serial` because their cache was
-created under the old path
-`/home/yihuang/westlake/windylab-arm/windylab_ws`.
+结果：4 个包均完成构建。`dummy_description`、`dummy_interface`、`serial` 有既有 CMake cache 路径警告，因为缓存来自旧路径：
 
-Existing student simulation launch:
+```text
+/home/yihuang/westlake/windylab-arm/windylab_ws
+```
+
+原学生仿真启动命令：
 
 ```bash
 source setup_env.bash
 ros2 launch manipulator student_arm.launch.py use_rviz:=False
 ```
 
-Observed topics:
+观察到的话题：
 
 - `/joint_states`
 - `/parameter_events`
@@ -140,137 +114,97 @@ Observed topics:
 - `/tf`
 - `/tf_static`
 
-Motion command used for baseline verification:
+运动验证命令：
 
 ```bash
 ros2 topic pub --once /student/joint_command sensor_msgs/msg/JointState \
   "{position: [0.3, 0.0, 0.0, 0.0, 0.0, 0.0]}"
 ```
 
-`/joint_states` and `tf2_echo base_link link6` reflected the commanded joint1
-motion.
+结果：`/joint_states` 和 `tf2_echo base_link link6` 均反映 joint1 运动。
 
-IK self-test:
+IK 自测：
 
 ```bash
 cd src/arm-platform/demo
 python3 pinocchio_ik_6dof.py
 ```
 
-Result: the script loaded a six-DoF model with end frame `link6` and converged
-on 8 of 10 random FK/IK round-trip targets. The non-converged samples were
-random difficult or unreachable targets and match the current demo behavior.
+结果：脚本加载 6 自由度模型，末端 frame 为 `link6`，10 个随机 FK/IK 回代目标中收敛 8 个；未收敛样本为随机困难或不可达目标，符合当前 demo 行为。
 
-## Gazebo Baseline Added In Phase 0
+### 阶段 0 Gazebo 基线
 
-New launch file:
+新增 launch：
 
 ```text
 src/arm-platform/launch/gazebo_arm.launch.py
 ```
 
-Usage:
+使用方式：
 
 ```bash
 source setup_env.bash
 ros2 launch manipulator gazebo_arm.launch.py
 ```
 
-Headless/server-only verification:
+无 GUI 验证：
 
 ```bash
 source setup_env.bash
 ros2 launch manipulator gazebo_arm.launch.py gui:=false
 ```
 
-GUI verification:
+有 GUI 验证：
 
 ```bash
 source setup_env.bash
 ros2 launch manipulator gazebo_arm.launch.py gui:=true
 ```
 
-The launch starts Gazebo Classic through `gazebo_ros`, publishes the existing
-`arm.urdf` as `robot_description`, and spawns a Gazebo entity named
-`windylab_arm` from that topic. This baseline is for visual/model spawn
-verification only. It does not add Gazebo joint control.
+该 launch 通过 `gazebo_ros` 启动 Gazebo Classic，将当前机械臂描述发布为 `robot_description`，并用 `spawn_entity.py` 生成名为 `windylab_arm` 的 Gazebo 实体。
 
-The launch rewrites `dummy_description` mesh URIs in the spawned Gazebo
-description to `file://` paths, so Gazebo does not query the online model
-database for project meshes. It sets `GAZEBO_MODEL_PATH` to include Gazebo
-Classic's local `sun` and `ground_plane` models, and disables the Gazebo Classic
-online model database by setting `GAZEBO_MODEL_DATABASE_URI` to an empty value.
-The spawned model is marked static for this visual baseline, avoiding unstable
-free-body physics before a Gazebo joint-control stack exists.
+为避免 Gazebo GUI 卡在在线模型库或 mesh 路径解析上，launch 做了以下处理：
 
-The launch strips the leading XML encoding declaration from the published URDF
-string before handing it to `spawn_entity.py`. This works around the ROS 2
-Humble `spawn_entity.py`/lxml behavior where Unicode strings with an XML
-encoding declaration are rejected. The source `arm.urdf` file is not modified.
+- 将项目 mesh URI 改写为本地 `file://` 路径；
+- 将 `GAZEBO_MODEL_PATH` 设置为包含 Gazebo Classic 本地 `sun` 和 `ground_plane` 模型；
+- 将 `GAZEBO_MODEL_DATABASE_URI` 设置为空，禁用在线模型库查询；
+- 去掉发布给 `spawn_entity.py` 的 XML encoding 声明，规避 ROS 2 Humble 中 `spawn_entity.py`/lxml 对 Unicode XML 声明的解析问题。
 
-Headless verification completed successfully after this workaround. Gazebo
-reported:
+阶段 0 的 Gazebo 模型被标记为 static，只用于稳定显示基线；此时尚未接入 Gazebo 关节控制。
+
+验证结果：
 
 ```text
 Spawn status: SpawnEntity: Successfully spawned entity [windylab_arm]
 ```
 
-The default GUI launch also started both `gzserver` and `gzclient`, then spawned
-the same `windylab_arm` entity successfully.
+### Git 状态
 
-When the verification command was stopped by `timeout`, `gzserver` required
-SIGKILL after SIGINT/SIGTERM. This was observed during shutdown only, after the
-entity had already spawned successfully.
-
-## Git State
-
-The workspace root is not a Git repository. The actual Git repositories are:
+工作空间根目录不是 Git 仓库，实际 Git 仓库位于：
 
 - `src/arm-platform`
 - `src/dummy_description`
 - `src/dummy-interface`
 - `src/serial`
 
-Before Phase 0 edits, `src/arm-platform` already contained many uncommitted
-changes from earlier work, including the student-arm simulation entry and 6-DoF
-demo files. This phase only adds the Gazebo baseline launch, this report, and
-the minimal package metadata needed to install them.
+阶段 0 修改前，`src/arm-platform` 已经存在较多未提交改动，包括学生仿真入口和 6 自由度 demo 文件。阶段提交只纳入与本阶段相关的 Gazebo baseline 和报告文件。
 
-## Planned Files For Later Phases
+## 阶段 1：引入并验证官方 D435i 描述资源
 
-Likely later changes should stay in the active `manipulator` package unless a
-dedicated Gazebo package is introduced:
+阶段 1 使用 ROS 包 `realsense2_description` 引入官方 D435i xacro 和 mesh。官方文件不复制到本仓库，也不修改官方文件；项目侧只新增 wrapper xacro 和集成入口。
 
-- D435i wrapper xacro under the active robot description path
-- Gazebo sensor xacro for RGB-D and IMU plugin tags
-- Optional D435i simulation config
-- AprilTag test world/model assets
-- Sensor verification scripts
-
-Before Phase 1 sensor work, install `ros-humble-gazebo-plugins` and re-run the
-plugin path check above. The D435i integration should connect to the active
-`robot_description` chain instead of creating a parallel display-only robot.
-
-## Phase 1 D435i Description Baseline
-
-Phase 1 uses the ROS package `realsense2_description` from
-`ros-humble-realsense2-description`. Official RealSense files are not copied
-into this repository and are not modified. The project-side wrapper includes
-the official `_d435i.urdf.xacro` macro and mounts the camera on the active
-end-effector link `link6`.
-
-Installed dependencies for this phase:
+安装依赖：
 
 ```bash
 sudo apt-get install -y ros-humble-xacro ros-humble-realsense2-description
 ```
 
-New project description files:
+新增项目描述文件：
 
 - `config/sensors/d435i_mount.xacro`
 - `config/arm_with_d435i.urdf.xacro`
 
-Default mount parameters:
+默认安装参数：
 
 - `camera_name:=camera`
 - `camera_parent_link:=link6`
@@ -278,7 +212,11 @@ Default mount parameters:
 - `camera_rpy:="0 0 0"`
 - `camera_use_nominal_extrinsics:=true`
 
-Static validation command:
+默认挂载位置是当前真实末端 link：`link6`。
+
+### 阶段 1 静态检查
+
+展开并检查 URDF：
 
 ```bash
 source setup_env.bash
@@ -287,37 +225,69 @@ xacro $(ros2 pkg prefix manipulator)/share/manipulator/arm_with_d435i.urdf.xacro
 check_urdf /tmp/robot_with_d435i.urdf
 ```
 
-Result:
+结果：
 
-- `check_urdf` parsed successfully.
-- Expanded model contains 21 links and 20 joints.
-- No duplicate link or joint names were found.
-- The generated TF chain includes:
-  `link6 -> camera_bottom_screw_frame -> camera_link -> camera_depth_frame -> camera_depth_optical_frame`.
-- Nominal color, infrared, accel, and gyro frames are also generated.
+- `check_urdf` 成功解析；
+- 展开后模型包含 21 个 link 和 20 个 joint；
+- 未发现重复 link 或 joint 名称；
+- 生成的关键 TF 链包括：
 
-Runtime validation:
+```text
+link6
+  -> camera_bottom_screw_frame
+  -> camera_link
+  -> camera_depth_frame
+  -> camera_depth_optical_frame
+```
 
-- `ros2 launch manipulator student_arm.launch.py use_rviz:=False camera_enabled:=false`
-  still starts the original six-joint arm description.
-- `ros2 launch manipulator student_arm.launch.py use_rviz:=False camera_enabled:=true`
-  starts with the D435i frames in `robot_state_publisher`.
-- Publishing one joint command to `/student/joint_command` moved joint1 to
-  `0.3 rad`; `base_link -> camera_depth_optical_frame` changed consistently,
-  while `link6 -> camera_depth_optical_frame` stayed fixed.
-- `ros2 launch manipulator gazebo_arm.launch.py gui:=true camera_enabled:=true`
-  spawned `windylab_arm` successfully and displayed the D435i mesh at the arm
-  end in Gazebo Classic.
+同时生成官方 nominal color、infrared、accel、gyro frames。
 
-Evidence screenshots:
+### 阶段 1 运行验证
 
-- RViz: `/tmp/d435i_phase1_rviz.png`
-- Gazebo window: `/tmp/d435i_phase1_gazebo_window.png`
+原始学生启动保持兼容：
 
-Regression:
+```bash
+ros2 launch manipulator student_arm.launch.py use_rviz:=False camera_enabled:=false
+```
 
-- `colcon build` completed for all four workspace packages.
-- Existing CMake cache path warnings remain for `dummy_description`,
-  `dummy_interface`, and `serial`.
-- `python3 src/arm-platform/demo/pinocchio_ik_6dof.py` still reports
-  convergence on 8 of 10 random FK/IK targets, matching the previous baseline.
+带 D435i 的学生启动：
+
+```bash
+ros2 launch manipulator student_arm.launch.py use_rviz:=False camera_enabled:=true
+```
+
+验证结果：
+
+- `robot_state_publisher` 成功加载 D435i frame；
+- 发布一次 `/student/joint_command` 后 joint1 到达 `0.3 rad`；
+- `base_link -> camera_depth_optical_frame` 随机械臂运动变化；
+- `link6 -> camera_depth_optical_frame` 保持固定，说明相机随末端刚性运动。
+
+Gazebo 验证：
+
+```bash
+ros2 launch manipulator gazebo_arm.launch.py gui:=true camera_enabled:=true
+```
+
+结果：
+
+- `windylab_arm` 成功 spawn；
+- Gazebo 中能看到机械臂末端的 D435i 外形；
+- 模型位姿稳定，无 mesh 缺失、NaN 或模型爆炸。
+
+截图证据：
+
+- RViz：`/tmp/d435i_phase1_rviz.png`
+- Gazebo 窗口：`/tmp/d435i_phase1_gazebo_window.png`
+
+### 阶段 1 回归
+
+- `colcon build` 完成 4 个工作空间包构建；
+- 既有 CMake cache 旧路径 warning 仍存在于 `dummy_description`、`dummy_interface`、`serial`；
+- `python3 src/arm-platform/demo/pinocchio_ik_6dof.py` 仍为 10 个随机目标收敛 8 个，与阶段 0 基线一致。
+
+## 后续阶段注意事项
+
+- 当前 Gazebo 中的机械臂仍是 static 显示模型，不会响应 `/student/joint_command`。
+- 要让 Gazebo 机械臂跟随 demo 运动，需要在后续阶段补齐 Gazebo 侧关节状态同步或控制链路。
+- 阶段 2 才会加入 RGB-D 和 IMU sensor plugin，当前阶段不发布图像、深度、点云或 IMU 数据。
