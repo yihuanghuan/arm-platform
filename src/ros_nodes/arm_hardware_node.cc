@@ -59,8 +59,8 @@ void ArmHardwareNode::SetArmPlatform() {
 
   arm_platform_->SetArm(std::move(arm));
   auto smooth_position_controller = std::make_unique<controller::SmoothPositionController>();
-  std::vector<double> p_gain = GetParam<std::vector<double>>("p_gain", {30, 30, 30, 5, 5, 5, 1});
-  std::vector<double> d_gain = GetParam<std::vector<double>>("d_gain", {1, 1, 1, 0.1, 0.1, 0.1, 0.1});
+  std::vector<double> p_gain = GetParam<std::vector<double>>("p_gain", {30, 30, 30, 5, 5, 5});
+  std::vector<double> d_gain = GetParam<std::vector<double>>("d_gain", {1, 1, 1, 0.1, 0.1, 0.1});
   smooth_position_controller->SetKpKd(p_gain, d_gain);
   const auto p_gain_text = FormatVector(p_gain);
   const auto d_gain_text = FormatVector(d_gain);
@@ -90,11 +90,6 @@ void ArmHardwareNode::MoveItCallback(const sensor_msgs::msg::JointState::ConstSh
       }
     }
   }
-  if (msg->name.size() == 6) {
-    joint_setpoint.q[kJointCount - 1] = 0;
-    joint_setpoint.dq[kJointCount - 1] = 0.0;
-  }
-
   arm_platform_->SetJointSetpoint(joint_setpoint);
 }
 

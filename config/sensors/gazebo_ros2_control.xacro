@@ -1,0 +1,78 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <xacro:macro name="windylab_gazebo_ros2_control"
+      params="use_ros2_control:=true fix_base_to_world:=true">
+
+    <xacro:if value="${fix_base_to_world}">
+      <link name="world"/>
+      <joint name="world_to_base_link" type="fixed">
+        <parent link="world"/>
+        <child link="base_link"/>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+      </joint>
+    </xacro:if>
+
+    <xacro:macro name="windylab_gazebo_joint_stabilization" params="joint_name">
+      <gazebo reference="${joint_name}">
+        <implicitSpringDamper>true</implicitSpringDamper>
+      </gazebo>
+    </xacro:macro>
+
+    <xacro:windylab_gazebo_joint_stabilization joint_name="joint1"/>
+    <xacro:windylab_gazebo_joint_stabilization joint_name="joint2"/>
+    <xacro:windylab_gazebo_joint_stabilization joint_name="joint3"/>
+    <xacro:windylab_gazebo_joint_stabilization joint_name="joint4"/>
+    <xacro:windylab_gazebo_joint_stabilization joint_name="joint5"/>
+    <xacro:windylab_gazebo_joint_stabilization joint_name="joint6"/>
+
+    <xacro:macro name="windylab_gazebo_link_stabilization" params="link_name">
+      <gazebo reference="${link_name}">
+        <gravity>false</gravity>
+        <selfCollide>false</selfCollide>
+      </gazebo>
+    </xacro:macro>
+
+    <xacro:windylab_gazebo_link_stabilization link_name="base_link"/>
+    <xacro:windylab_gazebo_link_stabilization link_name="link1"/>
+    <xacro:windylab_gazebo_link_stabilization link_name="link2"/>
+    <xacro:windylab_gazebo_link_stabilization link_name="link3"/>
+    <xacro:windylab_gazebo_link_stabilization link_name="link4"/>
+    <xacro:windylab_gazebo_link_stabilization link_name="link5"/>
+    <xacro:windylab_gazebo_link_stabilization link_name="link6"/>
+    <xacro:windylab_gazebo_link_stabilization link_name="camera_bottom_screw_frame"/>
+    <xacro:windylab_gazebo_link_stabilization link_name="camera_link"/>
+
+    <xacro:if value="${use_ros2_control}">
+      <ros2_control name="GazeboSystem" type="system">
+        <hardware>
+          <plugin>gazebo_ros2_control/GazeboSystem</plugin>
+        </hardware>
+
+        <xacro:macro name="windylab_position_joint" params="joint_name lower upper">
+          <joint name="${joint_name}">
+            <command_interface name="position">
+              <param name="min">${lower}</param>
+              <param name="max">${upper}</param>
+            </command_interface>
+            <state_interface name="position"/>
+            <state_interface name="velocity"/>
+            <state_interface name="effort"/>
+          </joint>
+        </xacro:macro>
+
+        <xacro:windylab_position_joint joint_name="joint1" lower="-3.14" upper="3.14"/>
+        <xacro:windylab_position_joint joint_name="joint2" lower="-3.14" upper="3.14"/>
+        <xacro:windylab_position_joint joint_name="joint3" lower="-3.14" upper="3.14"/>
+        <xacro:windylab_position_joint joint_name="joint4" lower="-3.14" upper="3.14"/>
+        <xacro:windylab_position_joint joint_name="joint5" lower="-3.14" upper="3.14"/>
+        <xacro:windylab_position_joint joint_name="joint6" lower="-3.15" upper="3.15"/>
+      </ros2_control>
+
+      <gazebo>
+        <plugin filename="libgazebo_ros2_control.so" name="gazebo_ros2_control">
+          <parameters>$(find manipulator)/gazebo_controllers.yaml</parameters>
+        </plugin>
+      </gazebo>
+    </xacro:if>
+  </xacro:macro>
+</robot>

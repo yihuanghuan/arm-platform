@@ -13,10 +13,10 @@
 
 namespace manipulator {
 
-static constexpr size_t kJointCount = 7;
+static constexpr size_t kJointCount = 6;
 static constexpr double kControlPeriodMs = 10.0;
 static const std::array<std::string, kJointCount> kJointNames = {
-    "joint1", "joint2", "joint3", "joint4", "joint5", "joint6", "joint7"};
+    "joint1", "joint2", "joint3", "joint4", "joint5", "joint6"};
 
 class ArmHardwareNode : public rclcpp::Node, public IArmDataSubscriber {
  public:

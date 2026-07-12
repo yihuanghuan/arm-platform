@@ -188,9 +188,9 @@ release:
   before_script:
     - |
       if ! command -v release-cli >/dev/null 2>&1; then
-        curl --location --output release-cli "https://gitlab.com/gitlab-org/release-cli/-/releases/permalink/latest/downloads/bin/release-cli-linux-amd64"
-        chmod +x release-cli
-        export PATH="${PWD}:${PATH}"
+        echo "ERROR: release-cli is not installed on this shell runner."
+        echo "Install it on the runner host, for example: sudo install -m 0755 release-cli /usr/local/bin/release-cli"
+        exit 1
       fi
   script:
     - release-cli --version

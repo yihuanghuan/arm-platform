@@ -6,9 +6,12 @@
   <xacro:arg name="camera_xyz" default="0.06 0 0.04"/>
   <xacro:arg name="camera_rpy" default="0 0 0"/>
   <xacro:arg name="camera_use_nominal_extrinsics" default="true"/>
+  <xacro:arg name="use_ros2_control" default="true"/>
+  <xacro:arg name="fix_base_to_world" default="true"/>
 
   <xacro:include filename="$(find manipulator)/arm.urdf"/>
   <xacro:include filename="$(find manipulator)/sensors/d435i_mount.xacro"/>
+  <xacro:include filename="$(find manipulator)/sensors/gazebo_ros2_control.xacro"/>
 
   <xacro:windylab_d435i_mount
       camera_enabled="$(arg camera_enabled)"
@@ -17,4 +20,8 @@
       camera_xyz="$(arg camera_xyz)"
       camera_rpy="$(arg camera_rpy)"
       camera_use_nominal_extrinsics="$(arg camera_use_nominal_extrinsics)"/>
+
+  <xacro:windylab_gazebo_ros2_control
+      use_ros2_control="$(arg use_ros2_control)"
+      fix_base_to_world="$(arg fix_base_to_world)"/>
 </robot>

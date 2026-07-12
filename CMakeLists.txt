@@ -28,6 +28,7 @@ add_library(manipulator_core
   src/robotics/arm/abs_arm.cc
   src/robotics/arm/a_l1.cc
   src/robotics/arm/a_l1_gamma.cc
+  src/robotics/arm/sim_arm.cc
   src/robotics/arm/arm_factory.cc
   src/robotics/bus/abs_bus.cc
   src/robotics/bus/serial_bus.cc
@@ -148,6 +149,23 @@ add_executable(slave_arm_node
   src/ros_nodes/slave_arm_node.cc
 )
 
+add_executable(student_arm_node
+  src/ros_nodes/student_arm_node.cc
+)
+
+target_link_libraries(student_arm_node
+  manipulator_core
+  controller_lib
+  planner_lib
+)
+
+ament_target_dependencies(student_arm_node
+  rclcpp
+  sensor_msgs
+  std_msgs
+  dummy_interface
+)
+
 add_executable(robot_health_aggregator
   src/ros_nodes/robot_health_aggregator.cc
 )
@@ -198,6 +216,7 @@ install(TARGETS
   arm_hardware_node
   master_arm_node
   slave_arm_node
+  student_arm_node
   robot_health_aggregator
   flight_status_bridge
   EXPORT export_${PROJECT_NAME}
@@ -216,6 +235,11 @@ install(DIRECTORY launch/
 
 install(DIRECTORY config/
   DESTINATION share/${PROJECT_NAME}/
+)
+
+install(PROGRAMS
+  scripts/student_joint_command_bridge.py
+  DESTINATION lib/${PROJECT_NAME}
 )
 
 install(PROGRAMS
@@ -239,7 +263,7 @@ install(FILES
 # ==============================
 ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
 ament_export_include_directories(include)
-ament_export_dependencies(rclcpp sensor_msgs std_msgs mavros_msgs dummy_interface visualization_msgs)
+ament_export_dependencies(rclcpp sensor_msgs std_msgs mavros_msgs dummy_interface serial visualization_msgs)
 
 # ==============================
 # Tests & Lint

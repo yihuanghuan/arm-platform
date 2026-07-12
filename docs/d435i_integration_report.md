@@ -288,6 +288,155 @@ ros2 launch manipulator gazebo_arm.launch.py gui:=true camera_enabled:=true
 
 ## 后续阶段注意事项
 
-- 当前 Gazebo 中的机械臂仍是 static 显示模型，不会响应 `/student/joint_command`。
-- 要让 Gazebo 机械臂跟随 demo 运动，需要在后续阶段补齐 Gazebo 侧关节状态同步或控制链路。
+- 阶段 1.5 已补齐 Gazebo 侧 ROS 2 控制链路；默认 `gazebo_arm.launch.py` 不再使用 static 模型。
 - 阶段 2 才会加入 RGB-D 和 IMU sensor plugin，当前阶段不发布图像、深度、点云或 IMU 数据。
+
+## 阶段 1.5：连接 Gazebo 与 ROS 2 控制链路
+
+阶段 1.5 的目标是让 Gazebo 中的六关节机械臂真正响应现有学生 demo 的 `/student/joint_command`，并让 Gazebo 侧的 `joint_state_broadcaster` 成为 `/joint_states` 的唯一发布者。这样 RViz、TF 和 D435i 位姿都跟随 Gazebo 中的关节状态，而不是再由原来的假臂节点单独驱动。
+
+### 安装依赖
+
+本阶段补齐了 Gazebo Classic 与 ROS 2 control 所需包：
+
+```bash
+sudo apt-get update
+sudo apt-get install -y \
+  ros-humble-ros2-control \
+  ros-humble-ros2-controllers \
+  ros-humble-gazebo-ros2-control
+```
+
+### 新增与修改文件
+
+- `config/sensors/gazebo_ros2_control.xacro`：为六个关节声明 `position` command interface，以及 `position/velocity/effort` state interface；默认增加 `world -> base_link` 固定关节，避免 Gazebo 动力学中底座下落。
+- `config/gazebo_controllers.yaml`：配置 `joint_state_broadcaster` 和 `position_controllers/JointGroupPositionController`。
+- `scripts/student_joint_command_bridge.py`：订阅 `/student/joint_command` 的 `sensor_msgs/msg/JointState`，按 `joint1` 到 `joint6` 重排并限幅后，发布到 `/arm_position_controller/commands`。
+- `launch/gazebo_arm.launch.py`：默认启用 `gazebo_ros2_control`，启动控制器 spawner 和桥接节点；保留 `use_ros2_control:=false` 的只显示模型路径；默认 `disable_collisions:=true`，从 Gazebo 版 `robot_description` 中移除 collision geometry，避免 SolidWorks STL 碰撞网格与位置接口导致物理抖动。
+- `package.xml`、`CMakeLists.txt`：加入运行依赖和桥接脚本安装规则。
+
+### 启动方式
+
+默认控制模式：
+
+```bash
+source setup_env.bash
+ros2 launch manipulator gazebo_arm.launch.py gui:=true
+```
+
+无 GUI 控制模式：
+
+```bash
+source setup_env.bash
+ros2 launch manipulator gazebo_arm.launch.py gui:=false use_rviz:=false
+```
+
+兼容旧的 static 显示模式：
+
+```bash
+source setup_env.bash
+ros2 launch manipulator gazebo_arm.launch.py use_ros2_control:=false static_model:=true
+```
+
+如需调试完整碰撞几何，可显式关闭碰撞移除：
+
+```bash
+source setup_env.bash
+ros2 launch manipulator gazebo_arm.launch.py gui:=true disable_collisions:=false
+```
+
+当前不建议在阶段 1.5 默认打开完整 collision，因为当前 URDF 使用详细 STL 碰撞网格，且 Gazebo position interface 会和物理求解器形成硬约束修正，容易表现为机械臂颤抖。
+
+### 验证结果
+
+构建：
+
+```bash
+source /opt/ros/humble/setup.bash
+colcon build --packages-select manipulator --symlink-install
+```
+
+结果：`manipulator` 构建成功。
+
+URDF 展开与解析：
+
+```bash
+source install/setup.bash
+xacro $(ros2 pkg prefix manipulator)/share/manipulator/arm_with_d435i.urdf.xacro \
+  camera_enabled:=true use_ros2_control:=true fix_base_to_world:=true \
+  > /tmp/windylab_arm_control.urdf
+check_urdf /tmp/windylab_arm_control.urdf
+```
+
+结果：
+
+- `check_urdf` 成功解析；
+- root link 为 `world`；
+- `world -> base_link -> ... -> link6 -> camera_link` 链路存在；
+- D435i 官方子 frame 仍保留在 robot description 中，RViz 配置只显示主 frame。
+
+控制器状态：
+
+```bash
+ros2 control list_controllers --controller-manager /controller_manager
+ros2 control list_hardware_interfaces --controller-manager /controller_manager
+```
+
+结果：
+
+```text
+joint_state_broadcaster joint_state_broadcaster/JointStateBroadcaster active
+arm_position_controller position_controllers/JointGroupPositionController active
+```
+
+六个 `joint*/position` command interface 均为 `available` 且 `claimed`，六个关节均发布 `position/velocity/effort` state interface。
+
+`/joint_states` 发布者检查：
+
+```bash
+ros2 topic info /joint_states --verbose
+```
+
+结果：`/joint_states` 只有 1 个发布者，节点为 `joint_state_broadcaster`；`robot_state_publisher` 是订阅者。未发现 `student_arm_node` 与 Gazebo 同时发布 `/joint_states` 的冲突。
+
+手动命令验证：
+
+```bash
+ros2 topic pub --once /student/joint_command sensor_msgs/msg/JointState \
+  "{name: ['joint1','joint2','joint3','joint4','joint5','joint6'], position: [0.35, -0.25, 0.2, 0.1, -0.15, 0.3]}"
+```
+
+结果：命令通过桥接节点进入 `/arm_position_controller/commands`，Gazebo 发布的 `/joint_states` 发生变化。
+
+demo 验证：
+
+```bash
+python3 src/arm-platform/demo/move_arm_demo_6dof.py
+```
+
+结果：demo 不需要修改，仍向 `/student/joint_command` 发布命令；Gazebo 中机械臂关节状态随 demo 变化。
+
+有头 Gazebo 验证：
+
+```bash
+ros2 launch manipulator gazebo_arm.launch.py gui:=true verbose:=false use_rviz:=false camera_enabled:=true use_ros2_control:=true
+```
+
+结果：
+
+- `windylab_arm` 成功 spawn；
+- `gazebo_ros2_control` 成功加载；
+- `joint_state_broadcaster` 和 `arm_position_controller` 均进入 active；
+- 对 `/student/joint_command` 发布一次目标角后，Gazebo 侧 `/joint_states` 更新；
+- 测试结束时 `gzclient`、`gzserver`、`robot_state_publisher` 和桥接节点均能正常退出。
+
+### 抖动处理记录
+
+阶段 1.5 初版接入后，`gui:=true` 下机械臂会持续颤抖。定位结果：
+
+- 阶段 0/1 的 Gazebo 模型是 static，不参与动力学，所以不会暴露该问题；
+- 阶段 1.5 改为动态 ROS 2 control 模型后，SolidWorks 导出的 `arm.urdf` 仍存在关节 `effort="0"`、`velocity="0"` 且缺少 `dynamics` 阻尼/摩擦的问题；
+- 仅补关节 effort、velocity、damping、friction 和初始保持命令后，`/joint_states.velocity` 仍有明显跳动；
+- 将 Gazebo 版 robot description 的 collision geometry 移除后，静止状态下各关节速度降到 `1e-14` 量级，命令后关节能精确到达目标角。
+
+因此当前阶段默认使用无碰撞可视化控制模型。后续如果需要做真实碰撞或动力学，应单独为 Gazebo 建立简化 collision geometry，而不是直接复用视觉 STL 作为碰撞网格。

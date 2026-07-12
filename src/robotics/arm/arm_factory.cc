@@ -1,6 +1,7 @@
 #include <manipulator/robotics/arm/arm_factory.h>
 #include <manipulator/robotics/arm/a_l1.h>
 #include <manipulator/robotics/arm/a_l1_gamma.h>
+#include <manipulator/robotics/arm/sim_arm.h>
 #include <stdexcept>
 
 namespace manipulator::arm {
@@ -8,6 +9,7 @@ namespace manipulator::arm {
 ArmFactory::ArmFactory() {
   arms_.emplace("a_l1", std::make_unique<AL1>());
   arms_.emplace("a_l1_gamma", std::make_unique<AL1Gamma>());
+  arms_.emplace("sim", std::make_unique<SimArm>());
 }
 
 ArmFactory& ArmFactory::Instance() {

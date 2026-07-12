@@ -89,8 +89,8 @@ void SlaveArmNode::SetArmPlatform() {
   auto smooth_position_controller = std::make_unique<controller::SmoothPositionController>();
   double max_velocity = GetParam<double>("max_velocity", 2);
   smooth_position_controller->SetMaxVelocity(max_velocity);
-  std::vector<double> p_gain = GetParam<std::vector<double>>("p_gain", {30, 30, 30, 5, 5, 5, 1});
-  std::vector<double> d_gain = GetParam<std::vector<double>>("d_gain", {1, 1, 1, 0.1, 0.1, 0.1, 0.1});
+  std::vector<double> p_gain = GetParam<std::vector<double>>("p_gain", {30, 30, 30, 5, 5, 5});
+  std::vector<double> d_gain = GetParam<std::vector<double>>("d_gain", {1, 1, 1, 0.1, 0.1, 0.1});
   smooth_position_controller->SetKpKd(p_gain, d_gain);
   arm_platform_->SetController(std::move(smooth_position_controller));
 }

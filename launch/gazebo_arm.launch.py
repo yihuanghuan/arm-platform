@@ -3,11 +3,13 @@ from launch.actions import DeclareLaunchArgument
 from launch.actions import IncludeLaunchDescription
 from launch.actions import OpaqueFunction
 from launch.actions import SetEnvironmentVariable
+from launch.actions import TimerAction
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
 import os
+import xml.etree.ElementTree as ET
 import xacro
 
 
@@ -16,29 +18,34 @@ def _as_bool(value):
 
 
 def _render_robot_description(pkg_share, context):
-    camera_enabled = _as_bool(LaunchConfiguration('camera_enabled').perform(context))
-    if camera_enabled:
-        xacro_path = os.path.join(pkg_share, 'arm_with_d435i.urdf.xacro')
-        doc = xacro.process_file(
-            xacro_path,
-            mappings={
-                'camera_enabled': 'true',
-                'camera_name': LaunchConfiguration('camera_name').perform(context),
-                'camera_parent_link': LaunchConfiguration('camera_parent_link').perform(context),
-                'camera_xyz': LaunchConfiguration('camera_xyz').perform(context),
-                'camera_rpy': LaunchConfiguration('camera_rpy').perform(context),
-                'camera_use_nominal_extrinsics': LaunchConfiguration(
-                    'camera_use_nominal_extrinsics').perform(context),
-            })
-        robot_description = doc.toprettyxml(indent='  ')
-    else:
-        urdf_path = os.path.join(pkg_share, 'arm.urdf')
-        with open(urdf_path, 'r') as f:
-            robot_description = f.read()
+    xacro_path = os.path.join(pkg_share, 'arm_with_d435i.urdf.xacro')
+    doc = xacro.process_file(
+        xacro_path,
+        mappings={
+            'camera_enabled': LaunchConfiguration('camera_enabled').perform(context),
+            'camera_name': LaunchConfiguration('camera_name').perform(context),
+            'camera_parent_link': LaunchConfiguration('camera_parent_link').perform(context),
+            'camera_xyz': LaunchConfiguration('camera_xyz').perform(context),
+            'camera_rpy': LaunchConfiguration('camera_rpy').perform(context),
+            'camera_use_nominal_extrinsics': LaunchConfiguration(
+                'camera_use_nominal_extrinsics').perform(context),
+            'use_ros2_control': LaunchConfiguration('use_ros2_control').perform(context),
+            'fix_base_to_world': LaunchConfiguration('fix_base_to_world').perform(context),
+        })
+    robot_description = doc.toprettyxml(indent='  ')
 
     if robot_description.startswith('<?xml'):
         robot_description = robot_description.split('\n', 1)[1]
     return robot_description
+
+
+def _strip_collision_elements(robot_description):
+    root = ET.fromstring(robot_description)
+    for parent in root.iter():
+        for child in list(parent):
+            if child.tag == 'collision':
+                parent.remove(child)
+    return ET.tostring(root, encoding='unicode')
 
 
 def _launch_setup(context, *args, **kwargs):
@@ -47,6 +54,10 @@ def _launch_setup(context, *args, **kwargs):
     realsense_description_share = FindPackageShare('realsense2_description').find(
         'realsense2_description')
     robot_description = _render_robot_description(pkg_share, context)
+    use_ros2_control = _as_bool(LaunchConfiguration('use_ros2_control').perform(context))
+    static_model = _as_bool(LaunchConfiguration('static_model').perform(context))
+    use_rviz = _as_bool(LaunchConfiguration('use_rviz').perform(context))
+    disable_collisions = _as_bool(LaunchConfiguration('disable_collisions').perform(context))
 
     mesh_rewrites = {
         'package://dummy_description/': 'file://' + dummy_description_share + '/',
@@ -57,13 +68,17 @@ def _launch_setup(context, *args, **kwargs):
     for old, new in mesh_rewrites.items():
         robot_description = robot_description.replace(old, new)
 
-    robot_description = robot_description.replace(
-        '</robot>',
-        '  <gazebo>\n'
-        '    <static>true</static>\n'
-        '  </gazebo>\n'
-        '</robot>',
-        1)
+    if disable_collisions:
+        robot_description = _strip_collision_elements(robot_description)
+
+    if not use_ros2_control and static_model:
+        robot_description = robot_description.replace(
+            '</robot>',
+            '  <gazebo>\n'
+            '    <static>true</static>\n'
+            '  </gazebo>\n'
+            '</robot>',
+            1)
 
     robot_state_publisher = Node(
         package='robot_state_publisher',
@@ -87,7 +102,62 @@ def _launch_setup(context, *args, **kwargs):
         ]
     )
 
-    return [robot_state_publisher, spawn_arm]
+    actions = [robot_state_publisher, spawn_arm]
+
+    if use_ros2_control:
+        joint_state_broadcaster_spawner = Node(
+            package='controller_manager',
+            executable='spawner',
+            name='spawn_joint_state_broadcaster',
+            output='screen',
+            arguments=[
+                'joint_state_broadcaster',
+                '--controller-manager', '/controller_manager',
+            ]
+        )
+
+        arm_position_controller_spawner = Node(
+            package='controller_manager',
+            executable='spawner',
+            name='spawn_arm_position_controller',
+            output='screen',
+            arguments=[
+                'arm_position_controller',
+                '--controller-manager', '/controller_manager',
+            ]
+        )
+
+        student_joint_command_bridge = Node(
+            package='manipulator',
+            executable='student_joint_command_bridge.py',
+            name='student_joint_command_bridge',
+            output='screen',
+            parameters=[{
+                'input_topic': '/student/joint_command',
+                'controller_command_topic': '/arm_position_controller/commands',
+                'joint_names': ['joint1', 'joint2', 'joint3', 'joint4', 'joint5', 'joint6'],
+            }]
+        )
+
+        actions.append(TimerAction(
+            period=3.0,
+            actions=[
+                joint_state_broadcaster_spawner,
+                arm_position_controller_spawner,
+                student_joint_command_bridge,
+            ]))
+
+    if use_rviz:
+        rviz_config = os.path.join(pkg_share, 'student_arm.rviz')
+        actions.append(Node(
+            package='rviz2',
+            executable='rviz2',
+            name='rviz2',
+            output='screen',
+            arguments=['-d', rviz_config]
+        ))
+
+    return actions
 
 
 def generate_launch_description():
@@ -147,6 +217,36 @@ def generate_launch_description():
         description='Use official D435i nominal camera and IMU extrinsic frames'
     )
 
+    use_ros2_control_arg = DeclareLaunchArgument(
+        'use_ros2_control',
+        default_value='true',
+        description='Load gazebo_ros2_control and drive the Gazebo joints from ROS 2'
+    )
+
+    fix_base_to_world_arg = DeclareLaunchArgument(
+        'fix_base_to_world',
+        default_value='true',
+        description='Add a fixed world_to_base_link joint for Gazebo simulation'
+    )
+
+    static_model_arg = DeclareLaunchArgument(
+        'static_model',
+        default_value='true',
+        description='Use a static Gazebo model only when use_ros2_control is false'
+    )
+
+    use_rviz_arg = DeclareLaunchArgument(
+        'use_rviz',
+        default_value='false',
+        description='Start RViz with the student arm configuration'
+    )
+
+    disable_collisions_arg = DeclareLaunchArgument(
+        'disable_collisions',
+        default_value='true',
+        description='Remove collision geometry from the Gazebo robot model'
+    )
+
     gazebo = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             os.path.join(gazebo_share, 'launch', 'gazebo.launch.py')
@@ -167,6 +267,11 @@ def generate_launch_description():
         camera_xyz_arg,
         camera_rpy_arg,
         camera_use_nominal_extrinsics_arg,
+        use_ros2_control_arg,
+        fix_base_to_world_arg,
+        static_model_arg,
+        use_rviz_arg,
+        disable_collisions_arg,
         SetEnvironmentVariable('GAZEBO_MODEL_DATABASE_URI', ''),
         SetEnvironmentVariable('GAZEBO_MODEL_PATH', os.pathsep.join(model_paths)),
         gazebo,
