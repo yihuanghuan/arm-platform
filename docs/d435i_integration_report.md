@@ -489,6 +489,20 @@ camera_depth_optical_frame
 
 因此 color image、depth image、两个 CameraInfo 和 PointCloud2 的 header frame 均为 `camera_depth_optical_frame`。官方 RealSense nominal TF 仍保留 `camera_color_optical_frame` 和 `camera_depth_optical_frame`，但 Gazebo 当前是一台共位虚拟 RGB-D 相机；后续如果需要严格模拟 D435i color/depth 物理外参，应拆成独立 color/depth sensor 或增加专用数据同步节点。
 
+### 工程风险说明
+
+当前 RGB-D 数据来自 Gazebo Classic 通用插件的模拟输出，不是 RealSense D435i 真机驱动的原生数据。由于插件只能配置一个 `frame_name`，本阶段暂时把彩色图像、深度图、CameraInfo 和点云都标记为 `camera_depth_optical_frame`。这只是当前仿真的临时接口限制，不应被视为真实 D435i 的标准接口。
+
+真实 D435i 通常应区分：
+
+- 彩色图像与彩色 CameraInfo：`camera_color_optical_frame`；
+- 原始深度图与原始点云：`camera_depth_optical_frame`；
+- 两个 optical frame 之间存在固定外参。
+
+后续 AprilTag 检测基于彩色图像，因此其位姿结果应以 `camera_color_optical_frame` 为参考坐标系，不能长期依赖当前全部使用 depth frame 的临时配置。彩色图像和原始深度图的同一像素位置也不能默认一一对应；如果需要根据彩色像素读取深度，必须使用 depth-to-color alignment，或根据内参、外参完成重新投影。
+
+上层算法不得硬编码 topic、frame、分辨率、FOV 或相机内参，应通过 ROS 参数、launch remap、TF 和 `CameraInfo` 获取。当前阶段的 RGB-D 测试仍然有效，但它只证明传感器数据链路、TF 基础结构和仿真功能正常，不能证明真实 D435i 的精度、噪声、延迟和对齐性能。
+
 默认 RGB-D 参数：
 
 ```text
@@ -602,3 +616,62 @@ joint2=-0.350 joint3=0.200
 - 六个 `joint*/position` command interface 均为 `available` 且 `claimed`；
 - `/joint_states` 只有 1 个发布者：`joint_state_broadcaster`；
 - `move_arm_demo_6dof.py` 可继续向 `/student/joint_command` 发布，Gazebo 关节状态随 demo 变化。
+
+### 可视化验收方法
+
+启动仿真：
+
+```bash
+cd /home/yihuang/westlake/windylab-arm-for6/windylab_ws
+source setup_env.bash
+ros2 launch manipulator gazebo_arm.launch.py \
+  gui:=true use_rviz:=false \
+  world:=$(ros2 pkg prefix manipulator)/share/manipulator/worlds/d435i_rgbd_test.world
+```
+
+查看 RGB 或深度图像：
+
+```bash
+cd /home/yihuang/westlake/windylab-arm-for6/windylab_ws
+source setup_env.bash
+ros2 run rqt_image_view rqt_image_view
+```
+
+在 `rqt_image_view` 中选择：
+
+```text
+/d435i/color/image_raw
+/d435i/depth/image_raw
+```
+
+预期效果：彩色图像能看到 Gazebo 测试场景中的墙、box 和 cylinder；深度图能看到近远物体的深度差异。如果缺少工具，安装：
+
+```bash
+sudo apt install ros-humble-rqt-image-view
+```
+
+查看点云：
+
+```bash
+cd /home/yihuang/westlake/windylab-arm-for6/windylab_ws
+source setup_env.bash
+rviz2
+```
+
+RViz2 设置：
+
+- `Global Options / Fixed Frame` 设置为 `world`；如临时 TF 显示异常，可设为 `camera_depth_optical_frame` 只看点云本体；
+- 添加 `PointCloud2`，topic 选择 `/d435i/depth/points`；
+- 点云显示建议 `Style=Points`，`Size=0.005` 或 `0.01`；
+- `Color Transformer` 优先试 `RGB8`，若显示异常则用 `AxisColor` 或 `FlatColor`；
+- 可同时添加 `RobotModel` 和 `TF`，检查机械臂、D435i frame 与点云的相对关系。
+
+预期效果：RViz2 中能看到测试墙面、box 和 cylinder 形成的三维点云；发布 `/student/joint_command` 后，机械臂末端相机运动，点云视角随之变化。
+
+### 后续任务清单
+
+- 增加独立的“仿真—真机接口对齐”阶段，在接入真实 D435i 前统一 topic、namespace、`frame_id`、TF、CameraInfo、depth alignment、点云参考坐标系、时间戳和数据同步策略。
+- 为 AprilTag 彩色图像链路明确使用 `camera_color_optical_frame`，避免检测结果长期绑定到当前临时 depth frame 配置。
+- 若需要根据彩色图像像素读取深度，加入 depth-to-color alignment 或基于内参/外参的重投影模块。
+- 将上层视觉节点的 topic、frame、分辨率、FOV 和同步策略全部参数化，不依赖阶段 2 的临时 Gazebo topic/frame 默认值。
+- 在真实 D435i 上单独验收精度、噪声、延迟、曝光、深度空洞和 color/depth 对齐性能；阶段 2 的仿真结果不能替代真机标定与数据质量验证。
