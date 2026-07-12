@@ -1,0 +1,131 @@
+<?xml version="1.0"?>
+<sdf version="1.6">
+  <world name="d435i_rgbd_test">
+    <include>
+      <uri>model://sun</uri>
+    </include>
+
+    <physics name="ode_physics" type="ode">
+      <max_step_size>0.001</max_step_size>
+      <real_time_update_rate>1000</real_time_update_rate>
+    </physics>
+
+    <model name="rgbd_ground_plane">
+      <static>true</static>
+      <link name="link">
+        <collision name="collision">
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>6 6</size>
+            </plane>
+          </geometry>
+        </collision>
+        <visual name="visual">
+          <cast_shadows>false</cast_shadows>
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>6 6</size>
+            </plane>
+          </geometry>
+          <material>
+            <ambient>0.55 0.55 0.55 1</ambient>
+            <diffuse>0.55 0.55 0.55 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="rgbd_back_wall">
+      <pose>2.30 0.0 0.75 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <visual name="visual">
+          <geometry>
+            <box>
+              <size>0.04 2.40 1.50</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>0.80 0.80 0.76 1</ambient>
+            <diffuse>0.80 0.80 0.76 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="rgbd_box_red_060m">
+      <pose>1.08 -0.22 0.44 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <visual name="visual">
+          <geometry>
+            <box>
+              <size>0.16 0.16 0.16</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>0.90 0.08 0.06 1</ambient>
+            <diffuse>0.90 0.08 0.06 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="rgbd_box_green_100m">
+      <pose>1.48 0.00 0.44 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <visual name="visual">
+          <geometry>
+            <box>
+              <size>0.20 0.20 0.20</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>0.05 0.65 0.18 1</ambient>
+            <diffuse>0.05 0.65 0.18 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="rgbd_box_blue_150m">
+      <pose>1.98 0.24 0.44 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <visual name="visual">
+          <geometry>
+            <box>
+              <size>0.24 0.24 0.24</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>0.08 0.22 0.85 1</ambient>
+            <diffuse>0.08 0.22 0.85 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="rgbd_cylinder_yellow">
+      <pose>1.36 0.34 0.18 0 0 0</pose>
+      <static>true</static>
+      <link name="link">
+        <visual name="visual">
+          <geometry>
+            <cylinder>
+              <radius>0.08</radius>
+              <length>0.36</length>
+            </cylinder>
+          </geometry>
+          <material>
+            <ambient>0.95 0.74 0.12 1</ambient>
+            <diffuse>0.95 0.74 0.12 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+  </world>
+</sdf>

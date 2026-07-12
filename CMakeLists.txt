@@ -237,6 +237,10 @@ install(DIRECTORY config/
   DESTINATION share/${PROJECT_NAME}/
 )
 
+install(DIRECTORY worlds/
+  DESTINATION share/${PROJECT_NAME}/worlds
+)
+
 install(PROGRAMS
   scripts/student_joint_command_bridge.py
   DESTINATION lib/${PROJECT_NAME}

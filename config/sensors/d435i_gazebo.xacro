@@ -1,0 +1,56 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <xacro:macro name="windylab_d435i_gazebo_rgbd"
+      params="rgbd_enabled:=true
+              camera_name:=camera
+              rgbd_namespace:=d435i
+              rgbd_camera_name:=color
+              rgbd_frame_name:=camera_depth_optical_frame
+              rgbd_update_rate:=15
+              rgbd_width:=640
+              rgbd_height:=480
+              rgbd_horizontal_fov:=1.211
+              rgbd_near:=0.1
+              rgbd_far:=5.0
+              rgbd_visualize:=false">
+
+    <xacro:if value="${rgbd_enabled}">
+      <gazebo reference="${camera_name}_link">
+        <sensor type="depth" name="${camera_name}_rgbd_sensor">
+          <update_rate>${rgbd_update_rate}</update_rate>
+          <visualize>${rgbd_visualize}</visualize>
+          <camera>
+            <horizontal_fov>${rgbd_horizontal_fov}</horizontal_fov>
+            <image>
+              <width>${rgbd_width}</width>
+              <height>${rgbd_height}</height>
+              <format>R8G8B8</format>
+            </image>
+            <depth_camera/>
+            <clip>
+              <near>${rgbd_near}</near>
+              <far>${rgbd_far}</far>
+            </clip>
+            <noise>
+              <type>gaussian</type>
+              <mean>0.0</mean>
+              <stddev>0.0</stddev>
+            </noise>
+          </camera>
+          <plugin name="${camera_name}_rgbd_controller" filename="libgazebo_ros_camera.so">
+            <ros>
+              <namespace>${rgbd_namespace}</namespace>
+              <remapping>${rgbd_camera_name}/depth/image_raw:=depth/image_raw</remapping>
+              <remapping>${rgbd_camera_name}/depth/camera_info:=depth/camera_info</remapping>
+              <remapping>${rgbd_camera_name}/points:=depth/points</remapping>
+            </ros>
+            <camera_name>${rgbd_camera_name}</camera_name>
+            <frame_name>${rgbd_frame_name}</frame_name>
+            <min_depth>${rgbd_near}</min_depth>
+            <max_depth>${rgbd_far}</max_depth>
+          </plugin>
+        </sensor>
+      </gazebo>
+    </xacro:if>
+  </xacro:macro>
+</robot>

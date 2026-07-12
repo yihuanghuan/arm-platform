@@ -6,11 +6,23 @@
   <xacro:arg name="camera_xyz" default="0.06 0 0.04"/>
   <xacro:arg name="camera_rpy" default="0 0 0"/>
   <xacro:arg name="camera_use_nominal_extrinsics" default="true"/>
+  <xacro:arg name="rgbd_enabled" default="true"/>
+  <xacro:arg name="rgbd_namespace" default="d435i"/>
+  <xacro:arg name="rgbd_camera_name" default="color"/>
+  <xacro:arg name="rgbd_frame_name" default="camera_depth_optical_frame"/>
+  <xacro:arg name="rgbd_update_rate" default="15"/>
+  <xacro:arg name="rgbd_width" default="640"/>
+  <xacro:arg name="rgbd_height" default="480"/>
+  <xacro:arg name="rgbd_horizontal_fov" default="1.211"/>
+  <xacro:arg name="rgbd_near" default="0.1"/>
+  <xacro:arg name="rgbd_far" default="5.0"/>
+  <xacro:arg name="rgbd_visualize" default="false"/>
   <xacro:arg name="use_ros2_control" default="true"/>
   <xacro:arg name="fix_base_to_world" default="true"/>
 
   <xacro:include filename="$(find manipulator)/arm.urdf"/>
   <xacro:include filename="$(find manipulator)/sensors/d435i_mount.xacro"/>
+  <xacro:include filename="$(find manipulator)/sensors/d435i_gazebo.xacro"/>
   <xacro:include filename="$(find manipulator)/sensors/gazebo_ros2_control.xacro"/>
 
   <xacro:windylab_d435i_mount
@@ -20,6 +32,20 @@
       camera_xyz="$(arg camera_xyz)"
       camera_rpy="$(arg camera_rpy)"
       camera_use_nominal_extrinsics="$(arg camera_use_nominal_extrinsics)"/>
+
+  <xacro:windylab_d435i_gazebo_rgbd
+      rgbd_enabled="$(arg rgbd_enabled)"
+      camera_name="$(arg camera_name)"
+      rgbd_namespace="$(arg rgbd_namespace)"
+      rgbd_camera_name="$(arg rgbd_camera_name)"
+      rgbd_frame_name="$(arg rgbd_frame_name)"
+      rgbd_update_rate="$(arg rgbd_update_rate)"
+      rgbd_width="$(arg rgbd_width)"
+      rgbd_height="$(arg rgbd_height)"
+      rgbd_horizontal_fov="$(arg rgbd_horizontal_fov)"
+      rgbd_near="$(arg rgbd_near)"
+      rgbd_far="$(arg rgbd_far)"
+      rgbd_visualize="$(arg rgbd_visualize)"/>
 
   <xacro:windylab_gazebo_ros2_control
       use_ros2_control="$(arg use_ros2_control)"

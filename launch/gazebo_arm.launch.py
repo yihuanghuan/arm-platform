@@ -29,6 +29,17 @@ def _render_robot_description(pkg_share, context):
             'camera_rpy': LaunchConfiguration('camera_rpy').perform(context),
             'camera_use_nominal_extrinsics': LaunchConfiguration(
                 'camera_use_nominal_extrinsics').perform(context),
+            'rgbd_enabled': LaunchConfiguration('rgbd_enabled').perform(context),
+            'rgbd_namespace': LaunchConfiguration('rgbd_namespace').perform(context),
+            'rgbd_camera_name': LaunchConfiguration('rgbd_camera_name').perform(context),
+            'rgbd_frame_name': LaunchConfiguration('rgbd_frame_name').perform(context),
+            'rgbd_update_rate': LaunchConfiguration('rgbd_update_rate').perform(context),
+            'rgbd_width': LaunchConfiguration('rgbd_width').perform(context),
+            'rgbd_height': LaunchConfiguration('rgbd_height').perform(context),
+            'rgbd_horizontal_fov': LaunchConfiguration('rgbd_horizontal_fov').perform(context),
+            'rgbd_near': LaunchConfiguration('rgbd_near').perform(context),
+            'rgbd_far': LaunchConfiguration('rgbd_far').perform(context),
+            'rgbd_visualize': LaunchConfiguration('rgbd_visualize').perform(context),
             'use_ros2_control': LaunchConfiguration('use_ros2_control').perform(context),
             'fix_base_to_world': LaunchConfiguration('fix_base_to_world').perform(context),
         })
@@ -181,6 +192,12 @@ def generate_launch_description():
         description='Enable verbose Gazebo server output'
     )
 
+    world_arg = DeclareLaunchArgument(
+        'world',
+        default_value=[FindPackageShare('gazebo_ros'), '/worlds/empty.world'],
+        description='Gazebo world file'
+    )
+
     camera_enabled_arg = DeclareLaunchArgument(
         'camera_enabled',
         default_value='true',
@@ -215,6 +232,72 @@ def generate_launch_description():
         'camera_use_nominal_extrinsics',
         default_value='true',
         description='Use official D435i nominal camera and IMU extrinsic frames'
+    )
+
+    rgbd_enabled_arg = DeclareLaunchArgument(
+        'rgbd_enabled',
+        default_value='true',
+        description='Attach the Gazebo RGB-D sensor plugin to the D435i body'
+    )
+
+    rgbd_namespace_arg = DeclareLaunchArgument(
+        'rgbd_namespace',
+        default_value='d435i',
+        description='ROS namespace for RGB-D camera topics'
+    )
+
+    rgbd_camera_name_arg = DeclareLaunchArgument(
+        'rgbd_camera_name',
+        default_value='color',
+        description='gazebo_ros_camera camera_name used for color image topics'
+    )
+
+    rgbd_frame_name_arg = DeclareLaunchArgument(
+        'rgbd_frame_name',
+        default_value='camera_depth_optical_frame',
+        description='Header frame_id used by the Gazebo RGB-D plugin'
+    )
+
+    rgbd_update_rate_arg = DeclareLaunchArgument(
+        'rgbd_update_rate',
+        default_value='15',
+        description='RGB-D sensor update rate in Hz'
+    )
+
+    rgbd_width_arg = DeclareLaunchArgument(
+        'rgbd_width',
+        default_value='640',
+        description='RGB-D image width'
+    )
+
+    rgbd_height_arg = DeclareLaunchArgument(
+        'rgbd_height',
+        default_value='480',
+        description='RGB-D image height'
+    )
+
+    rgbd_horizontal_fov_arg = DeclareLaunchArgument(
+        'rgbd_horizontal_fov',
+        default_value='1.211',
+        description='RGB-D horizontal field of view in radians'
+    )
+
+    rgbd_near_arg = DeclareLaunchArgument(
+        'rgbd_near',
+        default_value='0.1',
+        description='RGB-D near clipping and minimum valid depth in meters'
+    )
+
+    rgbd_far_arg = DeclareLaunchArgument(
+        'rgbd_far',
+        default_value='5.0',
+        description='RGB-D far clipping and maximum valid depth in meters'
+    )
+
+    rgbd_visualize_arg = DeclareLaunchArgument(
+        'rgbd_visualize',
+        default_value='false',
+        description='Show the Gazebo RGB-D camera frustum'
     )
 
     use_ros2_control_arg = DeclareLaunchArgument(
@@ -254,6 +337,7 @@ def generate_launch_description():
         launch_arguments={
             'gui': LaunchConfiguration('gui'),
             'verbose': LaunchConfiguration('verbose'),
+            'world': LaunchConfiguration('world'),
             'factory': 'true',
         }.items()
     )
@@ -261,12 +345,24 @@ def generate_launch_description():
     return LaunchDescription([
         gui_arg,
         verbose_arg,
+        world_arg,
         camera_enabled_arg,
         camera_name_arg,
         camera_parent_link_arg,
         camera_xyz_arg,
         camera_rpy_arg,
         camera_use_nominal_extrinsics_arg,
+        rgbd_enabled_arg,
+        rgbd_namespace_arg,
+        rgbd_camera_name_arg,
+        rgbd_frame_name_arg,
+        rgbd_update_rate_arg,
+        rgbd_width_arg,
+        rgbd_height_arg,
+        rgbd_horizontal_fov_arg,
+        rgbd_near_arg,
+        rgbd_far_arg,
+        rgbd_visualize_arg,
         use_ros2_control_arg,
         fix_base_to_world_arg,
         static_model_arg,

@@ -440,3 +440,165 @@ ros2 launch manipulator gazebo_arm.launch.py gui:=true verbose:=false use_rviz:=
 - 将 Gazebo 版 robot description 的 collision geometry 移除后，静止状态下各关节速度降到 `1e-14` 量级，命令后关节能精确到达目标角。
 
 因此当前阶段默认使用无碰撞可视化控制模型。后续如果需要做真实碰撞或动力学，应单独为 Gazebo 建立简化 collision geometry，而不是直接复用视觉 STL 作为碰撞网格。
+
+## 阶段 2：加入 RGB-D 传感器与 ROS 数据输出
+
+阶段 2 在阶段 1/1.5 的官方 D435i 描述和 Gazebo ROS 2 control 链路基础上，加入 Gazebo Classic RGB-D depth camera sensor，并建立固定视觉测试场景。本阶段只发布 RGB、Depth、CameraInfo 和 PointCloud2，不加入 IMU、AprilTag、SLAM 或视觉闭环控制。
+
+### 插件依据
+
+本机 ROS 2 Humble 实际可用的相关 Gazebo 插件：
+
+```text
+/opt/ros/humble/lib/libgazebo_ros_camera.so
+/opt/ros/humble/lib/libgazebo_ros_imu_sensor.so
+```
+
+Humble 下没有 ROS1 常见的 `libgazebo_ros_openni_kinect.so` 或单独 depth camera 插件；RGB-D 使用 `gazebo_ros_pkgs` 官方示例：
+
+```text
+/opt/ros/humble/share/gazebo_plugins/worlds/gazebo_ros_depth_camera_demo.world
+```
+
+### 新增与修改文件
+
+- `config/sensors/d435i_gazebo.xacro`：新增项目侧 Gazebo RGB-D wrapper，不修改 RealSense 官方 xacro。
+- `config/arm_with_d435i.urdf.xacro`：加入 `rgbd_enabled`、分辨率、频率、FOV、clip range、frame/topic 参数。
+- `worlds/d435i_rgbd_test.world`：新增固定 RGB-D 测试场景。
+- `launch/gazebo_arm.launch.py`：新增 `world` 参数和 RGB-D 参数透传。
+- `CMakeLists.txt`：安装 `worlds/`。
+- `package.xml`：声明 `gazebo_plugins` 运行依赖。
+
+### Topic 与 frame 约定
+
+默认启动后发布：
+
+```text
+/d435i/color/image_raw
+/d435i/color/camera_info
+/d435i/depth/image_raw
+/d435i/depth/camera_info
+/d435i/depth/points
+```
+
+当前 Humble `libgazebo_ros_camera.so` 对单个 depth sensor 只配置一个 `frame_name`，本阶段设置为：
+
+```text
+camera_depth_optical_frame
+```
+
+因此 color image、depth image、两个 CameraInfo 和 PointCloud2 的 header frame 均为 `camera_depth_optical_frame`。官方 RealSense nominal TF 仍保留 `camera_color_optical_frame` 和 `camera_depth_optical_frame`，但 Gazebo 当前是一台共位虚拟 RGB-D 相机；后续如果需要严格模拟 D435i color/depth 物理外参，应拆成独立 color/depth sensor 或增加专用数据同步节点。
+
+默认 RGB-D 参数：
+
+```text
+update_rate: 15 Hz
+width: 640
+height: 480
+horizontal_fov: 1.211 rad
+near/far: 0.1 / 5.0 m
+noise stddev: 0.0
+```
+
+### 测试场景
+
+启动测试 world：
+
+```bash
+source setup_env.bash
+ros2 launch manipulator gazebo_arm.launch.py \
+  gui:=false use_rviz:=false \
+  world:=$(ros2 pkg prefix manipulator)/share/manipulator/worlds/d435i_rgbd_test.world
+```
+
+测试物体均为 static visual geometry：
+
+| 名称 | 位姿 xyz rpy | 尺寸 | 颜色 |
+|---|---|---|---|
+| `rgbd_ground_plane` | `0 0 0 0 0 0` | `6 x 6 m` plane | gray |
+| `rgbd_back_wall` | `2.30 0.00 0.75 0 0 0` | `0.04 x 2.40 x 1.50 m` box | off-white |
+| `rgbd_box_red_060m` | `1.08 -0.22 0.44 0 0 0` | `0.16 m` cube | red |
+| `rgbd_box_green_100m` | `1.48 0.00 0.44 0 0 0` | `0.20 m` cube | green |
+| `rgbd_box_blue_150m` | `1.98 0.24 0.44 0 0 0` | `0.24 m` cube | blue |
+| `rgbd_cylinder_yellow` | `1.36 0.34 0.18 0 0 0` | radius `0.08 m`, length `0.36 m` | yellow |
+
+这些位置按当前零位姿相机前方布置，三个 box 距默认相机约 0.6 m、1.0 m、1.5 m。
+
+### 验证结果
+
+构建：
+
+```bash
+source setup_env.bash
+colcon build --packages-select manipulator --symlink-install --cmake-force-configure
+```
+
+结果：`manipulator` 构建成功，仅有既有 CMake/编译 warning。
+
+URDF 与 world 静态检查：
+
+```bash
+xacro $(ros2 pkg prefix manipulator)/share/manipulator/arm_with_d435i.urdf.xacro \
+  camera_enabled:=true rgbd_enabled:=true use_ros2_control:=true fix_base_to_world:=true \
+  > /tmp/windylab_arm_rgbd.urdf
+check_urdf /tmp/windylab_arm_rgbd.urdf
+gz sdf -k src/arm-platform/worlds/d435i_rgbd_test.world
+```
+
+结果：
+
+- `check_urdf` 成功解析；
+- TF 链仍包含 `world -> base_link -> ... -> link6 -> camera_link -> camera_depth_optical_frame`；
+- 展开后的 URDF 包含 `camera_rgbd_sensor`、`libgazebo_ros_camera.so` 和 `/d435i` remap；
+- `gz sdf -k` 返回 `Check complete`。
+
+运行后 topic：
+
+```text
+/d435i/color/camera_info
+/d435i/color/image_raw
+/d435i/depth/camera_info
+/d435i/depth/image_raw
+/d435i/depth/points
+```
+
+实测频率：
+
+```text
+/d435i/color/image_raw: 约 13.7 Hz
+/d435i/depth/image_raw: 约 15.0 Hz
+/d435i/depth/points: 约 11.8 Hz
+```
+
+CameraInfo 检查：
+
+- color/depth `width=640`，`height=480`；
+- `K` 和 `P` 非零；
+- `frame_id=camera_depth_optical_frame`；
+- color/depth CameraInfo 时间戳相差约 0.067 s，可被普通视觉节点同步订阅。
+
+数据体检：
+
+```text
+image: 640x480 encoding=rgb8 frame=camera_depth_optical_frame bytes=921600
+cloud: 640x480 frame=camera_depth_optical_frame point_step=32 row_step=20480
+finite_points_in_first_10000: 9344
+sample_z_range: 1.856..1.856
+```
+
+运动联动验证：
+
+```text
+before_mean_depth_first_50000=1.856 finite=46698
+after_mean_depth_first_50000=1.327 finite=50000
+joint2=-0.350 joint3=0.200
+```
+
+说明 `/student/joint_command` 经桥接节点驱动 Gazebo 关节后，末端 D435i 的点云数据随相机位姿变化。
+
+控制链路回归：
+
+- `joint_state_broadcaster` 和 `arm_position_controller` 均为 `active`；
+- 六个 `joint*/position` command interface 均为 `available` 且 `claimed`；
+- `/joint_states` 只有 1 个发布者：`joint_state_broadcaster`；
+- `move_arm_demo_6dof.py` 可继续向 `/student/joint_command` 发布，Gazebo 关节状态随 demo 变化。
