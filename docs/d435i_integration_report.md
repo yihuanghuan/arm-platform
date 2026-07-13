@@ -1626,7 +1626,7 @@ Base 模式满足 `base_link -> camera_color_optical_frame` 三姿态恒定要�
 
 ### 新增与修改文件
 
-- `config/base_disturbance_profiles.yaml`：定义 `static`、`sine_x`、`sine_y`、`sine_z`、`random_translation_3d`，默认 30 s、100 Hz、seed 42、XYZ 幅值 `0.03/0.03/0.02 m`。
+- `config/base_disturbance_profiles.yaml`：定义 `static`、`sine_x`、`sine_y`、`sine_z`、`random_translation_3d`，默认 30 s、100 Hz、seed 42。初版验收幅值为 XYZ `0.03/0.03/0.02 m`；为便于 Gazebo 可视化，后续默认调大为 XYZ `0.10/0.10/0.06 m`，正弦频率 `0.35 Hz`，随机频带 `0.10-1.0 Hz`。
 - `scripts/generate_base_disturbance.py`：从 YAML 生成 CSV 轨迹。随机轨迹使用固定 seed 的有限正弦分量叠加，连续、带限且可重复；同 seed 输出 CSV 完全一致。
 - `scripts/base_disturbance_replay.py`：读取轨迹 CSV，通过 Gazebo `/set_entity_state` 对 `windylab_arm` 整体模型重放 pose 和 twist，并记录 commanded pose、Gazebo actual model/base/link6/camera-proxy pose、实际频率、tracking error、关节连续性和速度命令。
 - `scripts/baseline_velocity_command.py`：baseline 模式持续向 `/arm_velocity_controller/commands` 发布 6 维零速度。
@@ -1763,3 +1763,15 @@ Node name: arm_velocity_controller
 - `/arm_velocity_controller/commands` 只有 baseline 零速度节点一个发布者；
 - GT 只写入 CSV，不进入控制器；
 - `sine_x`、`sine_y`、`sine_z` 和 `random_translation_3d` 均完成 30 秒运行。
+
+### 阶段 8.0 参数调整
+
+为便于在 Gazebo GUI 中直接观察 Base 扰动带来的整机移动，`base_disturbance_profiles.yaml` 默认扰动参数调大：
+
+```text
+translation_amplitude: x=0.10 m, y=0.10 m, z=0.06 m
+sine_frequency_hz: 0.35
+frequency_band: 0.10-1.0 Hz
+```
+
+该调整只改变轨迹生成默认参数，不改变 replay、baseline、controller 或 Ground Truth 隔离逻辑。

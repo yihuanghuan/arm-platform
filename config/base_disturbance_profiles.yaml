@@ -3,13 +3,13 @@ defaults:
   sample_rate_hz: 100.0
   random_seed: 42
   translation_amplitude:
-    x: 0.03
-    y: 0.03
-    z: 0.02
+    x: 0.10
+    y: 0.10
+    z: 0.06
   frequency_band:
-    min: 0.05
-    max: 0.5
-  sine_frequency_hz: 0.2
+    min: 0.10
+    max: 1.0
+  sine_frequency_hz: 0.35
 
 profiles:
   static:
