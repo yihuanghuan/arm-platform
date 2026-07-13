@@ -27,7 +27,7 @@ def _resolve_camera_mount(context):
         raise RuntimeError('camera_mount_mode must be one of: ee, base')
 
     if mount_mode == 'base':
-        default_parent_link = 'link1'
+        default_parent_link = 'base_link'
         default_xyz = '0.02 0 0.06'
         default_rpy = '0 0 0'
     else:
