@@ -258,9 +258,11 @@ def _launch_setup(context, *args, **kwargs):
 
 def generate_launch_description():
     gazebo_share = FindPackageShare('gazebo_ros').find('gazebo_ros')
+    manipulator_share = FindPackageShare('manipulator').find('manipulator')
     gazebo_model_path = os.environ.get('GAZEBO_MODEL_PATH', '')
     model_paths = [
         '/usr/share/gazebo-11/models',
+        os.path.join(manipulator_share, 'models'),
     ]
     if gazebo_model_path:
         model_paths.append(gazebo_model_path)

@@ -241,6 +241,10 @@ install(DIRECTORY worlds/
   DESTINATION share/${PROJECT_NAME}/worlds
 )
 
+install(DIRECTORY models/
+  DESTINATION share/${PROJECT_NAME}/models
+)
+
 install(PROGRAMS
   scripts/student_joint_command_bridge.py
   scripts/student_joint_velocity_bridge.py

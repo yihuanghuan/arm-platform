@@ -668,13 +668,6 @@ RViz2 设置：
 
 预期效果：RViz2 中能看到测试墙面、box 和 cylinder 形成的三维点云；发布 `/student/joint_command` 后，机械臂末端相机运动，点云视角随之变化。
 
-### 后续任务清单
-
-- 增加独立的“仿真—真机接口对齐”阶段，在接入真实 D435i 前统一 topic、namespace、`frame_id`、TF、CameraInfo、depth alignment、点云参考坐标系、时间戳和数据同步策略。
-- 为 AprilTag 彩色图像链路明确使用 `camera_color_optical_frame`，避免检测结果长期绑定到当前临时 depth frame 配置。
-- 若需要根据彩色图像像素读取深度，加入 depth-to-color alignment 或基于内参/外参的重投影模块。
-- 将上层视觉节点的 topic、frame、分辨率、FOV 和同步策略全部参数化，不依赖阶段 2 的临时 Gazebo topic/frame 默认值。
-- 在真实 D435i 上单独验收精度、噪声、延迟、曝光、深度空洞和 color/depth 对齐性能；阶段 2 的仿真结果不能替代真机标定与数据质量验证。
 
 ## 阶段 3：加入 D435i IMU 仿真
 
@@ -1215,3 +1208,143 @@ translation [0.031, 0.018, 0.072]
 - 末端模式相机随 `link6` 刚性运动；
 - Base 模式相机相对 `base_link` 固定，安装在基座附近且不随机械臂内部关节运动；
 - 原有 Gazebo 控制链路和学生启动入口保持可用。
+
+## 阶段 6：在环境中加入静态 AprilTag
+
+阶段 6 的目标是在独立 Gazebo Classic 测试 world 中加入一个尺寸已知、位姿固定、可被 D435i RGB 相机看见的静态 AprilTag。本阶段只加入视觉目标和测试 world，不运行 AprilTag 检测器，不新增 detection topic，也不修改机械臂控制逻辑。
+
+### 新增与修改文件
+
+- `worlds/d435i_apriltag_test.world`：新增独立 AprilTag 测试场景，包含 sun、地面、背景墙、一个静态 AprilTag 和一个绿色深度参考 box。
+- `models/apriltag_36h11_00000/`：新增 Gazebo Classic AprilTag 模型，包含 `model.config`、`model.sdf`、纹理、material script、来源说明和许可证副本。
+- `docs/third_party_sources.md`：记录 AprilTag 纹理来源、上游 commit、许可证和生成说明。
+- `CMakeLists.txt`：安装 `models/` 到 `share/manipulator/models`。
+- `launch/gazebo_arm.launch.py`：将包内 `models` 安装目录加入 `GAZEBO_MODEL_PATH`，使 `model://apriltag_36h11_00000` 可在安装后解析。
+
+### AprilTag 定义
+
+第一版 Tag 参数：
+
+```text
+family: tag36h11
+id: 0
+static: true
+detection tag size: 0.20 m
+texture plane size: 0.30 m x 0.30 m
+```
+
+尺寸定义：
+
+- `0.20 m` 指 AprilTag 检测器应配置的黑色有效检测边长，也就是上游 AprilTag 文档中 detection corners 之间的 tag size；
+- 纹理总平面为 12 个 cell，黑色有效检测边为 8 个 cell，因此总平面尺寸为 `0.20 * 12 / 8 = 0.30 m`；
+- 外层白色 quiet zone/背景不计入 detector `tag_size`。
+
+纹理来源：
+
+```text
+repository: https://github.com/AprilRobotics/apriltag
+commit: 0e16a12dd380fd607e4afd54712ee9b1ffb9ec8f
+license: BSD 2-Clause
+source files: tag36h11.c, apriltag.c, README.md, LICENSE.md
+generated date: 2026-07-13
+```
+
+纹理按上游 `apriltag_to_image()` 布局语义生成：`width_at_border=8`、`total_width=10`、`reversed_border=false`，并额外增加 1 个 cell 的白色 quiet zone。PNG 文件为：
+
+```text
+models/apriltag_36h11_00000/materials/textures/tag36_11_00000.png
+```
+
+### World 位姿
+
+Tag 在测试 world 中通过 include 放置：
+
+```xml
+<include>
+  <name>apriltag_36h11_00000_target</name>
+  <uri>model://apriltag_36h11_00000</uri>
+  <pose>1.23 0.0 0.35 0 -1.57079632679 0</pose>
+</include>
+```
+
+模型局部 Tag 平面法向为 `+Z`。world pose 中 `pitch=-pi/2` 后，Tag 平面法向为 world `-X`，面向默认朝 world `+X` 方向观察的 D435i。实测 RGB 图中 Tag 未出现镜像或翻转。
+
+### 静态检查
+
+SDF 检查：
+
+```bash
+source setup_env.bash
+gz sdf -k src/arm-platform/models/apriltag_36h11_00000/model.sdf
+GAZEBO_MODEL_PATH=$PWD/src/arm-platform/models:/usr/share/gazebo-11/models \
+  gz sdf -k src/arm-platform/worlds/d435i_apriltag_test.world
+```
+
+结果均为：
+
+```text
+Check complete
+```
+
+构建验证：
+
+```bash
+source setup_env.bash
+colcon build --packages-select manipulator
+```
+
+结果：构建通过；仍有既有 Pinocchio/eigenpy 触发的 Boost Python header CMake warning。
+
+### Gazebo 验收
+
+末端模式启动：
+
+```bash
+source setup_env.bash
+ros2 launch manipulator gazebo_arm.launch.py \
+  gui:=false use_rviz:=false \
+  world:=$(ros2 pkg prefix manipulator)/share/manipulator/worlds/d435i_apriltag_test.world \
+  camera_mount_mode:=ee control_mode:=kinematic_visualization
+```
+
+结果：
+
+```text
+SpawnEntity: Successfully spawned entity [windylab_arm]
+/d435i/color/image_raw 发布 640x480 rgb8
+```
+
+Base 模式启动：
+
+```bash
+source setup_env.bash
+ros2 launch manipulator gazebo_arm.launch.py \
+  gui:=false use_rviz:=false \
+  world:=$(ros2 pkg prefix manipulator)/share/manipulator/worlds/d435i_apriltag_test.world \
+  camera_mount_mode:=base control_mode:=kinematic_visualization
+```
+
+结果：
+
+```text
+SpawnEntity: Successfully spawned entity [windylab_arm]
+/d435i/color/image_raw 发布 640x480 rgb8
+```
+
+保存的 RGB 验证截图：
+
+```text
+/tmp/d435i_phase6_ee_color.png
+/tmp/d435i_phase6_base_color.png
+```
+
+两种模式的 RGB 图像中均可看到完整 AprilTag，Tag 位于背景墙前，方向一致且未被机械臂遮挡。Base 模式图像中还可看到绿色 box，用于辅助验证深度场景几何。
+
+### 阶段 6 结论
+
+- 独立 AprilTag world 已加入；
+- AprilTag 是 Gazebo Classic 静态视觉模型，不是 logical camera；
+- Tag family、id、尺寸定义、纹理来源、许可证和 world pose 已记录；
+- 包内 `models/` 已安装并由 launch 自动加入 `GAZEBO_MODEL_PATH`；
+- `camera_mount_mode:=ee` 和 `camera_mount_mode:=base` 均能看到清晰 Tag；
+- 本阶段未运行 AprilTag 检测器，检测链路留给阶段 7。
