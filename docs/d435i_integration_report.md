@@ -1348,3 +1348,144 @@ SpawnEntity: Successfully spawned entity [windylab_arm]
 - 包内 `models/` 已安装并由 launch 自动加入 `GAZEBO_MODEL_PATH`；
 - `camera_mount_mode:=ee` 和 `camera_mount_mode:=base` 均能看到清晰 Tag；
 - 本阶段未运行 AprilTag 检测器，检测链路留给阶段 7。
+
+## 阶段 7：AprilTag 检测链路基础验证
+
+阶段 7 的目标是从 Gazebo D435i 彩色图像和 CameraInfo 运行真实 AprilTag 检测，并将检测结果与 Gazebo ground truth 做基础几何对比。本阶段不使用 Gazebo ground truth 伪造检测结果，不接入机械臂控制闭环，也不实现 SLAM 或扰动补偿。
+
+### 依赖
+
+本阶段安装系统包：
+
+```bash
+sudo apt-get install -y ros-humble-apriltag-ros ros-humble-image-proc
+```
+
+实际新增 ROS 包包括 `apriltag_ros`、`apriltag_msgs`、`apriltag`、`image_proc` 和图像传输插件。`apriltag_ros` Humble 版提供：
+
+```text
+apriltag_ros/apriltag_node
+apriltag_msgs/msg/AprilTagDetectionArray
+```
+
+### 新增与修改文件
+
+- `config/apriltag_36h11_00000.yaml`：配置 `tag36h11`、ID `0`、检测边长 `0.20 m`、tag frame `apriltag_36h11_00000`。
+- `launch/d435i_apriltag_test.launch.py`：启动 AprilTag 测试 world、D435i RGB-D、`apriltag_ros` 检测节点，并可选运行 ground truth 验证脚本。
+- `scripts/check_apriltag_ground_truth.py`：订阅检测结果、读取检测 TF、通过 Gazebo state service 获取 Tag ground truth，并输出误差统计和 CSV。
+- `worlds/d435i_apriltag_test.world`：加载 `libgazebo_ros_state.so`，为验证脚本提供 `/get_entity_state`。
+- `package.xml`、`CMakeLists.txt`：声明依赖并安装验证脚本。
+
+### 检测接口
+
+启动命令：
+
+```bash
+source setup_env.bash
+ros2 launch manipulator d435i_apriltag_test.launch.py \
+  gui:=false use_rviz:=false camera_mount_mode:=ee
+```
+
+该 launch 显式设置：
+
+```text
+rgbd_frame_name:=camera_color_optical_frame
+```
+
+因此 AprilTag 输入图像和 CameraInfo 使用同一 frame：
+
+```text
+/d435i/color/image_raw
+/d435i/color/camera_info
+frame_id: camera_color_optical_frame
+```
+
+检测节点：
+
+```text
+node: /apriltag/apriltag
+topic: /apriltag/detections
+type: apriltag_msgs/msg/AprilTagDetectionArray
+TF: camera_color_optical_frame -> apriltag_36h11_00000
+```
+
+ID 检查：
+
+```text
+id=0 family=tag36h11 hamming=0 margin=95.321 detections=1
+```
+
+检测频率：
+
+```text
+/apriltag/detections: 约 14.98-15.10 Hz
+```
+
+控制链路回归：
+
+```text
+joint_state_broadcaster: active
+arm_position_controller: active
+/joint_states publisher count: 1, node=joint_state_broadcaster
+```
+
+### Ground truth 对比工具
+
+验证脚本默认比较：
+
+```text
+detected: camera_color_optical_frame -> apriltag_36h11_00000
+ground truth: inverse(world -> camera_color_optical_frame) * (world -> apriltag_36h11_00000_target)
+```
+
+Gazebo state service：
+
+```text
+/get_entity_state
+```
+
+验证命令示例：
+
+```bash
+ros2 run manipulator check_apriltag_ground_truth.py \
+  --duration 8 --sample-hz 5 \
+  --output-csv /tmp/d435i_apriltag_phase7_pose0.csv
+```
+
+当前 AprilTag Gazebo 模型 frame 与 `apriltag_ros` PnP tag frame 在本模型纹理约定下无需额外旋转：
+
+```text
+tag_frame_rpy_in_model: 0 0 0
+```
+
+### 误差结果
+
+三组末端相机位姿下均持续检测到 ID 0，丢失率为 0：
+
+| 场景 | 关节命令 `[j1..j6]` rad | 检测率 | 丢失率 | 检测距离均值 | GT 距离均值 | 位置误差均值 | 位置误差标准差 | 姿态误差均值 |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| pose0 | `[0, 0, 0, 0, 0, 0]` | `15.103 Hz` | `0.000` | `0.8110 m` | `0.8061 m` | `0.0168 m` | `0.0000 m` | `0.00 deg` |
+| pose1 | `[0.20, -0.25, 0.18, 0.0, -0.10, 0.0]` | `14.983 Hz` | `0.000` | `0.7282 m` | `0.7281 m` | `0.0159 m` | `0.0000 m` | `0.31 deg` |
+| pose2 | `[-0.18, -0.35, 0.28, 0.12, -0.18, 0.10]` | `15.048 Hz` | `0.000` | `0.7110 m` | `0.7112 m` | `0.0157 m` | `0.0000 m` | `0.60 deg` |
+
+CSV 日志：
+
+```text
+/tmp/d435i_apriltag_phase7_pose0.csv
+/tmp/d435i_apriltag_phase7_pose1.csv
+/tmp/d435i_apriltag_phase7_pose2.csv
+```
+
+### 阶段 7 结论
+
+- AprilTag 检测从仿真 RGB 图像和 CameraInfo 得到，未读取 ground truth 伪造检测；
+- `/apriltag/detections` 持续发布，ID 为 `0`，family 为 `tag36h11`；
+- 检测 TF `camera_color_optical_frame -> apriltag_36h11_00000` 存在，方向与 Gazebo 模型约定一致；
+- 估计距离与 Gazebo ground truth 一致，三组位姿位置误差约 `1.6-1.7 cm`；
+- `libgazebo_ros_state.so` 只用于验证脚本取 ground truth，不参与检测节点；
+- 未接入机械臂控制闭环，原 Gazebo 控制器和 `/joint_states` 单发布者约束保持不变。
+
+### 已知现象
+
+- 验证脚本启动早于 `joint_state_broadcaster` 时，前几秒可能出现 TF tree 未连接 warning；控制器 active 后可正常采样。
+- 使用 `timeout` 或 Ctrl-C 停止 launch 时，既有 `student_joint_command_bridge.py` 偶尔在 `destroy_node()` 阶段打印 `KeyboardInterrupt` traceback；这不影响 AprilTag 检测结果，Gazebo、`apriltag_node` 和 `robot_state_publisher` 均正常退出。
