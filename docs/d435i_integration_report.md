@@ -848,3 +848,188 @@ moving_last_5s: stamp_start=111.740 stamp_end=116.735 monotonic=True
 - 运动时线加速度和时间戳行为正常，但角速度受当前 position interface 控制链路限制仍为 0；
 - RGB-D 与 IMU 可同时运行；
 - 机械臂 Gazebo 控制链路和 `/joint_states` 单发布者约束保持不变。
+
+## 阶段 3 修正：加入 physical_dynamics 控制模式
+
+本修正只处理阶段 3 中 Gazebo 机械臂运动时 D435i IMU `angular_velocity` 始终为 0 的问题，不加入 Base 扰动、AprilTag、SLAM 或视觉闭环，也不修改现有 IK 和动力学算法。
+
+### 根因分析
+
+阶段 1.5/3 的默认 Gazebo 控制链路使用：
+
+```text
+/student/joint_command
+  -> student_joint_command_bridge.py
+  -> /arm_position_controller/commands
+  -> position_controllers/JointGroupPositionController
+  -> joint*/position command interface
+```
+
+该链路能更新 Gazebo 关节 position 和 link pose，适合 RGB-D、TF、AprilTag 等可视化/几何链路验证；但实测 `/joint_states.velocity` 在运动过程中仍为 0。Gazebo IMU 插件读取 Gazebo sensor/physics 中的 link angular velocity，而不是从 TF 数值微分，因此 D435i IMU 的 `angular_velocity` 也保持为 0。
+
+### 采用方案
+
+保留原稳定模式并新增可切换模式：
+
+```text
+control_mode:=kinematic_visualization
+  -> joint_state_broadcaster + arm_position_controller + student_joint_command_bridge.py
+
+control_mode:=physical_dynamics
+  -> joint_state_broadcaster + arm_velocity_controller + student_joint_velocity_bridge.py
+```
+
+物理模式使用 `velocity_controllers/JointGroupVelocityController`，让 Gazebo 通过 `joint*/velocity` command interface 真实积分关节运动。新增的 `student_joint_velocity_bridge.py` 仍订阅原有 `/student/joint_command`，保持“目标关节角”语义不变；节点根据当前 `/joint_states.position` 和目标位置生成速度命令，并使用 `/student/joint_command.velocity` 作为短时前馈。命令流超时后会清零前馈速度，只保持最后目标位置，避免 demo 退出后继续运动。
+
+### 修改文件
+
+- `config/sensors/gazebo_ros2_control.xacro`：六个关节增加 `velocity` command interface，保留 `position` command interface。
+- `config/gazebo_controllers.yaml`：新增 `arm_velocity_controller`。
+- `scripts/student_joint_velocity_bridge.py`：新增目标位置到速度命令的桥接节点，不发布 `/joint_states` 或 IMU。
+- `launch/gazebo_arm.launch.py`：新增 `control_mode` 和 velocity bridge 参数，并按模式加载对应 controller/bridge。
+- `CMakeLists.txt`、`package.xml`：安装新脚本并声明 `velocity_controllers` 运行依赖。
+
+### 新增 launch 参数
+
+```text
+control_mode:=kinematic_visualization | physical_dynamics
+velocity_kp:=4.0
+velocity_feedforward_scale:=1.0
+velocity_max_velocity:=1.0
+velocity_position_tolerance:=0.005
+velocity_publish_rate:=100.0
+velocity_command_timeout_sec:=0.25
+```
+
+### 启动命令
+
+可视化/几何验证模式：
+
+```bash
+source setup_env.bash
+ros2 launch manipulator gazebo_arm.launch.py \
+  gui:=false use_rviz:=false \
+  world:=$(ros2 pkg prefix manipulator)/share/manipulator/worlds/d435i_rgbd_test.world \
+  control_mode:=kinematic_visualization
+```
+
+IMU/动力学实验模式：
+
+```bash
+source setup_env.bash
+ros2 launch manipulator gazebo_arm.launch.py \
+  gui:=false use_rviz:=false \
+  world:=$(ros2 pkg prefix manipulator)/share/manipulator/worlds/d435i_rgbd_test.world \
+  control_mode:=physical_dynamics
+```
+
+### 验证结果
+
+构建：
+
+```bash
+source setup_env.bash
+colcon build --packages-select manipulator --symlink-install
+```
+
+结果：`manipulator` 构建成功。
+
+静态检查：
+
+```bash
+xacro src/arm-platform/config/arm_with_d435i.urdf.xacro \
+  camera_enabled:=true rgbd_enabled:=true imu_enabled:=true \
+  use_ros2_control:=true fix_base_to_world:=true \
+  > /tmp/windylab_arm_velocity.urdf
+check_urdf /tmp/windylab_arm_velocity.urdf
+```
+
+结果：`check_urdf` 成功解析；六个关节均包含 `position` 和 `velocity` command interface。
+
+`kinematic_visualization` 回归：
+
+```text
+joint_state_broadcaster joint_state_broadcaster/JointStateBroadcaster active
+arm_position_controller position_controllers/JointGroupPositionController active
+/joint_states publisher count: 1
+/d435i/imu: 约 199.94 Hz
+```
+
+`physical_dynamics` 控制器：
+
+```text
+joint_state_broadcaster joint_state_broadcaster/JointStateBroadcaster active
+arm_velocity_controller velocity_controllers/JointGroupVelocityController active
+```
+
+硬件接口：
+
+```text
+joint1/position [available] [unclaimed]
+joint1/velocity [available] [claimed]
+joint2/position [available] [unclaimed]
+joint2/velocity [available] [claimed]
+joint3/position [available] [unclaimed]
+joint3/velocity [available] [claimed]
+joint4/position [available] [unclaimed]
+joint4/velocity [available] [claimed]
+joint5/position [available] [unclaimed]
+joint5/velocity [available] [claimed]
+joint6/position [available] [unclaimed]
+joint6/velocity [available] [claimed]
+state interfaces: joint*/position, joint*/velocity, joint*/effort
+```
+
+`/joint_states` 发布者：
+
+```text
+Publisher count: 1
+Node name: joint_state_broadcaster
+Subscribers: student_joint_velocity_bridge, robot_state_publisher
+```
+
+运动测试使用与 `move_arm_demo_6dof.py` 相同的 50 Hz 正弦关节目标。统计结果：
+
+```text
+static: joint_samples=103
+static: joint_vel_first3_max_abs=0.000000 mean_abs=0.000000
+static: imu_ang_norm_max=0.000000 mean=0.000000
+
+moving: joint_samples=450
+moving: joint1_pos_start=0.2141 joint1_pos_end=0.3021
+moving: joint_vel_first3_max_abs=0.485792 mean_abs=0.297128
+moving: sample_vel_first3=[-0.18465, 0.295867, 0.478437]
+moving: imu_samples=900 frame=camera_accel_optical_frame
+moving: imu_ang_norm_max=0.841186 mean=0.660292
+moving: sample_angular=(-0.180479, -0.774339, -0.038101)
+direction_check_joint1: agree=416/416 ratio=1.000
+
+stopped: joint_samples=150
+stopped: joint_vel_first3_max_abs=0.000000 mean_abs=0.000000
+stopped: imu_samples=300 frame=camera_accel_optical_frame
+stopped: imu_ang_norm_max=0.000000 mean=0.000000
+```
+
+实际 demo 回归：
+
+```bash
+timeout -s INT 4 python3 src/arm-platform/demo/move_arm_demo_6dof.py
+```
+
+结果：demo 正常向 `/student/joint_command` 发布；Gazebo 关节由 velocity controller 平滑运动。demo 停止 1 秒后 `/joint_states.velocity` 回到 `1e-15` 量级，`/d435i/imu.angular_velocity` 回到 `1e-14` 量级。
+
+RGB-D/IMU 回归：
+
+```text
+/d435i/color/image_raw: 约 14-15 Hz
+/d435i/imu: 约 200.0 Hz
+```
+
+结论：
+
+- `physical_dynamics` 模式下 `/joint_states.velocity` 在运动期间连续、非零，方向与目标前馈速度一致；
+- D435i IMU `angular_velocity` 随机械臂运动明显变化，停止后回到接近 0；
+- `/joint_states` 仍只有 Gazebo `joint_state_broadcaster` 一个权威发布源；
+- RViz 和 Gazebo 均由同一 `/joint_states` 驱动，姿态一致；
+- 未观察到明显抖动、模型爆炸或控制发散；
+- 当前无碰撞可视化模型继续使用，本修正不处理 collision geometry。

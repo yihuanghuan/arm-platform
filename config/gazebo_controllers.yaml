@@ -8,7 +8,20 @@ controller_manager:
     arm_position_controller:
       type: position_controllers/JointGroupPositionController
 
+    arm_velocity_controller:
+      type: velocity_controllers/JointGroupVelocityController
+
 arm_position_controller:
+  ros__parameters:
+    joints:
+      - joint1
+      - joint2
+      - joint3
+      - joint4
+      - joint5
+      - joint6
+
+arm_velocity_controller:
   ros__parameters:
     joints:
       - joint1

@@ -80,6 +80,11 @@ def _launch_setup(context, *args, **kwargs):
     static_model = _as_bool(LaunchConfiguration('static_model').perform(context))
     use_rviz = _as_bool(LaunchConfiguration('use_rviz').perform(context))
     disable_collisions = _as_bool(LaunchConfiguration('disable_collisions').perform(context))
+    control_mode = LaunchConfiguration('control_mode').perform(context)
+    valid_control_modes = ('kinematic_visualization', 'physical_dynamics')
+    if control_mode not in valid_control_modes:
+        raise RuntimeError(
+            'control_mode must be one of: ' + ', '.join(valid_control_modes))
 
     mesh_rewrites = {
         'package://dummy_description/': 'file://' + dummy_description_share + '/',
@@ -138,36 +143,72 @@ def _launch_setup(context, *args, **kwargs):
             ]
         )
 
-        arm_position_controller_spawner = Node(
-            package='controller_manager',
-            executable='spawner',
-            name='spawn_arm_position_controller',
-            output='screen',
-            arguments=[
-                'arm_position_controller',
-                '--controller-manager', '/controller_manager',
-            ]
-        )
+        controller_actions = [joint_state_broadcaster_spawner]
 
-        student_joint_command_bridge = Node(
-            package='manipulator',
-            executable='student_joint_command_bridge.py',
-            name='student_joint_command_bridge',
-            output='screen',
-            parameters=[{
-                'input_topic': '/student/joint_command',
-                'controller_command_topic': '/arm_position_controller/commands',
-                'joint_names': ['joint1', 'joint2', 'joint3', 'joint4', 'joint5', 'joint6'],
-            }]
-        )
+        if control_mode == 'physical_dynamics':
+            arm_controller_spawner = Node(
+                package='controller_manager',
+                executable='spawner',
+                name='spawn_arm_velocity_controller',
+                output='screen',
+                arguments=[
+                    'arm_velocity_controller',
+                    '--controller-manager', '/controller_manager',
+                ]
+            )
+
+            command_bridge = Node(
+                package='manipulator',
+                executable='student_joint_velocity_bridge.py',
+                name='student_joint_velocity_bridge',
+                output='screen',
+                parameters=[{
+                    'input_topic': '/student/joint_command',
+                    'joint_state_topic': '/joint_states',
+                    'controller_command_topic': '/arm_velocity_controller/commands',
+                    'joint_names': ['joint1', 'joint2', 'joint3', 'joint4', 'joint5', 'joint6'],
+                    'kp': float(LaunchConfiguration('velocity_kp').perform(context)),
+                    'feedforward_scale': float(
+                        LaunchConfiguration('velocity_feedforward_scale').perform(context)),
+                    'max_velocity': float(
+                        LaunchConfiguration('velocity_max_velocity').perform(context)),
+                    'position_tolerance': float(
+                        LaunchConfiguration('velocity_position_tolerance').perform(context)),
+                    'publish_rate_hz': float(
+                        LaunchConfiguration('velocity_publish_rate').perform(context)),
+                    'command_timeout_sec': float(
+                        LaunchConfiguration('velocity_command_timeout_sec').perform(context)),
+                }]
+            )
+        else:
+            arm_controller_spawner = Node(
+                package='controller_manager',
+                executable='spawner',
+                name='spawn_arm_position_controller',
+                output='screen',
+                arguments=[
+                    'arm_position_controller',
+                    '--controller-manager', '/controller_manager',
+                ]
+            )
+
+            command_bridge = Node(
+                package='manipulator',
+                executable='student_joint_command_bridge.py',
+                name='student_joint_command_bridge',
+                output='screen',
+                parameters=[{
+                    'input_topic': '/student/joint_command',
+                    'controller_command_topic': '/arm_position_controller/commands',
+                    'joint_names': ['joint1', 'joint2', 'joint3', 'joint4', 'joint5', 'joint6'],
+                }]
+            )
+
+        controller_actions.extend([arm_controller_spawner, command_bridge])
 
         actions.append(TimerAction(
             period=3.0,
-            actions=[
-                joint_state_broadcaster_spawner,
-                arm_position_controller_spawner,
-                student_joint_command_bridge,
-            ]))
+            actions=controller_actions))
 
     if use_rviz:
         rviz_config = os.path.join(pkg_share, 'student_arm.rviz')
@@ -371,6 +412,48 @@ def generate_launch_description():
         description='Load gazebo_ros2_control and drive the Gazebo joints from ROS 2'
     )
 
+    control_mode_arg = DeclareLaunchArgument(
+        'control_mode',
+        default_value='kinematic_visualization',
+        description='Gazebo control mode: kinematic_visualization or physical_dynamics'
+    )
+
+    velocity_kp_arg = DeclareLaunchArgument(
+        'velocity_kp',
+        default_value='4.0',
+        description='Proportional gain from joint position error to velocity command'
+    )
+
+    velocity_feedforward_scale_arg = DeclareLaunchArgument(
+        'velocity_feedforward_scale',
+        default_value='1.0',
+        description='Scale applied to /student/joint_command.velocity in physical_dynamics mode'
+    )
+
+    velocity_max_velocity_arg = DeclareLaunchArgument(
+        'velocity_max_velocity',
+        default_value='1.0',
+        description='Absolute velocity command limit in rad/s for physical_dynamics mode'
+    )
+
+    velocity_position_tolerance_arg = DeclareLaunchArgument(
+        'velocity_position_tolerance',
+        default_value='0.005',
+        description='Position error tolerance in rad below which velocity command is zeroed'
+    )
+
+    velocity_publish_rate_arg = DeclareLaunchArgument(
+        'velocity_publish_rate',
+        default_value='100.0',
+        description='Velocity bridge command publish rate in Hz'
+    )
+
+    velocity_command_timeout_sec_arg = DeclareLaunchArgument(
+        'velocity_command_timeout_sec',
+        default_value='0.25',
+        description='After this timeout, ignore stale feedforward velocity and hold target position'
+    )
+
     fix_base_to_world_arg = DeclareLaunchArgument(
         'fix_base_to_world',
         default_value='true',
@@ -438,6 +521,13 @@ def generate_launch_description():
         imu_angular_velocity_noise_stddev_arg,
         imu_linear_acceleration_noise_stddev_arg,
         use_ros2_control_arg,
+        control_mode_arg,
+        velocity_kp_arg,
+        velocity_feedforward_scale_arg,
+        velocity_max_velocity_arg,
+        velocity_position_tolerance_arg,
+        velocity_publish_rate_arg,
+        velocity_command_timeout_sec_arg,
         fix_base_to_world_arg,
         static_model_arg,
         use_rviz_arg,

@@ -34,6 +34,7 @@
   <exec_depend>gazebo_ros2_control</exec_depend>
   <exec_depend>joint_state_broadcaster</exec_depend>
   <exec_depend>position_controllers</exec_depend>
+  <exec_depend>velocity_controllers</exec_depend>
   <exec_depend>realsense2_description</exec_depend>
 
   <test_depend>ament_lint_auto</test_depend>

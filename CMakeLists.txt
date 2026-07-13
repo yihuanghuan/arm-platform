@@ -243,6 +243,7 @@ install(DIRECTORY worlds/
 
 install(PROGRAMS
   scripts/student_joint_command_bridge.py
+  scripts/student_joint_velocity_bridge.py
   DESTINATION lib/${PROJECT_NAME}
 )
 
