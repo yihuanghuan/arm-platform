@@ -249,6 +249,8 @@ install(PROGRAMS
   scripts/student_joint_command_bridge.py
   scripts/student_joint_velocity_bridge.py
   scripts/check_apriltag_ground_truth.py
+  scripts/dynamic_ground_truth_logger.py
+  scripts/check_camera_mount_regression.py
   DESTINATION lib/${PROJECT_NAME}
 )
 

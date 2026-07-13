@@ -15,7 +15,7 @@
               rgbd_visualize:=false">
 
     <xacro:if value="${rgbd_enabled}">
-      <gazebo reference="${camera_name}_link">
+      <gazebo reference="${camera_name}_color_frame">
         <sensor type="depth" name="${camera_name}_rgbd_sensor">
           <update_rate>${rgbd_update_rate}</update_rate>
           <visualize>${rgbd_visualize}</visualize>

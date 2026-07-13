@@ -1489,3 +1489,133 @@ CSV 日志：
 
 - 验证脚本启动早于 `joint_state_broadcaster` 时，前几秒可能出现 TF tree 未连接 warning；控制器 active 后可正常采样。
 - 使用 `timeout` 或 Ctrl-C 停止 launch 时，既有 `student_joint_command_bridge.py` 偶尔在 `destroy_node()` 阶段打印 `KeyboardInterrupt` traceback；这不影响 AprilTag 检测结果，Gazebo、`apriltag_node` 和 `robot_state_publisher` 均正常退出。
+
+## 阶段 7.5：闭环实验前置修正
+
+阶段 7.5 只修正闭环实验前的感知/验证基础设施，不实现反扰动控制、视觉伺服、SLAM 或 Jacobian 闭环。
+
+### RGB sensor frame 修正
+
+阶段 7 的三姿态位置误差约 `1.6-1.7 cm`。展开 URDF 后确认 RGB-D sensor 原先实际挂载在：
+
+```text
+<gazebo reference="camera_link">
+```
+
+但 AprilTag 输入图像、CameraInfo 和检测 TF 使用：
+
+```text
+camera_color_optical_frame
+```
+
+官方 nominal extrinsics 中 `camera_link -> camera_color_frame` 有 `0 0.015 0` 平移，`camera_color_frame -> camera_color_optical_frame` 平移为 0。因此阶段 7 的固定位置误差与 sensor 原点使用 `camera_link` 而输出 frame 使用 color optical frame 一致。
+
+本阶段将 RGB-D sensor reference 改为 `camera_color_frame`。该 frame 与 `camera_color_optical_frame` 原点完全重合，同时保持 Gazebo camera `+X` 前向和 ROS optical `+Z` 前向之间的既有旋转约定。修正后展开检查：
+
+```text
+camera_color_frame [{'name': 'camera_rgbd_sensor', 'type': 'depth'}]
+camera_link [{'name': 'camera_imu_sensor', 'type': 'imu'}]
+camera_color_joint camera_link -> camera_color_frame xyz=0 0.015 0 rpy=0 0 0
+camera_color_optical_joint camera_color_frame -> camera_color_optical_frame xyz=0 0 0 rpy=-1.5707963267948966 0 -1.5707963267948966
+```
+
+### 新增脚本与 launch 参数
+
+新增：
+
+- `scripts/dynamic_ground_truth_logger.py`：按 AprilTag detection stamp 插值 GT，记录动态误差和 old/latest 方法误差。
+- `scripts/check_camera_mount_regression.py`：验证 Base 相机外参恒定，并记录 Base 模式三姿态 AprilTag 误差。
+- `docs/pre_closed_loop_validation_report.md`：阶段 7.5 完整测试报告。
+
+修改：
+
+- `config/sensors/d435i_gazebo.xacro`：RGB-D sensor 挂载到 `camera_color_frame`。
+- `launch/gazebo_arm.launch.py`：新增并透传 `use_sim_time`。
+- `launch/d435i_apriltag_test.launch.py`：新增 `use_sim_time`、`run_dynamic_logger`、`run_mount_regression` 等验证参数。
+- `CMakeLists.txt`：安装新增脚本。
+
+### EE 相机三姿态回归
+
+启动：
+
+```bash
+ros2 launch manipulator d435i_apriltag_test.launch.py \
+  gui:=false use_rviz:=false \
+  camera_mount_mode:=ee \
+  control_mode:=kinematic_visualization
+```
+
+结果：
+
+| 场景 | 关节命令 `[j1..j6]` rad | 检测率 | 丢失率 | 位置误差均值 | 姿态误差均值 | CSV |
+|---|---:|---:|---:|---:|---:|---|
+| pose0 | `[0, 0, 0, 0, 0, 0]` | `15.114 Hz` | `0.000` | `0.00159 m` | `1.376 deg` | `/tmp/d435i_phase75_ee_pose0.csv` |
+| pose1 | `[0.20, -0.25, 0.18, 0.0, -0.10, 0.0]` | `16.226 Hz` | `0.000` | `0.00101 m` | `0.455 deg` | `/tmp/d435i_phase75_ee_pose1.csv` |
+| pose2 | `[-0.18, -0.35, 0.28, 0.12, -0.18, 0.10]` | `15.101 Hz` | `0.000` | `0.00113 m` | `0.563 deg` | `/tmp/d435i_phase75_ee_pose2.csv` |
+
+结论：位置误差从 `1.6-1.7 cm` 降至 `1-2 mm`，满足 `< 0.005 m` 目标。姿态误差 pose0 和 pose2 未满足 `< 0.5 deg` 目标，需继续定位 PnP、渲染采样或 tag/model frame 残差。
+
+### 动态时间同步 Ground Truth
+
+动态验证使用 `control_mode:=physical_dynamics`，并发布低速小幅关节正弦命令。`dynamic_ground_truth_logger.py` 保存最近 `10 s` GT buffer，按 detection stamp 查询检测 TF，并对 `world -> camera_color_optical_frame` 做平移线性插值和 quaternion SLERP。无法匹配的样本标记 invalid，不使用 latest TF 强行替代。
+
+实测：
+
+```text
+messages: 315
+detections_with_id_0: 315
+detection_rate_hz: 15.749
+loss_rate: 0.000
+gt_timer_frequency_hz: 100.000
+camera_gt_buffer_frequency_hz: 100.000
+valid_samples: 299
+invalid_samples: 16
+new_position_error_mean_m: 0.00134
+new_position_error_std_m: 0.00036
+new_orientation_error_mean_deg: 0.729
+gt_match_error_max_sec: 0.01200
+old_position_error_mean_m: 0.00143
+position_error_improvement_m: 0.00010
+csv: /tmp/d435i_phase75_dynamic.csv
+```
+
+补充频率检查：
+
+```text
+/joint_states: 约 99.99 Hz
+/tf: 约 75 Hz
+/clock: 约 10 Hz
+```
+
+由于 `/clock` topic 频率较低，ROS-time timer 无法稳定触发 100 Hz GT 采样；logger 使用 steady wall timer 触发采样，但检测时间和 TF/GT 匹配仍基于仿真时间戳。动态最大匹配误差 `12 ms`，略高于一个 100 Hz 周期。
+
+### Base 相机阶段 7 回归
+
+启动：
+
+```bash
+ros2 launch manipulator d435i_apriltag_test.launch.py \
+  gui:=false use_rviz:=false \
+  camera_mount_mode:=base \
+  control_mode:=kinematic_visualization
+```
+
+结果：
+
+| 场景 | base-camera 平移变化 | base-camera 姿态变化 | 检测率 | 丢失率 | 位置误差均值 | 姿态误差均值 |
+|---|---:|---:|---:|---:|---:|---:|
+| pose0 | `0 m` | `0 rad` | `15.125 Hz` | `0.000` | `0.00190 m` | `5.1e-08 deg` |
+| pose1 | `0 m` | `0 rad` | `15.000 Hz` | `0.000` | `0.00190 m` | `5.1e-08 deg` |
+| pose2 | `0 m` | `0 rad` | `15.125 Hz` | `0.000` | `0.00190 m` | `5.1e-08 deg` |
+
+CSV：
+
+```text
+/tmp/d435i_phase75_base_regression.csv
+```
+
+Base 模式满足 `base_link -> camera_color_optical_frame` 三姿态恒定要求，translation difference 和 orientation difference 均为 0。
+
+### 阶段 7.5 结论
+
+已完成 RGB sensor 原点修正、动态时间同步 GT logger、Base 相机阶段 7 回归。可以进入只依赖平移误差的闭环原型验证；不建议直接进入高精度 6D 位姿闭环或姿态闭环，需先继续定位 EE 姿态残差和动态时间匹配边界。

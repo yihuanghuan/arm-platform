@@ -113,6 +113,7 @@ def _launch_setup(context, *args, **kwargs):
     static_model = _as_bool(LaunchConfiguration('static_model').perform(context))
     use_rviz = _as_bool(LaunchConfiguration('use_rviz').perform(context))
     disable_collisions = _as_bool(LaunchConfiguration('disable_collisions').perform(context))
+    use_sim_time = _as_bool(LaunchConfiguration('use_sim_time').perform(context))
     control_mode = LaunchConfiguration('control_mode').perform(context)
     valid_control_modes = ('kinematic_visualization', 'physical_dynamics')
     if control_mode not in valid_control_modes:
@@ -145,7 +146,10 @@ def _launch_setup(context, *args, **kwargs):
         executable='robot_state_publisher',
         name='robot_state_publisher',
         output='screen',
-        parameters=[{'robot_description': robot_description}]
+        parameters=[{
+            'robot_description': robot_description,
+            'use_sim_time': use_sim_time,
+        }]
     )
 
     spawn_arm = Node(
@@ -196,6 +200,7 @@ def _launch_setup(context, *args, **kwargs):
                 name='student_joint_velocity_bridge',
                 output='screen',
                 parameters=[{
+                    'use_sim_time': use_sim_time,
                     'input_topic': '/student/joint_command',
                     'joint_state_topic': '/joint_states',
                     'controller_command_topic': '/arm_velocity_controller/commands',
@@ -231,6 +236,7 @@ def _launch_setup(context, *args, **kwargs):
                 name='student_joint_command_bridge',
                 output='screen',
                 parameters=[{
+                    'use_sim_time': use_sim_time,
                     'input_topic': '/student/joint_command',
                     'controller_command_topic': '/arm_position_controller/commands',
                     'joint_names': ['joint1', 'joint2', 'joint3', 'joint4', 'joint5', 'joint6'],
@@ -513,6 +519,12 @@ def generate_launch_description():
         description='Start RViz with the student arm configuration'
     )
 
+    use_sim_time_arg = DeclareLaunchArgument(
+        'use_sim_time',
+        default_value='true',
+        description='Use Gazebo /clock for ROS nodes launched here'
+    )
+
     disable_collisions_arg = DeclareLaunchArgument(
         'disable_collisions',
         default_value='true',
@@ -573,6 +585,7 @@ def generate_launch_description():
         fix_base_to_world_arg,
         static_model_arg,
         use_rviz_arg,
+        use_sim_time_arg,
         disable_collisions_arg,
         SetEnvironmentVariable('GAZEBO_MODEL_DATABASE_URI', ''),
         SetEnvironmentVariable('GAZEBO_MODEL_PATH', os.pathsep.join(model_paths)),
