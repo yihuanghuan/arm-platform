@@ -17,6 +17,15 @@
   <xacro:arg name="rgbd_near" default="0.1"/>
   <xacro:arg name="rgbd_far" default="5.0"/>
   <xacro:arg name="rgbd_visualize" default="false"/>
+  <xacro:arg name="imu_enabled" default="true"/>
+  <xacro:arg name="imu_namespace" default="d435i"/>
+  <xacro:arg name="imu_topic" default="imu"/>
+  <xacro:arg name="imu_frame_name" default="camera_accel_optical_frame"/>
+  <xacro:arg name="imu_update_rate" default="200"/>
+  <xacro:arg name="imu_visualize" default="false"/>
+  <xacro:arg name="imu_noise_mean" default="0.0"/>
+  <xacro:arg name="imu_angular_velocity_noise_stddev" default="0.0"/>
+  <xacro:arg name="imu_linear_acceleration_noise_stddev" default="0.0"/>
   <xacro:arg name="use_ros2_control" default="true"/>
   <xacro:arg name="fix_base_to_world" default="true"/>
 
@@ -46,6 +55,18 @@
       rgbd_near="$(arg rgbd_near)"
       rgbd_far="$(arg rgbd_far)"
       rgbd_visualize="$(arg rgbd_visualize)"/>
+
+  <xacro:windylab_d435i_gazebo_imu
+      imu_enabled="$(arg imu_enabled)"
+      camera_name="$(arg camera_name)"
+      imu_namespace="$(arg imu_namespace)"
+      imu_topic="$(arg imu_topic)"
+      imu_frame_name="$(arg imu_frame_name)"
+      imu_update_rate="$(arg imu_update_rate)"
+      imu_visualize="$(arg imu_visualize)"
+      imu_noise_mean="$(arg imu_noise_mean)"
+      imu_angular_velocity_noise_stddev="$(arg imu_angular_velocity_noise_stddev)"
+      imu_linear_acceleration_noise_stddev="$(arg imu_linear_acceleration_noise_stddev)"/>
 
   <xacro:windylab_gazebo_ros2_control
       use_ros2_control="$(arg use_ros2_control)"

@@ -40,6 +40,17 @@ def _render_robot_description(pkg_share, context):
             'rgbd_near': LaunchConfiguration('rgbd_near').perform(context),
             'rgbd_far': LaunchConfiguration('rgbd_far').perform(context),
             'rgbd_visualize': LaunchConfiguration('rgbd_visualize').perform(context),
+            'imu_enabled': LaunchConfiguration('imu_enabled').perform(context),
+            'imu_namespace': LaunchConfiguration('imu_namespace').perform(context),
+            'imu_topic': LaunchConfiguration('imu_topic').perform(context),
+            'imu_frame_name': LaunchConfiguration('imu_frame_name').perform(context),
+            'imu_update_rate': LaunchConfiguration('imu_update_rate').perform(context),
+            'imu_visualize': LaunchConfiguration('imu_visualize').perform(context),
+            'imu_noise_mean': LaunchConfiguration('imu_noise_mean').perform(context),
+            'imu_angular_velocity_noise_stddev': LaunchConfiguration(
+                'imu_angular_velocity_noise_stddev').perform(context),
+            'imu_linear_acceleration_noise_stddev': LaunchConfiguration(
+                'imu_linear_acceleration_noise_stddev').perform(context),
             'use_ros2_control': LaunchConfiguration('use_ros2_control').perform(context),
             'fix_base_to_world': LaunchConfiguration('fix_base_to_world').perform(context),
         })
@@ -300,6 +311,60 @@ def generate_launch_description():
         description='Show the Gazebo RGB-D camera frustum'
     )
 
+    imu_enabled_arg = DeclareLaunchArgument(
+        'imu_enabled',
+        default_value='true',
+        description='Attach the Gazebo IMU sensor plugin to the D435i body'
+    )
+
+    imu_namespace_arg = DeclareLaunchArgument(
+        'imu_namespace',
+        default_value='d435i',
+        description='ROS namespace for D435i IMU topics'
+    )
+
+    imu_topic_arg = DeclareLaunchArgument(
+        'imu_topic',
+        default_value='imu',
+        description='IMU topic name inside imu_namespace'
+    )
+
+    imu_frame_name_arg = DeclareLaunchArgument(
+        'imu_frame_name',
+        default_value='camera_accel_optical_frame',
+        description='Header frame_id used by the Gazebo IMU plugin'
+    )
+
+    imu_update_rate_arg = DeclareLaunchArgument(
+        'imu_update_rate',
+        default_value='200',
+        description='IMU sensor update rate in Hz'
+    )
+
+    imu_visualize_arg = DeclareLaunchArgument(
+        'imu_visualize',
+        default_value='false',
+        description='Show the Gazebo IMU sensor visualization'
+    )
+
+    imu_noise_mean_arg = DeclareLaunchArgument(
+        'imu_noise_mean',
+        default_value='0.0',
+        description='Mean for Gazebo IMU Gaussian noise'
+    )
+
+    imu_angular_velocity_noise_stddev_arg = DeclareLaunchArgument(
+        'imu_angular_velocity_noise_stddev',
+        default_value='0.0',
+        description='Angular velocity Gaussian noise stddev in rad/s'
+    )
+
+    imu_linear_acceleration_noise_stddev_arg = DeclareLaunchArgument(
+        'imu_linear_acceleration_noise_stddev',
+        default_value='0.0',
+        description='Linear acceleration Gaussian noise stddev in m/s^2'
+    )
+
     use_ros2_control_arg = DeclareLaunchArgument(
         'use_ros2_control',
         default_value='true',
@@ -363,6 +428,15 @@ def generate_launch_description():
         rgbd_near_arg,
         rgbd_far_arg,
         rgbd_visualize_arg,
+        imu_enabled_arg,
+        imu_namespace_arg,
+        imu_topic_arg,
+        imu_frame_name_arg,
+        imu_update_rate_arg,
+        imu_visualize_arg,
+        imu_noise_mean_arg,
+        imu_angular_velocity_noise_stddev_arg,
+        imu_linear_acceleration_noise_stddev_arg,
         use_ros2_control_arg,
         fix_base_to_world_arg,
         static_model_arg,

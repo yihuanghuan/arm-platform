@@ -53,4 +53,77 @@
       </gazebo>
     </xacro:if>
   </xacro:macro>
+
+  <xacro:macro name="windylab_d435i_gazebo_imu"
+      params="imu_enabled:=true
+              camera_name:=camera
+              imu_namespace:=d435i
+              imu_topic:=imu
+              imu_frame_name:=camera_accel_optical_frame
+              imu_update_rate:=200
+              imu_visualize:=false
+              imu_noise_mean:=0.0
+              imu_angular_velocity_noise_stddev:=0.0
+              imu_linear_acceleration_noise_stddev:=0.0">
+
+    <xacro:if value="${imu_enabled}">
+      <gazebo reference="${camera_name}_link">
+        <sensor type="imu" name="${camera_name}_imu_sensor">
+          <always_on>true</always_on>
+          <update_rate>${imu_update_rate}</update_rate>
+          <visualize>${imu_visualize}</visualize>
+          <imu>
+            <angular_velocity>
+              <x>
+                <noise type="gaussian">
+                  <mean>${imu_noise_mean}</mean>
+                  <stddev>${imu_angular_velocity_noise_stddev}</stddev>
+                </noise>
+              </x>
+              <y>
+                <noise type="gaussian">
+                  <mean>${imu_noise_mean}</mean>
+                  <stddev>${imu_angular_velocity_noise_stddev}</stddev>
+                </noise>
+              </y>
+              <z>
+                <noise type="gaussian">
+                  <mean>${imu_noise_mean}</mean>
+                  <stddev>${imu_angular_velocity_noise_stddev}</stddev>
+                </noise>
+              </z>
+            </angular_velocity>
+            <linear_acceleration>
+              <x>
+                <noise type="gaussian">
+                  <mean>${imu_noise_mean}</mean>
+                  <stddev>${imu_linear_acceleration_noise_stddev}</stddev>
+                </noise>
+              </x>
+              <y>
+                <noise type="gaussian">
+                  <mean>${imu_noise_mean}</mean>
+                  <stddev>${imu_linear_acceleration_noise_stddev}</stddev>
+                </noise>
+              </y>
+              <z>
+                <noise type="gaussian">
+                  <mean>${imu_noise_mean}</mean>
+                  <stddev>${imu_linear_acceleration_noise_stddev}</stddev>
+                </noise>
+              </z>
+            </linear_acceleration>
+          </imu>
+          <plugin name="${camera_name}_imu_controller" filename="libgazebo_ros_imu_sensor.so">
+            <ros>
+              <namespace>${imu_namespace}</namespace>
+              <remapping>~/out:=${imu_topic}</remapping>
+            </ros>
+            <frame_name>${imu_frame_name}</frame_name>
+            <initial_orientation_as_reference>false</initial_orientation_as_reference>
+          </plugin>
+        </sensor>
+      </gazebo>
+    </xacro:if>
+  </xacro:macro>
 </robot>

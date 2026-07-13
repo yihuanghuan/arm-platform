@@ -675,3 +675,176 @@ RViz2 设置：
 - 若需要根据彩色图像像素读取深度，加入 depth-to-color alignment 或基于内参/外参的重投影模块。
 - 将上层视觉节点的 topic、frame、分辨率、FOV 和同步策略全部参数化，不依赖阶段 2 的临时 Gazebo topic/frame 默认值。
 - 在真实 D435i 上单独验收精度、噪声、延迟、曝光、深度空洞和 color/depth 对齐性能；阶段 2 的仿真结果不能替代真机标定与数据质量验证。
+
+## 阶段 3：加入 D435i IMU 仿真
+
+阶段 3 在现有 D435i 官方描述、Gazebo ROS 2 control 和 RGB-D 输出基础上加入 Gazebo Classic IMU sensor。本阶段只发布 `sensor_msgs/msg/Imu`，不使用固定发布器伪造数据，不加入 AprilTag、SLAM 或视觉闭环控制。
+
+### 新增与修改文件
+
+- `config/sensors/d435i_gazebo.xacro`：新增 `windylab_d435i_gazebo_imu` 宏，使用 Gazebo Classic `sensor type="imu"` 和 ROS 2 Humble 插件 `libgazebo_ros_imu_sensor.so`。
+- `config/arm_with_d435i.urdf.xacro`：新增 IMU xacro 参数并调用 IMU wrapper。
+- `launch/gazebo_arm.launch.py`：新增 IMU launch 参数透传。
+
+默认 IMU 参数：
+
+```text
+imu_enabled: true
+imu_namespace: d435i
+imu_topic: imu
+imu_frame_name: camera_accel_optical_frame
+imu_update_rate: 200 Hz
+imu_visualize: false
+imu_noise_mean: 0.0
+imu_angular_velocity_noise_stddev: 0.0
+imu_linear_acceleration_noise_stddev: 0.0
+```
+
+IMU sensor 挂接在 `${camera_name}_link` 上，属于 D435i 子树；消息 `header.frame_id` 使用官方 D435i nominal TF 中已有的 `camera_accel_optical_frame`。当前官方描述提供 `camera_accel_frame`、`camera_accel_optical_frame`、`camera_gyro_frame`、`camera_gyro_optical_frame`，没有统一的 `camera_imu_optical_frame`，因此本阶段不新增虚构 frame。
+
+### 插件语义
+
+本机 Humble 可用 IMU 插件：
+
+```text
+/opt/ros/humble/lib/libgazebo_ros_imu_sensor.so
+```
+
+插件默认发布 topic 为 `~/out`，本阶段通过：
+
+```xml
+<remapping>~/out:=imu</remapping>
+```
+
+在 ROS namespace `d435i` 下发布为：
+
+```text
+/d435i/imu
+```
+
+本阶段显式设置：
+
+```xml
+<initial_orientation_as_reference>false</initial_orientation_as_reference>
+```
+
+因此 orientation 以 world 为参考，符合插件默认的 REP 145 语义。实测消息包含 orientation、angular velocity 和 linear acceleration 字段；协方差矩阵为全 0，表示未知协方差。
+
+静止样例中线加速度模长为 `9.800000 m/s^2`，说明当前 Gazebo IMU 输出包含重力项。
+
+### 静态检查
+
+URDF 展开与解析：
+
+```bash
+source setup_env.bash
+xacro src/arm-platform/config/arm_with_d435i.urdf.xacro \
+  camera_enabled:=true rgbd_enabled:=true imu_enabled:=true \
+  use_ros2_control:=true fix_base_to_world:=true \
+  > /tmp/windylab_arm_imu.urdf
+check_urdf /tmp/windylab_arm_imu.urdf
+```
+
+结果：
+
+- `check_urdf` 成功解析；
+- root link 仍为 `world`；
+- TF 链仍包含 `world -> base_link -> ... -> link6 -> camera_link -> camera_accel_optical_frame`；
+- 展开后的 URDF 包含 `camera_imu_sensor`、`libgazebo_ros_imu_sensor.so`、`~/out:=imu` 和 `frame_name=camera_accel_optical_frame`。
+
+### 构建与启动
+
+构建：
+
+```bash
+source setup_env.bash
+colcon build --packages-select manipulator --symlink-install
+```
+
+结果：`manipulator` 构建成功。
+
+启动验证：
+
+```bash
+source setup_env.bash
+ros2 launch manipulator gazebo_arm.launch.py \
+  gui:=false use_rviz:=false \
+  world:=$(ros2 pkg prefix manipulator)/share/manipulator/worlds/d435i_rgbd_test.world \
+  imu_enabled:=true rgbd_enabled:=true
+```
+
+结果：
+
+- `windylab_arm` 成功 spawn；
+- RGB-D 插件继续发布 color、depth、CameraInfo 和 point cloud；
+- `joint_state_broadcaster` 和 `arm_position_controller` 均为 `active`；
+- `/joint_states` 仍只有 1 个发布者。
+
+### Topic 验证
+
+新增 topic：
+
+```text
+/d435i/imu
+```
+
+topic 类型与发布者：
+
+```text
+Type: sensor_msgs/msg/Imu
+Publisher count: 1
+Node name: camera_imu_controller
+Node namespace: /d435i
+```
+
+实测频率：
+
+```text
+/d435i/imu: 约 199.96 Hz
+```
+
+IMU 打开后 RGB-D 仍稳定发布：
+
+```text
+/d435i/color/image_raw: 约 15.0 Hz
+/d435i/depth/points: 约 15.0 Hz
+```
+
+静止 IMU 样例：
+
+```text
+frame_id: camera_accel_optical_frame
+orientation: x=-7.75e-16 y=1.60e-16 z=1.95e-17 w=1.0
+angular_velocity: x=-1.70e-15 y=-1.67e-14 z=-2.81e-16 rad/s
+linear_acceleration: x=-6.94e-13 y=5.80e-15 z=9.800000 m/s^2
+```
+
+### 运动测试
+
+使用与 `move_arm_demo_6dof.py` 相同的 50 Hz 正弦关节位置命令，对前三个关节施加 `0.3 rad` 幅值、`4 s` 周期的轨迹，并同步统计 `/d435i/imu`。
+
+统计结果：
+
+```text
+static_first_1s: samples=202 frame=camera_accel_optical_frame
+static_first_1s: angular_norm min=0.000000 max=0.000000 rad/s
+static_first_1s: accel_norm min=9.800000 max=9.800000 m/s^2
+static_first_1s: stamp_start=110.730 stamp_end=111.735 monotonic=True
+
+moving_last_5s: samples=1000 frame=camera_accel_optical_frame
+moving_last_5s: angular_norm min=0.000000 max=0.000000 rad/s
+moving_last_5s: accel_norm min=9.800000 max=9.800000 m/s^2
+moving_last_5s: accel_z min=8.506501 max=9.800000 m/s^2
+moving_last_5s: stamp_start=111.740 stamp_end=116.735 monotonic=True
+```
+
+线加速度随相机姿态和运动发生变化，时间戳持续递增且 frame 固定。当前角速度没有随关节运动变化；进一步检查 `/joint_states.velocity` 也为 0，说明阶段 1.5 当前使用的 Gazebo position interface 会更新关节位置和 link pose，但没有向 Gazebo 物理链路提供连续关节速度。IMU 数据仍来自 Gazebo IMU sensor，并未通过固定发布器或自定义节点伪造。后续若需要可用的仿真角速度，应将 Gazebo 控制链路改为速度/力矩/轨迹控制，使 Gazebo 物理引擎产生真实 link velocity。
+
+### 阶段 3 结论
+
+- `/d435i/imu` 已由 Gazebo Classic IMU sensor 和 `gazebo_ros_imu_sensor` 插件稳定发布；
+- IMU frame 位于 D435i TF 子树中，使用 `camera_accel_optical_frame`；
+- 静止时 orientation 接近单位四元数，角速度接近 0，线加速度稳定且包含重力项；
+- 运动时线加速度和时间戳行为正常，但角速度受当前 position interface 控制链路限制仍为 0；
+- RGB-D 与 IMU 可同时运行；
+- 机械臂 Gazebo 控制链路和 `/joint_states` 单发布者约束保持不变。
