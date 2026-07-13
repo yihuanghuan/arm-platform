@@ -17,16 +17,49 @@ def _as_bool(value):
     return str(value).lower() in ('1', 'true', 'yes', 'on')
 
 
+def _auto_or_empty(value):
+    return str(value).strip().lower() in ('', 'auto')
+
+
+def _resolve_camera_mount(context):
+    mount_mode = LaunchConfiguration('camera_mount_mode').perform(context)
+    if mount_mode not in ('ee', 'base'):
+        raise RuntimeError('camera_mount_mode must be one of: ee, base')
+
+    if mount_mode == 'base':
+        default_parent_link = 'base_link'
+        default_xyz = '0.12 0 0.36'
+        default_rpy = '0 0 0'
+    else:
+        default_parent_link = 'link6'
+        default_xyz = '0.06 0 0.04'
+        default_rpy = '0 0 0'
+
+    camera_parent_link = LaunchConfiguration('camera_parent_link').perform(context)
+    camera_xyz = LaunchConfiguration('camera_xyz').perform(context)
+    camera_rpy = LaunchConfiguration('camera_rpy').perform(context)
+
+    return {
+        'camera_mount_mode': mount_mode,
+        'camera_parent_link': (
+            default_parent_link if _auto_or_empty(camera_parent_link) else camera_parent_link),
+        'camera_xyz': default_xyz if _auto_or_empty(camera_xyz) else camera_xyz,
+        'camera_rpy': default_rpy if _auto_or_empty(camera_rpy) else camera_rpy,
+    }
+
+
 def _render_robot_description(pkg_share, context):
     xacro_path = os.path.join(pkg_share, 'arm_with_d435i.urdf.xacro')
+    camera_mount = _resolve_camera_mount(context)
     doc = xacro.process_file(
         xacro_path,
         mappings={
             'camera_enabled': LaunchConfiguration('camera_enabled').perform(context),
+            'camera_mount_mode': camera_mount['camera_mount_mode'],
             'camera_name': LaunchConfiguration('camera_name').perform(context),
-            'camera_parent_link': LaunchConfiguration('camera_parent_link').perform(context),
-            'camera_xyz': LaunchConfiguration('camera_xyz').perform(context),
-            'camera_rpy': LaunchConfiguration('camera_rpy').perform(context),
+            'camera_parent_link': camera_mount['camera_parent_link'],
+            'camera_xyz': camera_mount['camera_xyz'],
+            'camera_rpy': camera_mount['camera_rpy'],
             'camera_use_nominal_extrinsics': LaunchConfiguration(
                 'camera_use_nominal_extrinsics').perform(context),
             'rgbd_enabled': LaunchConfiguration('rgbd_enabled').perform(context),
@@ -256,6 +289,12 @@ def generate_launch_description():
         description='Attach the D435i description to robot_description'
     )
 
+    camera_mount_mode_arg = DeclareLaunchArgument(
+        'camera_mount_mode',
+        default_value='ee',
+        description='D435i mount preset: ee or base'
+    )
+
     camera_name_arg = DeclareLaunchArgument(
         'camera_name',
         default_value='camera',
@@ -264,20 +303,20 @@ def generate_launch_description():
 
     camera_parent_link_arg = DeclareLaunchArgument(
         'camera_parent_link',
-        default_value='link6',
-        description='Parent link for the D435i mount'
+        default_value='auto',
+        description='Parent link for the D435i mount, or auto for camera_mount_mode default'
     )
 
     camera_xyz_arg = DeclareLaunchArgument(
         'camera_xyz',
-        default_value='0.06 0 0.04',
-        description='D435i mount translation relative to camera_parent_link'
+        default_value='auto',
+        description='D435i mount translation relative to camera_parent_link, or auto'
     )
 
     camera_rpy_arg = DeclareLaunchArgument(
         'camera_rpy',
-        default_value='0 0 0',
-        description='D435i mount orientation relative to camera_parent_link'
+        default_value='auto',
+        description='D435i mount orientation relative to camera_parent_link, or auto'
     )
 
     camera_use_nominal_extrinsics_arg = DeclareLaunchArgument(
@@ -495,6 +534,7 @@ def generate_launch_description():
         verbose_arg,
         world_arg,
         camera_enabled_arg,
+        camera_mount_mode_arg,
         camera_name_arg,
         camera_parent_link_arg,
         camera_xyz_arg,

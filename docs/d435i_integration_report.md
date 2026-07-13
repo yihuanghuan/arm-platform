@@ -1033,3 +1033,185 @@ RGB-D/IMU 回归：
 - RViz 和 Gazebo 均由同一 `/joint_states` 驱动，姿态一致；
 - 未观察到明显抖动、模型爆炸或控制发散；
 - 当前无碰撞可视化模型继续使用，本修正不处理 collision geometry。
+
+## 阶段 4：相机安装位置参数化
+
+阶段 4 的目标是允许同一套官方 D435i 描述、RGB-D 插件和 IMU 插件在末端安装与 Base 安装之间切换，不复制模型，也不修改官方 RealSense xacro。
+
+### 新增与修改文件
+
+- `config/arm_with_d435i.urdf.xacro`：新增 `camera_mount_mode` 参数，并支持 `camera_parent_link`、`camera_xyz`、`camera_rpy` 使用 `auto` 默认值。
+- `launch/gazebo_arm.launch.py`：新增 `camera_mount_mode:=ee|base`，并在 launch 层解析默认 parent 和安装位姿。
+- `launch/student_arm.launch.py`：同步支持 `camera_mount_mode:=ee|base`，用于纯学生/RViz 启动入口。
+
+默认参数：
+
+```text
+camera_mount_mode:=ee
+  -> camera_parent_link:=link6
+  -> camera_xyz:=0.06 0 0.04
+  -> camera_rpy:=0 0 0
+
+camera_mount_mode:=base
+  -> camera_parent_link:=base_link
+  -> camera_xyz:=0.12 0 0.36
+  -> camera_rpy:=0 0 0
+```
+
+显式传入 `camera_parent_link`、`camera_xyz` 或 `camera_rpy` 时优先生效。非法模式会在 launch 阶段报错：
+
+```text
+camera_mount_mode must be one of: ee, base
+```
+
+### 静态检查
+
+URDF 展开与解析：
+
+```bash
+source setup_env.bash
+xacro src/arm-platform/config/arm_with_d435i.urdf.xacro \
+  camera_enabled:=true camera_mount_mode:=ee \
+  rgbd_enabled:=true imu_enabled:=true \
+  use_ros2_control:=true fix_base_to_world:=true \
+  > /tmp/d435i_ee.urdf
+check_urdf /tmp/d435i_ee.urdf
+
+xacro src/arm-platform/config/arm_with_d435i.urdf.xacro \
+  camera_enabled:=true camera_mount_mode:=base \
+  rgbd_enabled:=true imu_enabled:=true \
+  use_ros2_control:=true fix_base_to_world:=true \
+  > /tmp/d435i_base.urdf
+check_urdf /tmp/d435i_base.urdf
+```
+
+结果：
+
+- `ee` 模式 TF 链为 `world -> base_link -> ... -> link6 -> camera_bottom_screw_frame -> camera_link -> camera_depth_optical_frame`；
+- `base` 模式 TF 链为 `world -> base_link -> camera_bottom_screw_frame -> camera_link -> camera_depth_optical_frame`，机械臂链仍从 `base_link -> link1 -> ... -> link6` 独立展开；
+- 两种模式均包含 `camera_rgbd_sensor`、`camera_imu_sensor`、`camera_depth_optical_frame` 和 `camera_accel_optical_frame`；
+- 显式覆盖 `camera_parent_link:=link6 camera_xyz:="0.01 0.02 0.03" camera_rpy:="0.1 0.2 0.3"` 可覆盖 `camera_mount_mode:=base` 的默认 parent/pose；
+- `gz sdf -k src/arm-platform/worlds/d435i_rgbd_test.world` 返回 `Check complete`。
+
+### Gazebo 验收
+
+末端模式启动：
+
+```bash
+source setup_env.bash
+ros2 launch manipulator gazebo_arm.launch.py \
+  gui:=false use_rviz:=false \
+  world:=$(ros2 pkg prefix manipulator)/share/manipulator/worlds/d435i_rgbd_test.world \
+  camera_mount_mode:=ee control_mode:=kinematic_visualization
+```
+
+Base 模式启动：
+
+```bash
+source setup_env.bash
+ros2 launch manipulator gazebo_arm.launch.py \
+  gui:=false use_rviz:=false \
+  world:=$(ros2 pkg prefix manipulator)/share/manipulator/worlds/d435i_rgbd_test.world \
+  camera_mount_mode:=base control_mode:=kinematic_visualization
+```
+
+两种模式均成功 spawn：
+
+```text
+SpawnEntity: Successfully spawned entity [windylab_arm]
+```
+
+控制器状态：
+
+```text
+joint_state_broadcaster joint_state_broadcaster/JointStateBroadcaster active
+arm_position_controller position_controllers/JointGroupPositionController active
+```
+
+两种模式均发布相同 topic：
+
+```text
+/d435i/color/image_raw   sensor_msgs/msg/Image
+/d435i/depth/image_raw   sensor_msgs/msg/Image
+/d435i/depth/points      sensor_msgs/msg/PointCloud2
+/d435i/imu               sensor_msgs/msg/Imu
+/joint_states
+```
+
+发布验证命令：
+
+```bash
+ros2 topic pub --once /student/joint_command sensor_msgs/msg/JointState \
+  "{name: ['joint1','joint2','joint3','joint4','joint5','joint6'], position: [0.3, 0.0, 0.0, 0.0, 0.0, 0.0]}"
+```
+
+结果：两种模式下 `/joint_states` 中 `joint1` 均到达约 `0.3 rad`。
+
+末端模式 TF：
+
+```text
+link6 -> camera_depth_optical_frame
+before/after joint1 command:
+translation [0.071, 0.018, 0.053], rotation [-90 deg, 0 deg, -90 deg]
+
+base_link -> camera_depth_optical_frame
+before: translation [0.424, 0.019, 0.427], RPY [-90 deg, 0 deg, -90 deg]
+after:  translation [0.424, -0.108, 0.413], RPY [-90 deg, 17.189 deg, -90 deg]
+```
+
+说明：相机相对 `link6` 保持固定，随末端运动。
+
+Base 模式 TF：
+
+```text
+base_link -> camera_depth_optical_frame
+before/after joint1 command:
+translation [0.131, 0.018, 0.372], rotation [-90 deg, 0 deg, -90 deg]
+
+link6 -> camera_depth_optical_frame
+before: translation [-0.223, 0.016, -0.002], RPY [-90 deg, 0 deg, -90 deg]
+after:  translation [-0.223, 0.125, -0.024], RPY [-90 deg, -17.189 deg, -90 deg]
+```
+
+说明：相机相对 `base_link` 保持固定，不随末端运动。
+
+### 学生入口回归
+
+末端模式：
+
+```bash
+ros2 launch manipulator student_arm.launch.py \
+  use_rviz:=False camera_enabled:=true camera_mount_mode:=ee
+```
+
+TF 验证：
+
+```text
+link6 -> camera_depth_optical_frame
+translation [0.071, 0.018, 0.053]
+```
+
+Base 模式：
+
+```bash
+ros2 launch manipulator student_arm.launch.py \
+  use_rviz:=False camera_enabled:=true camera_mount_mode:=base
+```
+
+TF 验证：
+
+```text
+base_link -> camera_depth_optical_frame
+translation [0.131, 0.018, 0.372]
+```
+
+两种模式中 `robot_state_publisher` 均成功加载 `camera_depth_optical_frame`。
+
+### 阶段 4 结论
+
+- 只通过 launch 参数即可在 `camera_mount_mode:=ee` 与 `camera_mount_mode:=base` 间切换；
+- 两种模式复用同一套 D435i xacro、RGB-D sensor 和 IMU sensor；
+- RGB-D/IMU topic 命名保持一致；
+- 末端模式相机随 `link6` 刚性运动；
+- Base 模式相机相对 `base_link` 固定，不随末端运动；
+- 原有 Gazebo 控制链路和学生启动入口保持可用。
