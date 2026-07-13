@@ -1,0 +1,32 @@
+defaults:
+  duration_sec: 30.0
+  sample_rate_hz: 100.0
+  random_seed: 42
+  translation_amplitude:
+    x: 0.03
+    y: 0.03
+    z: 0.02
+  frequency_band:
+    min: 0.05
+    max: 0.5
+  sine_frequency_hz: 0.2
+
+profiles:
+  static:
+    type: static
+
+  sine_x:
+    type: sine
+    axis: x
+
+  sine_y:
+    type: sine
+    axis: y
+
+  sine_z:
+    type: sine
+    axis: z
+
+  random_translation_3d:
+    type: random_translation_3d
+    component_count: 6

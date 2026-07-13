@@ -248,6 +248,9 @@ install(DIRECTORY models/
 install(PROGRAMS
   scripts/student_joint_command_bridge.py
   scripts/student_joint_velocity_bridge.py
+  scripts/generate_base_disturbance.py
+  scripts/base_disturbance_replay.py
+  scripts/baseline_velocity_command.py
   scripts/check_apriltag_ground_truth.py
   scripts/dynamic_ground_truth_logger.py
   scripts/check_camera_mount_regression.py

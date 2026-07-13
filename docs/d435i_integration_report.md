@@ -1619,3 +1619,147 @@ Base 模式满足 `base_link -> camera_color_optical_frame` 三姿态恒定要�
 ### 阶段 7.5 结论
 
 已完成 RGB sensor 原点修正、动态时间同步 GT logger、Base 相机阶段 7 回归。可以进入只依赖平移误差的闭环原型验证；不建议直接进入高精度 6D 位姿闭环或姿态闭环，需先继续定位 EE 姿态残差和动态时间匹配边界。
+
+## 阶段 8.0：Base 扰动与实验基础设施
+
+阶段 8.0 只建立可重复移动 Base 实验平台，不实现视觉补偿、SLAM、AprilTag 闭环或 Base 扰动补偿控制。
+
+### 新增与修改文件
+
+- `config/base_disturbance_profiles.yaml`：定义 `static`、`sine_x`、`sine_y`、`sine_z`、`random_translation_3d`，默认 30 s、100 Hz、seed 42、XYZ 幅值 `0.03/0.03/0.02 m`。
+- `scripts/generate_base_disturbance.py`：从 YAML 生成 CSV 轨迹。随机轨迹使用固定 seed 的有限正弦分量叠加，连续、带限且可重复；同 seed 输出 CSV 完全一致。
+- `scripts/base_disturbance_replay.py`：读取轨迹 CSV，通过 Gazebo `/set_entity_state` 对 `windylab_arm` 整体模型重放 pose 和 twist，并记录 commanded pose、Gazebo actual model/base/link6/camera-proxy pose、实际频率、tracking error、关节连续性和速度命令。
+- `scripts/baseline_velocity_command.py`：baseline 模式持续向 `/arm_velocity_controller/commands` 发布 6 维零速度。
+- `launch/moving_base_stabilization.launch.py`：阶段 8.0 专用入口，默认 `control_mode:=physical_dynamics`、`fix_base_to_world:=false`、`velocity_command_source:=external`、`experiment_mode:=baseline`。
+- `launch/gazebo_arm.launch.py`：新增 `velocity_command_source:=student_bridge|external`。默认仍为 `student_bridge`，保持原 `physical_dynamics` 行为；选择 `external` 时只加载 `arm_velocity_controller`，不启动 `student_joint_velocity_bridge.py`。
+- `CMakeLists.txt`、`package.xml`：安装新增脚本/config/launch，并补充 `gazebo_msgs` 运行依赖。
+
+### Ground Truth 记录约束
+
+Gazebo `/link_states` 中实际存在的 arm links 为：
+
+```text
+windylab_arm::base_link
+windylab_arm::link1
+...
+windylab_arm::link6
+```
+
+D435i 的 `camera_*` fixed links 在 Gazebo 中被合并，不是可通过 `/get_entity_state` 查询的独立 entity。因此阶段 8.0 的 Gazebo 直接 GT 记录：
+
+- `world -> base_link`：`windylab_arm::base_link`
+- `world -> link6`：`windylab_arm::link6`
+- `world -> camera proxy`：默认 `windylab_arm::link6`
+
+`camera_entity_name` 可在 launch 中覆盖；Base 相机实验可设置为 `windylab_arm::base_link`。这些 GT 字段只写入 replay CSV 和验收统计，不作为控制器输入。
+
+### 静态检查与构建
+
+Python 语法检查：
+
+```bash
+python3 -m py_compile \
+  scripts/generate_base_disturbance.py \
+  scripts/base_disturbance_replay.py \
+  scripts/baseline_velocity_command.py \
+  launch/gazebo_arm.launch.py \
+  launch/moving_base_stabilization.launch.py
+```
+
+`fix_base_to_world:=false` URDF 检查：
+
+```bash
+xacro src/arm-platform/config/arm_with_d435i.urdf.xacro \
+  camera_enabled:=true rgbd_enabled:=true imu_enabled:=true \
+  use_ros2_control:=true fix_base_to_world:=false \
+  > /tmp/windylab_arm_moving_base.urdf
+check_urdf /tmp/windylab_arm_moving_base.urdf
+```
+
+结果：`check_urdf` 成功解析，root link 为 `base_link`，没有 `world_to_base_link` 固定关节。
+
+构建：
+
+```bash
+source setup_env.bash
+colcon build --packages-select manipulator --symlink-install
+```
+
+结果：`manipulator` 构建成功，仅有既有 Boost/Python header check warning。
+
+### 轨迹生成验证
+
+同 seed 两次生成 `random_translation_3d` 后用 `cmp` 比较，CSV 完全一致。
+
+修正记录：初版 `generate_static()` 让正弦分支 position/velocity 共用同一个 dict，导致速度覆盖 position。已修为独立 position/velocity dict，并重新完整验收。修正后正弦位置幅值为：
+
+```text
+sine_x: x=[-0.030000, 0.030000] m
+sine_y: y=[-0.030000, 0.030000] m
+sine_z: z=[-0.020000, 0.020000] m
+```
+
+### 完整 30 秒重放验收
+
+启动模板：
+
+```bash
+ros2 launch manipulator moving_base_stabilization.launch.py \
+  gui:=false use_rviz:=false \
+  disturbance_csv:=/tmp/phase80_fixed_<profile>.csv \
+  replay_output_csv:=/tmp/phase80_fixed_<profile>_replay.csv \
+  start_delay_sec:=5.0
+```
+
+结果：
+
+| 轨迹 | 样本数 | 实际频率 | set 失败 | 最大 pose error | 最大关节步进 | CSV |
+|---|---:|---:|---:|---:|---:|---|
+| `sine_x` | `3001` | `100.036 Hz` | `0` | `0.000074804 m` | `0.000000000 rad` | `/tmp/phase80_fixed_sine_x_replay.csv` |
+| `sine_y` | `3001` | `100.001 Hz` | `0` | `0.000109182 m` | `0.000000000 rad` | `/tmp/phase80_fixed_sine_y_replay.csv` |
+| `sine_z` | `3001` | `100.019 Hz` | `0` | `0.000038730 m` | `0.000000000 rad` | `/tmp/phase80_fixed_sine_z_replay.csv` |
+| `random_translation_3d` | `3001` | `100.026 Hz` | `0` | `0.000106749 m` | `0.000000000 rad` | `/tmp/phase80_fixed_random_translation_3d_replay.csv` |
+
+Gazebo actual base/link6 位姿随模型整体移动，不是只修改 TF。示例实际范围：
+
+```text
+sine_x actual_base_x=[-0.030000, 0.030000]
+sine_y actual_base_y=[-0.030000, 0.030000]
+sine_z actual_base_z=[-0.020000, 0.020000]
+random actual_base_x=[-0.030000, 0.000049]
+random actual_base_y=[-0.002128, 0.030000]
+random actual_base_z=[-0.015468, 0.019804]
+```
+
+### Baseline 发布者检查
+
+运行中检查：
+
+```bash
+ros2 topic info /arm_velocity_controller/commands --verbose
+```
+
+结果：
+
+```text
+Publisher count: 1
+Node name: baseline_velocity_command
+Subscription count: 1
+Node name: arm_velocity_controller
+```
+
+节点列表中没有 `student_joint_velocity_bridge`。Baseline CSV 中 `velocity_command` 始终为：
+
+```text
+0;0;0;0;0;0
+```
+
+### 阶段 8.0 结论
+
+- Base 轨迹连续、带限并可重复；
+- 同 seed 随机轨迹 CSV 完全一致；
+- `fix_base_to_world:=false` 下 Gazebo 模型整体移动；
+- baseline 中关节保持初始构型，最大关节步进为 `0 rad`；
+- `/arm_velocity_controller/commands` 只有 baseline 零速度节点一个发布者；
+- GT 只写入 CSV，不进入控制器；
+- `sine_x`、`sine_y`、`sine_z` 和 `random_translation_3d` 均完成 30 秒运行。
