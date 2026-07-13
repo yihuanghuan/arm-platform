@@ -1053,8 +1053,8 @@ camera_mount_mode:=ee
   -> camera_rpy:=0 0 0
 
 camera_mount_mode:=base
-  -> camera_parent_link:=base_link
-  -> camera_xyz:=0.12 0 0.36
+  -> camera_parent_link:=link1
+  -> camera_xyz:=0.02 0 0.06
   -> camera_rpy:=0 0 0
 ```
 
@@ -1088,7 +1088,7 @@ check_urdf /tmp/d435i_base.urdf
 结果：
 
 - `ee` 模式 TF 链为 `world -> base_link -> ... -> link6 -> camera_bottom_screw_frame -> camera_link -> camera_depth_optical_frame`；
-- `base` 模式 TF 链为 `world -> base_link -> camera_bottom_screw_frame -> camera_link -> camera_depth_optical_frame`，机械臂链仍从 `base_link -> link1 -> ... -> link6` 独立展开；
+- `base` 模式 TF 链为 `world -> base_link -> link1 -> camera_bottom_screw_frame -> camera_link -> camera_depth_optical_frame`，相机固定在 base 关节转动 link 上；
 - 两种模式均包含 `camera_rgbd_sensor`、`camera_imu_sensor`、`camera_depth_optical_frame` 和 `camera_accel_optical_frame`；
 - 显式覆盖 `camera_parent_link:=link6 camera_xyz:="0.01 0.02 0.03" camera_rpy:="0.1 0.2 0.3"` 可覆盖 `camera_mount_mode:=base` 的默认 parent/pose；
 - `gz sdf -k src/arm-platform/worlds/d435i_rgbd_test.world` 返回 `Check complete`。
@@ -1164,16 +1164,16 @@ after:  translation [0.424, -0.108, 0.413], RPY [-90 deg, 17.189 deg, -90 deg]
 Base 模式 TF：
 
 ```text
-base_link -> camera_depth_optical_frame
+link1 -> camera_depth_optical_frame
 before/after joint1 command:
-translation [0.131, 0.018, 0.372], rotation [-90 deg, 0 deg, -90 deg]
+translation [0.031, 0.018, 0.072], rotation [-90 deg, 0 deg, -90 deg]
 
-link6 -> camera_depth_optical_frame
-before: translation [-0.223, 0.016, -0.002], RPY [-90 deg, 0 deg, -90 deg]
-after:  translation [-0.223, 0.125, -0.024], RPY [-90 deg, -17.189 deg, -90 deg]
+base_link -> camera_depth_optical_frame
+before: translation [0.092, 0.018, 0.072], RPY [-90 deg, 0 deg, -90 deg]
+after:  translation [0.092, -0.005, 0.074], RPY [-90 deg, 17.189 deg, -90 deg]
 ```
 
-说明：相机相对 `base_link` 保持固定，不随末端运动。
+说明：相机相对 `link1` 保持固定，会随 base 关节 joint1 运动；安装高度从上一版约 `0.37 m` 降到约 `0.07 m`。
 
 ### 学生入口回归
 
@@ -1201,8 +1201,8 @@ ros2 launch manipulator student_arm.launch.py \
 TF 验证：
 
 ```text
-base_link -> camera_depth_optical_frame
-translation [0.131, 0.018, 0.372]
+link1 -> camera_depth_optical_frame
+translation [0.031, 0.018, 0.072]
 ```
 
 两种模式中 `robot_state_publisher` 均成功加载 `camera_depth_optical_frame`。
@@ -1213,5 +1213,5 @@ translation [0.131, 0.018, 0.372]
 - 两种模式复用同一套 D435i xacro、RGB-D sensor 和 IMU sensor；
 - RGB-D/IMU topic 命名保持一致；
 - 末端模式相机随 `link6` 刚性运动；
-- Base 模式相机相对 `base_link` 固定，不随末端运动；
+- Base 模式相机相对 `link1` 固定，安装在 base 关节附近并随 joint1 运动；
 - 原有 Gazebo 控制链路和学生启动入口保持可用。

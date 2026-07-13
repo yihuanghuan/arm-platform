@@ -40,9 +40,9 @@
   <xacro:property name="camera_xyz_arg" value="$(arg camera_xyz)"/>
   <xacro:property name="camera_rpy_arg" value="$(arg camera_rpy)"/>
   <xacro:property name="resolved_camera_parent_link"
-                  value="${'base_link' if camera_parent_link_arg == 'auto' and camera_mount_mode_arg == 'base' else 'link6' if camera_parent_link_arg == 'auto' else camera_parent_link_arg}"/>
+                  value="${'link1' if camera_parent_link_arg == 'auto' and camera_mount_mode_arg == 'base' else 'link6' if camera_parent_link_arg == 'auto' else camera_parent_link_arg}"/>
   <xacro:property name="resolved_camera_xyz"
-                  value="${'0.12 0 0.36' if camera_xyz_arg == 'auto' and camera_mount_mode_arg == 'base' else '0.06 0 0.04' if camera_xyz_arg == 'auto' else camera_xyz_arg}"/>
+                  value="${'0.02 0 0.06' if camera_xyz_arg == 'auto' and camera_mount_mode_arg == 'base' else '0.06 0 0.04' if camera_xyz_arg == 'auto' else camera_xyz_arg}"/>
   <xacro:property name="resolved_camera_rpy"
                   value="${'0 0 0' if camera_rpy_arg == 'auto' else camera_rpy_arg}"/>
 
