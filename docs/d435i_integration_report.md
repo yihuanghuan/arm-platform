@@ -1678,6 +1678,29 @@ check_urdf /tmp/windylab_arm_moving_base.urdf
 
 结果：`check_urdf` 成功解析，root link 为 `base_link`，没有 `world_to_base_link` 固定关节。
 
+先生成一条幅度明显的轨迹，例如 sine_x：
+
+```bash
+  cd /home/yihuang/westlake/windylab-arm-for6/windylab_ws
+  source setup_env.bash
+
+  python3 src/arm-platform/scripts/generate_base_disturbance.py \
+    --config src/arm-platform/config/base_disturbance_profiles.yaml \
+    --profile sine_x \
+    --output-csv /tmp/phase80_sine_x.csv
+```
+
+  启动 Gazebo GUI：
+
+```bash
+  ros2 launch manipulator moving_base_stabilization.launch.py \
+    gui:=true use_rviz:=false \
+    disturbance_csv:=/tmp/phase80_sine_x.csv \
+    replay_output_csv:=/tmp/phase80_sine_x_replay.csv \
+    start_delay_sec:=5.0
+```
+
+
 构建：
 
 ```bash
