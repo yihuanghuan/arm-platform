@@ -15,6 +15,7 @@ def generate_launch_description():
     gazebo_launch = os.path.join(manipulator_share, 'gazebo_arm.launch.py')
     world_path = os.path.join(manipulator_share, 'worlds', 'd435i_apriltag_test.world')
     apriltag_config = os.path.join(manipulator_share, 'apriltag_36h11_00000.yaml')
+    arm_urdf_path = os.path.join(manipulator_share, 'arm.urdf')
 
     gui_arg = DeclareLaunchArgument(
         'gui',
@@ -136,6 +137,36 @@ def generate_launch_description():
         default_value='kinematic_orientation',
         description='visual position mode: kinematic_orientation or full_pose'
     )
+    run_visual_stabilization_controller_arg = DeclareLaunchArgument(
+        'run_visual_stabilization_controller',
+        default_value='false',
+        description='Run the dry-run visual end-effector stabilization controller'
+    )
+    visual_stabilization_control_rate_arg = DeclareLaunchArgument(
+        'visual_stabilization_control_rate',
+        default_value='100.0',
+        description='Dry-run visual stabilization control rate in Hz'
+    )
+    visual_stabilization_damping_arg = DeclareLaunchArgument(
+        'visual_stabilization_damping',
+        default_value='0.05',
+        description='Damped pseudo-inverse lambda for visual stabilization CLIK'
+    )
+    visual_stabilization_max_joint_velocity_arg = DeclareLaunchArgument(
+        'visual_stabilization_max_joint_velocity',
+        default_value='1.0',
+        description='Dry-run joint velocity clamp in rad/s'
+    )
+    visual_stabilization_measurement_timeout_arg = DeclareLaunchArgument(
+        'visual_stabilization_measurement_timeout',
+        default_value='0.35',
+        description='Maximum visual measurement age before dry-run zero velocity'
+    )
+    visual_stabilization_joint_state_timeout_arg = DeclareLaunchArgument(
+        'visual_stabilization_joint_state_timeout',
+        default_value='0.35',
+        description='Maximum joint state age before dry-run zero velocity'
+    )
 
     gazebo = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(gazebo_launch),
@@ -230,6 +261,34 @@ def generate_launch_description():
         }]
     )
 
+    visual_stabilization_controller = Node(
+        condition=IfCondition(LaunchConfiguration('run_visual_stabilization_controller')),
+        package='manipulator',
+        executable='visual_ee_stabilization_controller.py',
+        name='visual_ee_stabilization_controller',
+        output='screen',
+        parameters=[{
+            'use_sim_time': LaunchConfiguration('use_sim_time'),
+            'urdf_path': arm_urdf_path,
+            'ee_frame': LaunchConfiguration('visual_ee_frame'),
+            'control_rate': ParameterValue(
+                LaunchConfiguration('visual_stabilization_control_rate'),
+                value_type=float),
+            'damping': ParameterValue(
+                LaunchConfiguration('visual_stabilization_damping'),
+                value_type=float),
+            'max_joint_velocity': ParameterValue(
+                LaunchConfiguration('visual_stabilization_max_joint_velocity'),
+                value_type=float),
+            'measurement_timeout_sec': ParameterValue(
+                LaunchConfiguration('visual_stabilization_measurement_timeout'),
+                value_type=float),
+            'joint_state_timeout_sec': ParameterValue(
+                LaunchConfiguration('visual_stabilization_joint_state_timeout'),
+                value_type=float),
+        }]
+    )
+
     return LaunchDescription([
         gui_arg,
         use_rviz_arg,
@@ -255,9 +314,16 @@ def generate_launch_description():
         visual_detection_timeout_sec_arg,
         visual_tf_timeout_sec_arg,
         visual_position_estimation_mode_arg,
+        run_visual_stabilization_controller_arg,
+        visual_stabilization_control_rate_arg,
+        visual_stabilization_damping_arg,
+        visual_stabilization_max_joint_velocity_arg,
+        visual_stabilization_measurement_timeout_arg,
+        visual_stabilization_joint_state_timeout_arg,
         gazebo,
         apriltag,
         visual_ee_estimator,
+        visual_stabilization_controller,
         validator,
         dynamic_logger,
         mount_regression,

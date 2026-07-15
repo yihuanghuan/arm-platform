@@ -414,3 +414,189 @@ config 2: samples=15 mean=0.000361166 m max=0.000361166 m
 - 当前阶段优先满足位置闭环前置条件；姿态输出默认来自 TF 运动学姿态，不作为最终视觉 6D 姿态验收结果。
 - `full_pose` 模式会暴露 AprilTag PnP 姿态残差，零位姿下末端位置误差可被放大到厘米级；阶段 6 前应继续定位姿态误差来源。
 - `check_visual_ee_pose.py` 默认用 TF `world -> link6` 作为末端 frame ground truth；可用 `--ground-truth-source gazebo_entity` 查看 Gazebo link entity pose，但该 entity pose 与 ROS/URDF `link6` frame 存在固定 frame/origin 差异。
+
+# Perception-Control 阶段 2：Pinocchio CLIK Dry-Run 控制节点
+
+## 目标与结论
+
+本阶段从 `~/westlake/WindyLab-RobotArmControl` 的末端稳定控制实现中迁移可复用的 Pinocchio 运动学计算，新增只读输入、只发布调试量的 dry-run 控制节点：
+
+```text
+visual_ee_stabilization_controller
+```
+
+结论：
+
+- 控制节点订阅 `/joint_states` 和 `/visual_ee_pose`，并可使用 `/visual_ee_pose_valid` 做安全门控；
+- 启动后首次收到有效视觉末端位姿时锁定 `world_T_ee_target`；
+- 每周期计算 `delta = visual_world_T_ee.inverse() * world_T_ee_target`、`error = pin.log6(delta)`；
+- 使用 Pinocchio `LOCAL` frame Jacobian 和阻尼伪逆计算 `dq_raw`，再限幅得到 `dq_limited`；
+- 本阶段不发布 `/arm_velocity_controller/commands`，不发布 `/joint_states`，不接管 Gazebo 控制器；
+- Base 扰动生成、Pinocchio ABA 内部仿真、已知 Base 位姿输入和原参考项目的内部目标转换逻辑均未迁入。
+
+## 修改内容
+
+新增：
+
+- `scripts/visual_ee_stabilization_controller.py`
+
+修改：
+
+- `launch/d435i_apriltag_test.launch.py`
+- `CMakeLists.txt`
+- `docs/perception_control_report.md`
+
+节点默认参数：
+
+```text
+urdf_path: <manipulator share>/arm.urdf
+ee_frame: link6
+joint_names: joint1 joint2 joint3 joint4 joint5 joint6
+joint_states_topic: /joint_states
+visual_pose_topic: /visual_ee_pose
+visual_valid_topic: /visual_ee_pose_valid
+control_rate: 100.0
+damping: 0.05
+max_joint_velocity: 1.0
+measurement_timeout_sec: 0.35
+joint_state_timeout_sec: 0.35
+task_gain: [4, 4, 4, 2, 2, 2]
+max_task_velocity: [0.5, 0.5, 0.5, 1, 1, 1]
+```
+
+调试输出均为 `std_msgs/msg/Float64MultiArray`：
+
+```text
+/visual_stabilization/error       [vx, vy, vz, wx, wy, wz]
+/visual_stabilization/dq_raw      [joint1..joint6] rad/s
+/visual_stabilization/dq_limited  [joint1..joint6] rad/s
+/visual_stabilization/target_pose [x, y, z, qx, qy, qz, qw]
+```
+
+安全行为：
+
+- `/joint_states` 按 joint name 读取，不依赖消息数组顺序；
+- 目标未锁定、视觉 invalid、视觉超时、关节状态超时时，`dq_raw` 和 `dq_limited` 发布六维零速度；
+- 计算结果含 NaN/Inf 或 Pinocchio 求解异常时，本周期降级为零速度调试输出；
+- 本阶段没有任何实际关节命令发布者。
+
+## 验收命令
+
+静态检查：
+
+```bash
+cd /home/yihuang/westlake/windylab-arm-for6/windylab_ws
+source setup_env.bash
+python3 -m py_compile \
+  src/arm-platform/scripts/visual_ee_stabilization_controller.py \
+  src/arm-platform/launch/d435i_apriltag_test.launch.py
+```
+
+构建：
+
+```bash
+source setup_env.bash
+colcon build --packages-select manipulator --symlink-install
+```
+
+启动 dry-run：
+
+```bash
+source setup_env.bash
+ros2 launch manipulator d435i_apriltag_test.launch.py \
+  gui:=false use_rviz:=false \
+  run_visual_ee_estimator:=true \
+  run_visual_stabilization_controller:=true
+```
+
+Topic spot check：
+
+```bash
+ros2 topic echo --once /visual_stabilization/error
+ros2 topic echo --once /visual_stabilization/dq_raw
+ros2 topic echo --once /visual_stabilization/dq_limited
+ros2 topic echo --once /visual_stabilization/target_pose
+ros2 topic info /arm_position_controller/commands --verbose
+ros2 topic info /joint_states --verbose
+```
+
+预期结果：
+
+```text
+/visual_stabilization/error: 6 finite values
+/visual_stabilization/dq_raw: 6 finite values
+/visual_stabilization/dq_limited: 6 finite values, abs(value) <= max_joint_velocity
+/visual_stabilization/target_pose: 7 finite values
+```
+
+在阶段 2 dry-run 启动方式下，`visual_ee_stabilization_controller` 不应出现在 `/arm_velocity_controller/commands` 的发布者列表中，`/joint_states` 仍应由 Gazebo `joint_state_broadcaster` 发布。
+
+本阶段默认 `control_mode:=kinematic_visualization`，因此 `/arm_velocity_controller/commands` 可不存在；若后续用 `physical_dynamics` 启动，则该 topic 的发布者也不应包含 `visual_ee_stabilization_controller`。
+
+## 本次验收结果
+
+构建：
+
+```text
+colcon build --packages-select manipulator --symlink-install
+Summary: 1 package finished
+```
+
+仍有既有 Pinocchio/eigenpy 触发的 Boost Python header CMake warning，不影响构建产物。
+
+短运行命令：
+
+```bash
+source setup_env.bash
+ros2 launch manipulator d435i_apriltag_test.launch.py \
+  gui:=false use_rviz:=false \
+  run_visual_ee_estimator:=true \
+  run_visual_stabilization_controller:=true
+```
+
+观测结果：
+
+```text
+visual_ee_stabilization_controller loaded arm.urdf and locked target:
+  [0.3532, 0.0015, 0.3743]
+
+/visual_stabilization/error:
+  [0, 0, 0, 0, 0, 0]
+
+/visual_stabilization/dq_raw:
+  [0, 0, 0, 0, 0, 0]
+
+/visual_stabilization/dq_limited:
+  [0, 0, 0, 0, 0, 0]
+
+/visual_stabilization/target_pose:
+  [0.3532337061, 0.0015405685, 0.3743455966, 0, 0, 0, 1]
+```
+
+发布者检查：
+
+```text
+/joint_states publisher:
+  joint_state_broadcaster
+
+/visual_stabilization/error publisher:
+  visual_ee_stabilization_controller
+
+/visual_stabilization/dq_raw publisher:
+  visual_ee_stabilization_controller
+
+/visual_stabilization/dq_limited publisher:
+  visual_ee_stabilization_controller
+
+/visual_stabilization/target_pose publisher:
+  visual_ee_stabilization_controller
+
+/arm_position_controller/commands publisher:
+  student_joint_command_bridge
+```
+
+`visual_ee_stabilization_controller` 没有发布实际 Gazebo 控制命令；本阶段 dry-run 边界保持成立。
+
+## 项目状态评估
+
+阶段 2 完成后，项目具备视觉末端位姿输入和 Pinocchio CLIK dry-run 计算链路。若验收中确认误差、`dq_raw` 和 `dq_limited` 方向符合预期且无 NaN/Inf，可以进入阶段 3，将同一计算链路扩展为 XYZ 闭环并显式接入 `/arm_velocity_controller/commands`。阶段 3 前仍需保留 AprilTag 丢失、数据超时、速度限幅和关节限位保护。

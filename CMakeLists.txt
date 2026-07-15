@@ -255,6 +255,7 @@ install(PROGRAMS
   scripts/dynamic_ground_truth_logger.py
   scripts/check_camera_mount_regression.py
   scripts/visual_ee_pose_estimator.py
+  scripts/visual_ee_stabilization_controller.py
   scripts/check_visual_ee_pose.py
   DESTINATION lib/${PROJECT_NAME}
 )
