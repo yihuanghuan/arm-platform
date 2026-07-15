@@ -37,6 +37,16 @@ def generate_launch_description():
         default_value='kinematic_visualization',
         description='Gazebo control mode for the included arm launch'
     )
+    velocity_command_source_arg = DeclareLaunchArgument(
+        'velocity_command_source',
+        default_value='student_bridge',
+        description='Velocity command source in physical_dynamics mode: student_bridge or external'
+    )
+    fix_base_to_world_arg = DeclareLaunchArgument(
+        'fix_base_to_world',
+        default_value='true',
+        description='Fix base_link to world in the included Gazebo arm launch'
+    )
     use_sim_time_arg = DeclareLaunchArgument(
         'use_sim_time',
         default_value='true',
@@ -140,12 +150,22 @@ def generate_launch_description():
     run_visual_stabilization_controller_arg = DeclareLaunchArgument(
         'run_visual_stabilization_controller',
         default_value='false',
-        description='Run the dry-run visual end-effector stabilization controller'
+        description='Run the visual end-effector stabilization controller'
     )
     visual_stabilization_control_rate_arg = DeclareLaunchArgument(
         'visual_stabilization_control_rate',
         default_value='100.0',
-        description='Dry-run visual stabilization control rate in Hz'
+        description='Visual stabilization control rate in Hz'
+    )
+    visual_stabilization_dry_run_arg = DeclareLaunchArgument(
+        'visual_stabilization_dry_run',
+        default_value='true',
+        description='Keep visual stabilization in debug-only mode when true'
+    )
+    visual_stabilization_control_mode_arg = DeclareLaunchArgument(
+        'visual_stabilization_control_mode',
+        default_value='xyz',
+        description='Visual stabilization mode: xyz or se3_debug'
     )
     visual_stabilization_damping_arg = DeclareLaunchArgument(
         'visual_stabilization_damping',
@@ -154,18 +174,43 @@ def generate_launch_description():
     )
     visual_stabilization_max_joint_velocity_arg = DeclareLaunchArgument(
         'visual_stabilization_max_joint_velocity',
-        default_value='1.0',
-        description='Dry-run joint velocity clamp in rad/s'
+        default_value='0.35',
+        description='Joint velocity clamp in rad/s'
+    )
+    visual_stabilization_max_task_velocity_xyz_arg = DeclareLaunchArgument(
+        'visual_stabilization_max_task_velocity_xyz',
+        default_value='0.08 0.08 0.08',
+        description='XYZ task-space velocity clamp in m/s'
+    )
+    visual_stabilization_position_deadband_arg = DeclareLaunchArgument(
+        'visual_stabilization_position_deadband_m',
+        default_value='0.003',
+        description='XYZ visual position error deadband in meters'
+    )
+    visual_stabilization_joint_limit_margin_arg = DeclareLaunchArgument(
+        'visual_stabilization_joint_limit_margin_rad',
+        default_value='0.05',
+        description='Stop if a command would push a joint farther into this limit margin'
     )
     visual_stabilization_measurement_timeout_arg = DeclareLaunchArgument(
         'visual_stabilization_measurement_timeout',
         default_value='0.35',
-        description='Maximum visual measurement age before dry-run zero velocity'
+        description='Maximum visual measurement age before zero velocity'
     )
     visual_stabilization_joint_state_timeout_arg = DeclareLaunchArgument(
         'visual_stabilization_joint_state_timeout',
         default_value='0.35',
-        description='Maximum joint state age before dry-run zero velocity'
+        description='Maximum joint state age before zero velocity'
+    )
+    visual_stabilization_command_topic_arg = DeclareLaunchArgument(
+        'visual_stabilization_command_topic',
+        default_value='/arm_velocity_controller/commands',
+        description='Velocity controller command topic used when dry_run is false'
+    )
+    visual_stabilization_command_start_delay_arg = DeclareLaunchArgument(
+        'visual_stabilization_command_start_delay_sec',
+        default_value='0.0',
+        description='Delay command publishing after target lock; useful for phase 3 pulse tests'
     )
 
     gazebo = IncludeLaunchDescription(
@@ -176,11 +221,13 @@ def generate_launch_description():
             'world': world_path,
             'camera_mount_mode': LaunchConfiguration('camera_mount_mode'),
             'control_mode': LaunchConfiguration('control_mode'),
+            'velocity_command_source': LaunchConfiguration('velocity_command_source'),
             'camera_enabled': 'true',
             'rgbd_enabled': 'true',
             'rgbd_frame_name': 'camera_color_optical_frame',
             'imu_enabled': 'true',
             'use_ros2_control': 'true',
+            'fix_base_to_world': LaunchConfiguration('fix_base_to_world'),
             'use_sim_time': LaunchConfiguration('use_sim_time'),
         }.items()
     )
@@ -271,6 +318,14 @@ def generate_launch_description():
             'use_sim_time': LaunchConfiguration('use_sim_time'),
             'urdf_path': arm_urdf_path,
             'ee_frame': LaunchConfiguration('visual_ee_frame'),
+            'dry_run': ParameterValue(
+                LaunchConfiguration('visual_stabilization_dry_run'),
+                value_type=bool),
+            'control_mode': LaunchConfiguration('visual_stabilization_control_mode'),
+            'command_topic': LaunchConfiguration('visual_stabilization_command_topic'),
+            'command_start_delay_sec': ParameterValue(
+                LaunchConfiguration('visual_stabilization_command_start_delay_sec'),
+                value_type=float),
             'control_rate': ParameterValue(
                 LaunchConfiguration('visual_stabilization_control_rate'),
                 value_type=float),
@@ -279,6 +334,14 @@ def generate_launch_description():
                 value_type=float),
             'max_joint_velocity': ParameterValue(
                 LaunchConfiguration('visual_stabilization_max_joint_velocity'),
+                value_type=float),
+            'max_task_velocity_xyz': LaunchConfiguration(
+                'visual_stabilization_max_task_velocity_xyz'),
+            'position_deadband_m': ParameterValue(
+                LaunchConfiguration('visual_stabilization_position_deadband_m'),
+                value_type=float),
+            'joint_limit_margin_rad': ParameterValue(
+                LaunchConfiguration('visual_stabilization_joint_limit_margin_rad'),
                 value_type=float),
             'measurement_timeout_sec': ParameterValue(
                 LaunchConfiguration('visual_stabilization_measurement_timeout'),
@@ -294,6 +357,8 @@ def generate_launch_description():
         use_rviz_arg,
         camera_mount_mode_arg,
         control_mode_arg,
+        velocity_command_source_arg,
+        fix_base_to_world_arg,
         use_sim_time_arg,
         run_validator_arg,
         validator_duration_arg,
@@ -316,10 +381,17 @@ def generate_launch_description():
         visual_position_estimation_mode_arg,
         run_visual_stabilization_controller_arg,
         visual_stabilization_control_rate_arg,
+        visual_stabilization_dry_run_arg,
+        visual_stabilization_control_mode_arg,
         visual_stabilization_damping_arg,
         visual_stabilization_max_joint_velocity_arg,
+        visual_stabilization_max_task_velocity_xyz_arg,
+        visual_stabilization_position_deadband_arg,
+        visual_stabilization_joint_limit_margin_arg,
         visual_stabilization_measurement_timeout_arg,
         visual_stabilization_joint_state_timeout_arg,
+        visual_stabilization_command_topic_arg,
+        visual_stabilization_command_start_delay_arg,
         gazebo,
         apriltag,
         visual_ee_estimator,

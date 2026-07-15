@@ -600,3 +600,138 @@ visual_ee_stabilization_controller loaded arm.urdf and locked target:
 ## 项目状态评估
 
 阶段 2 完成后，项目具备视觉末端位姿输入和 Pinocchio CLIK dry-run 计算链路。若验收中确认误差、`dq_raw` 和 `dq_limited` 方向符合预期且无 NaN/Inf，可以进入阶段 3，将同一计算链路扩展为 XYZ 闭环并显式接入 `/arm_velocity_controller/commands`。阶段 3 前仍需保留 AprilTag 丢失、数据超时、速度限幅和关节限位保护。
+
+# Perception-Control 阶段 3：静态环境下的 XYZ 闭环验证
+
+## 目标与结论
+
+本阶段在静态 base、静态 AprilTag 场景下启用视觉 XYZ 闭环。控制器启动后锁定首次有效 `/visual_ee_pose` 为末端世界位置目标，只控制位置误差：
+
+```text
+error = [target_x - current_x, target_y - current_y, target_z - current_z, 0, 0, 0]
+```
+
+姿态误差继续置零，不进入闭环控制。控制器显式启用后向 Gazebo 速度控制器发布：
+
+```text
+/arm_velocity_controller/commands  std_msgs/Float64MultiArray
+```
+
+结论：
+
+- XYZ 闭环可以在静态环境中把约 `46.3 mm` 的视觉位置误差收敛到 `3 mm` 死区内；
+- 验收过程中 `/visual_ee_pose_valid` 有效率为 `1.000`；
+- 最大控制器输出关节速度 `0.318042 rad/s`，低于本阶段限幅 `0.35 rad/s`；
+- dry-run 默认行为保持不变，只有 `visual_stabilization_dry_run:=false` 时才发布真实速度命令；
+- 阶段 3 后项目适合进入阶段 4：连续 Base 平移扰动下的 XYZ 稳定。
+
+## 修改内容
+
+新增：
+
+- `scripts/static_xyz_closed_loop_check.py`
+
+修改：
+
+- `scripts/visual_ee_stabilization_controller.py`
+- `launch/d435i_apriltag_test.launch.py`
+- `CMakeLists.txt`
+- `docs/perception_control_report.md`
+
+控制节点新增参数：
+
+```text
+dry_run: true
+control_mode: xyz
+command_topic: /arm_velocity_controller/commands
+command_start_delay_sec: 0.0
+max_task_velocity_xyz: 0.08 0.08 0.08
+position_deadband_m: 0.003
+joint_limit_margin_rad: 0.05
+```
+
+`xyz` 模式使用 Pinocchio `LOCAL_WORLD_ALIGNED` frame Jacobian 的前三行，将世界系 XYZ 速度命令映射为六关节速度。`se3_debug` 保留阶段 2 的 6D dry-run 计算路径，供后续阶段 6 使用。
+
+安全行为：
+
+- 目标未锁定、视觉 invalid、视觉数据超时、关节状态超时、计算异常或 NaN/Inf 时输出零速度；
+- 关节速度按 `max_joint_velocity` 限幅；
+- XYZ 任务速度按 `max_task_velocity_xyz` 限幅；
+- 位置误差进入 `position_deadband_m` 后输出零任务速度；
+- 若关节已在限位 margin 内且命令继续推向限位，则本周期输出零关节速度；
+- `command_start_delay_sec` 用于阶段 3 实验中先锁定目标，再注入外部速度脉冲。
+
+## 验收命令
+
+静态检查和构建：
+
+```bash
+cd /home/yihuang/westlake/windylab-arm-for6/windylab_ws
+python3 -m py_compile \
+  src/arm-platform/scripts/visual_ee_stabilization_controller.py \
+  src/arm-platform/scripts/static_xyz_closed_loop_check.py \
+  src/arm-platform/launch/d435i_apriltag_test.launch.py
+
+source setup_env.bash
+colcon build --packages-select manipulator --symlink-install
+```
+
+启动阶段 3 闭环：
+
+```bash
+source setup_env.bash
+ros2 launch manipulator d435i_apriltag_test.launch.py \
+  gui:=false use_rviz:=false \
+  control_mode:=physical_dynamics \
+  velocity_command_source:=external \
+  fix_base_to_world:=true \
+  run_visual_ee_estimator:=true \
+  run_visual_stabilization_controller:=true \
+  visual_stabilization_dry_run:=false \
+  visual_stabilization_control_mode:=xyz \
+  visual_stabilization_max_joint_velocity:=0.35 \
+  visual_stabilization_max_task_velocity_xyz:='0.08 0.08 0.08'
+```
+
+注入关节速度脉冲并记录闭环响应：
+
+```bash
+source setup_env.bash
+ros2 run manipulator static_xyz_closed_loop_check.py \
+  --use-sim-time \
+  --output-csv /tmp/windylab_phase3_static_xyz_active_pulse.csv \
+  --max-joint-velocity 0.35 \
+  --pulse-velocity '0.0 0.4 -0.3 0.0 0.0 0.0' \
+  --pulse-duration-sec 0.8 \
+  --monitor-duration-sec 8.0
+```
+
+## 本次验收结果
+
+构建结果：
+
+```text
+colcon build --packages-select manipulator --symlink-install
+Summary: 1 package finished
+```
+
+阶段 3 active-pulse 验收：
+
+```text
+Static XYZ closed-loop summary
+  samples: 160
+  visual_valid_fraction: 1.000
+  initial_error_max_m: 0.046315
+  error_max_m: 0.046315
+  steady_error_mean_m: 0.000000
+  steady_error_max_m: 0.000000
+  max_abs_joint_velocity_rad_s: 0.318042
+  pass: true
+  csv: /tmp/windylab_phase3_static_xyz_active_pulse.csv
+```
+
+说明：`steady_error_mean_m` 和 `steady_error_max_m` 为 `0` 表示控制器输出调试误差已进入 `position_deadband_m=0.003 m` 死区，不表示视觉测量没有亚毫米级残差。
+
+## 项目状态评估
+
+阶段 3 已完成静态 XYZ 视觉闭环接入和可复现实验脚本。下一阶段可以在相同控制节点基础上使用 moving-base 扰动入口，将 `fix_base_to_world:=false` 并引入 base 扰动 CSV，对比 baseline 零速度与 visual XYZ 闭环的世界系末端 RMS 误差、最大误差、关节速度峰值和 AprilTag 丢失率。

@@ -80,10 +80,24 @@ class VisualEeStabilizationController(Node):
         self.damping = float(self.declare_parameter('damping', 0.05).value)
         self.max_joint_velocity = float(self.declare_parameter(
             'max_joint_velocity', 1.0).value)
+        self.dry_run = bool(self.declare_parameter('dry_run', True).value)
+        self.control_mode = self.declare_parameter('control_mode', 'xyz').value
+        self.command_topic = self.declare_parameter(
+            'command_topic', '/arm_velocity_controller/commands').value
+        self.command_start_delay_sec = float(self.declare_parameter(
+            'command_start_delay_sec', 0.0).value)
+        self.position_deadband_m = float(self.declare_parameter(
+            'position_deadband_m', 0.003).value)
+        self.joint_limit_margin_rad = float(self.declare_parameter(
+            'joint_limit_margin_rad', 0.05).value)
         self.task_gain = self._vector_parameter(
             'task_gain',
             [4.0, 4.0, 4.0, 2.0, 2.0, 2.0],
             6)
+        self.max_task_velocity_xyz = self._vector_parameter(
+            'max_task_velocity_xyz',
+            '0.08 0.08 0.08',
+            3)
         self.max_task_velocity = self._vector_parameter(
             'max_task_velocity',
             [0.5, 0.5, 0.5, 1.0, 1.0, 1.0],
@@ -99,6 +113,14 @@ class VisualEeStabilizationController(Node):
             raise ValueError('damping must be non-negative')
         if self.max_joint_velocity < 0.0:
             raise ValueError('max_joint_velocity must be non-negative')
+        if self.control_mode not in ('xyz', 'se3_debug'):
+            raise ValueError('control_mode must be xyz or se3_debug')
+        if self.position_deadband_m < 0.0:
+            raise ValueError('position_deadband_m must be non-negative')
+        if self.joint_limit_margin_rad < 0.0:
+            raise ValueError('joint_limit_margin_rad must be non-negative')
+        if self.command_start_delay_sec < 0.0:
+            raise ValueError('command_start_delay_sec must be non-negative')
 
         self.model = pin.buildModelFromUrdf(self.urdf_path)
         self.data = self.model.createData()
@@ -116,6 +138,12 @@ class VisualEeStabilizationController(Node):
                 raise ValueError(f'Only 1-DoF joints are supported: {name}')
             self.q_indices.append(joint_model.idx_q)
             self.v_indices.append(joint_model.idx_v)
+        self.lower_limits = np.array(
+            [self.model.lowerPositionLimit[index] for index in self.q_indices],
+            dtype=float)
+        self.upper_limits = np.array(
+            [self.model.upperPositionLimit[index] for index in self.q_indices],
+            dtype=float)
 
         self.q = pin.neutral(self.model)
         self.joint_state_ready = False
@@ -124,6 +152,7 @@ class VisualEeStabilizationController(Node):
         self.latest_visual_stamp_ns = 0
         self.visual_valid = False
         self.target_pose = None
+        self.target_lock_ns = 0
         self.last_status = 'waiting_for_inputs'
 
         self.create_subscription(
@@ -151,13 +180,18 @@ class VisualEeStabilizationController(Node):
             Float64MultiArray, '/visual_stabilization/dq_limited', 10)
         self.target_pose_pub = self.create_publisher(
             Float64MultiArray, '/visual_stabilization/target_pose', 10)
+        self.command_pub = None
+        if not self.dry_run:
+            self.command_pub = self.create_publisher(
+                Float64MultiArray, self.command_topic, 10)
 
         self.timer = self.create_timer(1.0 / self.control_rate, self.control_loop)
 
         self.get_logger().info(
-            'Dry-run visual CLIK controller ready: '
+            'Visual CLIK controller ready: '
             f'urdf={self.urdf_path}, ee_frame={self.ee_frame}, '
-            f'rate={self.control_rate:.1f} Hz')
+            f'rate={self.control_rate:.1f} Hz, mode={self.control_mode}, '
+            f'dry_run={self.dry_run}')
 
     def _vector_parameter(self, name, default, expected_length):
         raw_value = self.declare_parameter(name, default).value
@@ -225,6 +259,7 @@ class VisualEeStabilizationController(Node):
         if ready:
             if self.target_pose is None:
                 self.target_pose = self.latest_visual_pose.copy()
+                self.target_lock_ns = self.get_clock().now().nanoseconds
                 self.get_logger().info(
                     'Locked visual EE target at '
                     f'[{self.target_pose.translation[0]:.4f}, '
@@ -232,7 +267,7 @@ class VisualEeStabilizationController(Node):
                     f'{self.target_pose.translation[2]:.4f}]')
 
             try:
-                error, dq_raw, dq_limited = self.compute_dry_run_command()
+                error, dq_raw, dq_limited = self.compute_command()
                 reason = 'ok'
             except Exception as exc:
                 reason = f'compute_failed: {exc}'
@@ -242,6 +277,7 @@ class VisualEeStabilizationController(Node):
 
         self.last_status = reason
         self.publish_outputs(error, dq_raw, dq_limited)
+        self.publish_command(dq_limited)
 
     def inputs_ready(self):
         now_ns = self.get_clock().now().nanoseconds
@@ -257,7 +293,50 @@ class VisualEeStabilizationController(Node):
             return False, 'visual_pose_timeout'
         return True, 'ok'
 
-    def compute_dry_run_command(self):
+    def compute_command(self):
+        if self.control_mode == 'xyz':
+            return self.compute_xyz_command()
+        return self.compute_se3_debug_command()
+
+    def compute_xyz_command(self):
+        position_error = (
+            self.target_pose.translation - self.latest_visual_pose.translation)
+        error = np.zeros(6, dtype=float)
+        error[:3] = position_error
+        if not finite_vector(error):
+            raise ValueError('non-finite XYZ error')
+
+        task_velocity = self.task_gain[:3] * position_error
+        if np.linalg.norm(position_error) <= self.position_deadband_m:
+            task_velocity = np.zeros(3, dtype=float)
+            error[:3] = np.zeros(3, dtype=float)
+        task_velocity = np.clip(
+            task_velocity,
+            -self.max_task_velocity_xyz,
+            self.max_task_velocity_xyz)
+
+        pin.forwardKinematics(self.model, self.data, self.q)
+        pin.updateFramePlacements(self.model, self.data)
+        jacobian_full = pin.computeFrameJacobian(
+            self.model,
+            self.data,
+            self.q,
+            self.ee_frame_id,
+            pin.LOCAL_WORLD_ALIGNED)
+        jacobian = np.zeros((3, 6), dtype=float)
+        for out_col, v_index in enumerate(self.v_indices):
+            jacobian[:, out_col] = jacobian_full[:3, v_index]
+
+        lhs = jacobian @ jacobian.T + (
+            self.damping * self.damping * np.eye(3, dtype=float))
+        dq_raw = jacobian.T @ np.linalg.solve(lhs, task_velocity)
+        dq_limited = self.limit_joint_velocity(dq_raw)
+
+        if not finite_vector(dq_raw) or not finite_vector(dq_limited):
+            raise ValueError('non-finite joint velocity')
+        return error, dq_raw, dq_limited
+
+    def compute_se3_debug_command(self):
         delta = self.latest_visual_pose.inverse() * self.target_pose
         error = np.asarray(pin.log6(delta).vector, dtype=float).reshape(6)
         if not finite_vector(error):
@@ -283,14 +362,43 @@ class VisualEeStabilizationController(Node):
         lhs = jacobian @ jacobian.T + (
             self.damping * self.damping * np.eye(6, dtype=float))
         dq_raw = jacobian.T @ np.linalg.solve(lhs, task_velocity)
-        dq_limited = np.clip(
-            dq_raw,
-            -self.max_joint_velocity,
-            self.max_joint_velocity)
+        dq_limited = self.limit_joint_velocity(dq_raw)
 
         if not finite_vector(dq_raw) or not finite_vector(dq_limited):
             raise ValueError('non-finite joint velocity')
         return error, dq_raw, dq_limited
+
+    def limit_joint_velocity(self, dq_raw):
+        dq_limited = np.clip(
+            dq_raw,
+            -self.max_joint_velocity,
+            self.max_joint_velocity)
+        if self.command_would_push_joint_limit(dq_limited):
+            self.last_status = 'joint_limit_guard'
+            return np.zeros(6, dtype=float)
+        return dq_limited
+
+    def command_would_push_joint_limit(self, dq):
+        if self.joint_limit_margin_rad <= 0.0:
+            return False
+        for index, (position, velocity, lower, upper) in enumerate(zip(
+                self.q[self.q_indices],
+                dq,
+                self.lower_limits,
+                self.upper_limits)):
+            if math.isfinite(lower) and position <= lower + self.joint_limit_margin_rad:
+                if velocity < 0.0:
+                    self.get_logger().warn(
+                        f'{self.joint_names[index]} near lower limit; zeroing command',
+                        throttle_duration_sec=2.0)
+                    return True
+            if math.isfinite(upper) and position >= upper - self.joint_limit_margin_rad:
+                if velocity > 0.0:
+                    self.get_logger().warn(
+                        f'{self.joint_names[index]} near upper limit; zeroing command',
+                        throttle_duration_sec=2.0)
+                    return True
+        return False
 
     def publish_outputs(self, error, dq_raw, dq_limited):
         self.error_pub.publish(self.make_array(error))
@@ -300,6 +408,16 @@ class VisualEeStabilizationController(Node):
             self.target_pose_pub.publish(self.make_array([0.0] * 7))
         else:
             self.target_pose_pub.publish(self.make_array(se3_to_xyz_quat(self.target_pose)))
+
+    def publish_command(self, dq_limited):
+        if self.command_pub is None:
+            return
+        if self.target_lock_ns > 0:
+            elapsed_sec = (
+                self.get_clock().now().nanoseconds - self.target_lock_ns) * 1e-9
+            if elapsed_sec < self.command_start_delay_sec:
+                return
+        self.command_pub.publish(self.make_array(dq_limited))
 
     @staticmethod
     def make_array(values):
