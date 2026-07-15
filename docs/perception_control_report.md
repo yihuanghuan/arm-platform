@@ -283,3 +283,134 @@ after velocity:
 ```
 
 本阶段未修改控制算法、未新增闭环节点、未改变 Gazebo/ROS 2 control 逻辑。后续阶段可以在此 baseline 上继续实现视觉末端位姿标准化。
+
+# Perception-Control 阶段 1：标准化视觉末端位姿输出
+
+## 目标与结论
+
+本阶段新增视觉末端位姿标准化节点，将 AprilTag 检测链路转换为控制器可直接订阅的 `world -> link6` 末端位姿输出：
+
+```text
+/visual_ee_pose        geometry_msgs/PoseStamped
+/visual_ee_pose_valid  std_msgs/Bool
+/visual_ee_pose_debug  std_msgs/String(JSON)
+```
+
+结论：
+
+- `/visual_ee_pose.header.frame_id` 固定为 `world`；
+- `/visual_ee_pose.header.stamp` 使用对应 `/apriltag/detections.header.stamp`；
+- 三个静态关节构型下位置误差均值 `0.000497 m`，最大 `0.000716 m`；
+- 检测丢失率 `0.000`，视觉位姿 sample loss `0.000`；
+- 当前阶段只标准化感知输出，不发布关节命令，不接入闭环控制；
+- 项目状态适合进入阶段 2：迁移并 dry-run 验证 Pinocchio CLIK 控制算法。
+
+## 修改内容
+
+新增：
+
+- `scripts/visual_ee_pose_estimator.py`
+- `scripts/check_visual_ee_pose.py`
+
+修改：
+
+- `launch/d435i_apriltag_test.launch.py`
+- `CMakeLists.txt`
+
+`visual_ee_pose_estimator.py` 订阅 `/apriltag/detections`，筛选 `tag36h11/id=0`，并等待同一 detection stamp 的 `camera_color_optical_frame -> apriltag_36h11_00000` TF 到达后再处理，避免 TF 顺序导致的 future extrapolation。
+
+节点默认参数：
+
+```text
+world_frame: world
+base_frame: base_link
+ee_frame: link6
+camera_frame: camera_color_optical_frame
+detected_tag_frame: apriltag_36h11_00000
+tag_family: tag36h11
+tag_id: 0
+position_estimation_mode: kinematic_orientation
+world_to_tag_xyz: 1.23042456 0.000976374 0.35065986
+world_to_tag_rpy: -3.12204785 -1.56214388 3.12103003
+detection_timeout_sec: 0.5
+tf_timeout_sec: 0.1
+```
+
+说明：`world_to_tag_*` 表示 `apriltag_ros` 检测 TF 中 tag frame 的固定世界位姿，不是仅从 SDF 读取的 tag model nominal pose。阶段 7.5 已确认 AprilTag PnP 姿态仍有小残差；若直接使用完整 PnP 姿态反推出 `link6`，相机外参杠杆臂会把姿态残差放大为末端位置误差。因此阶段 1 默认使用 `kinematic_orientation` 模式：末端位置来自 AprilTag 视觉平移，末端/相机姿态来自当前 TF 运动学链路。`full_pose` 模式保留为参数选项，供后续阶段 6 定位和处理完整 6D 姿态误差。
+
+## 验收命令
+
+构建：
+
+```bash
+cd /home/yihuang/westlake/windylab-arm-for6/windylab_ws
+source setup_env.bash
+colcon build --packages-select manipulator --symlink-install
+```
+
+启动：
+
+```bash
+source setup_env.bash
+ros2 launch manipulator d435i_apriltag_test.launch.py \
+  gui:=false use_rviz:=false run_visual_ee_estimator:=true
+```
+
+Topic spot check：
+
+```bash
+ros2 topic echo --once /visual_ee_pose
+ros2 topic echo --once /visual_ee_pose_valid
+ros2 topic echo --once --full-length /visual_ee_pose_debug
+ros2 topic hz /visual_ee_pose
+```
+
+观测结果：
+
+```text
+/visual_ee_pose.header.frame_id: world
+/visual_ee_pose_valid: true
+/visual_ee_pose_debug.reason: ok
+/visual_ee_pose_debug.position_estimation_mode: kinematic_orientation
+/visual_ee_pose: about 15 Hz
+```
+
+三构型验证：
+
+```bash
+source setup_env.bash
+ros2 run manipulator check_visual_ee_pose.py \
+  --use-sim-time \
+  --output-csv /tmp/windylab_phase1_visual_ee_pose.csv
+```
+
+结果：
+
+```text
+samples: 45
+valid_samples: 45
+visual_loss_rate: 0.000
+detection_messages: 227
+target_detections: 227
+detection_loss_rate: 0.000
+visual_frames: ['world']
+stamp_in_detection_history_fraction: 1.000
+position_error_mean_m: 0.000497
+position_error_max_m: 0.000716
+position_error_std_m: 0.000156
+csv: /tmp/windylab_phase1_visual_ee_pose.csv
+```
+
+按构型拆分：
+
+```text
+config 0: samples=15 mean=0.000414205 m max=0.000414205 m
+config 1: samples=15 mean=0.000715896 m max=0.000715896 m
+config 2: samples=15 mean=0.000361166 m max=0.000361166 m
+```
+
+## 已知限制
+
+- 当前阶段优先满足位置闭环前置条件；姿态输出默认来自 TF 运动学姿态，不作为最终视觉 6D 姿态验收结果。
+- `full_pose` 模式会暴露 AprilTag PnP 姿态残差，零位姿下末端位置误差可被放大到厘米级；阶段 6 前应继续定位姿态误差来源。
+- `check_visual_ee_pose.py` 默认用 TF `world -> link6` 作为末端 frame ground truth；可用 `--ground-truth-source gazebo_entity` 查看 Gazebo link entity pose，但该 entity pose 与 ROS/URDF `link6` frame 存在固定 frame/origin 差异。

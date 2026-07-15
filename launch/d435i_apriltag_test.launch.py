@@ -5,6 +5,7 @@ from launch.conditions import IfCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
+from launch_ros.parameter_descriptions import ParameterValue
 from launch_ros.substitutions import FindPackageShare
 import os
 
@@ -80,6 +81,61 @@ def generate_launch_description():
         default_value='/tmp/d435i_base_camera_regression.csv',
         description='CSV path for base camera mount regression'
     )
+    run_visual_ee_estimator_arg = DeclareLaunchArgument(
+        'run_visual_ee_estimator',
+        default_value='true',
+        description='Run the visual end-effector pose estimator'
+    )
+    visual_world_frame_arg = DeclareLaunchArgument(
+        'visual_world_frame',
+        default_value='world',
+        description='World frame used by /visual_ee_pose'
+    )
+    visual_base_frame_arg = DeclareLaunchArgument(
+        'visual_base_frame',
+        default_value='base_link',
+        description='Base frame used as orientation fallback by the visual estimator'
+    )
+    visual_ee_frame_arg = DeclareLaunchArgument(
+        'visual_ee_frame',
+        default_value='link6',
+        description='End-effector frame estimated from AprilTag detections'
+    )
+    visual_camera_frame_arg = DeclareLaunchArgument(
+        'visual_camera_frame',
+        default_value='camera_color_optical_frame',
+        description='Camera optical frame used by AprilTag detection TF'
+    )
+    visual_detected_tag_frame_arg = DeclareLaunchArgument(
+        'visual_detected_tag_frame',
+        default_value='apriltag_36h11_00000',
+        description='AprilTag TF frame published by apriltag_ros'
+    )
+    visual_world_to_tag_xyz_arg = DeclareLaunchArgument(
+        'visual_world_to_tag_xyz',
+        default_value='1.23042456 0.000976374 0.35065986',
+        description='Fixed world-to-apriltag_ros tag-frame translation'
+    )
+    visual_world_to_tag_rpy_arg = DeclareLaunchArgument(
+        'visual_world_to_tag_rpy',
+        default_value='-3.12204785 -1.56214388 3.12103003',
+        description='Fixed world-to-apriltag_ros tag-frame RPY'
+    )
+    visual_detection_timeout_sec_arg = DeclareLaunchArgument(
+        'visual_detection_timeout_sec',
+        default_value='0.5',
+        description='Maximum age of visual detections before /visual_ee_pose_valid is false'
+    )
+    visual_tf_timeout_sec_arg = DeclareLaunchArgument(
+        'visual_tf_timeout_sec',
+        default_value='0.1',
+        description='TF lookup timeout for the visual end-effector estimator'
+    )
+    visual_position_estimation_mode_arg = DeclareLaunchArgument(
+        'visual_position_estimation_mode',
+        default_value='kinematic_orientation',
+        description='visual position mode: kinematic_orientation or full_pose'
+    )
 
     gazebo = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(gazebo_launch),
@@ -149,6 +205,31 @@ def generate_launch_description():
         ]
     )
 
+    visual_ee_estimator = Node(
+        condition=IfCondition(LaunchConfiguration('run_visual_ee_estimator')),
+        package='manipulator',
+        executable='visual_ee_pose_estimator.py',
+        name='visual_ee_pose_estimator',
+        output='screen',
+        parameters=[{
+            'use_sim_time': LaunchConfiguration('use_sim_time'),
+            'world_frame': LaunchConfiguration('visual_world_frame'),
+            'base_frame': LaunchConfiguration('visual_base_frame'),
+            'ee_frame': LaunchConfiguration('visual_ee_frame'),
+            'camera_frame': LaunchConfiguration('visual_camera_frame'),
+            'detected_tag_frame': LaunchConfiguration('visual_detected_tag_frame'),
+            'world_to_tag_xyz': LaunchConfiguration('visual_world_to_tag_xyz'),
+            'world_to_tag_rpy': LaunchConfiguration('visual_world_to_tag_rpy'),
+            'position_estimation_mode': LaunchConfiguration('visual_position_estimation_mode'),
+            'detection_timeout_sec': ParameterValue(
+                LaunchConfiguration('visual_detection_timeout_sec'),
+                value_type=float),
+            'tf_timeout_sec': ParameterValue(
+                LaunchConfiguration('visual_tf_timeout_sec'),
+                value_type=float),
+        }]
+    )
+
     return LaunchDescription([
         gui_arg,
         use_rviz_arg,
@@ -163,8 +244,20 @@ def generate_launch_description():
         dynamic_logger_output_csv_arg,
         run_mount_regression_arg,
         mount_regression_output_csv_arg,
+        run_visual_ee_estimator_arg,
+        visual_world_frame_arg,
+        visual_base_frame_arg,
+        visual_ee_frame_arg,
+        visual_camera_frame_arg,
+        visual_detected_tag_frame_arg,
+        visual_world_to_tag_xyz_arg,
+        visual_world_to_tag_rpy_arg,
+        visual_detection_timeout_sec_arg,
+        visual_tf_timeout_sec_arg,
+        visual_position_estimation_mode_arg,
         gazebo,
         apriltag,
+        visual_ee_estimator,
         validator,
         dynamic_logger,
         mount_regression,
