@@ -140,9 +140,15 @@ class VisualEePoseEstimator(Node):
         self.latest_target_detection_stamp_ns = 0
         self.latest_target_detection_id = None
         self.latest_valid_stamp_ns = 0
+        self.last_published_tag_tf_stamp_ns = 0
         self.last_debug_wall_time = 0.0
         self.last_valid = False
         self.last_reason = 'waiting_for_detection'
+        self.visual_valid_true_count = 0
+        self.visual_valid_false_count = 0
+        self.visual_valid_toggle_count = 0
+        self.duplicate_tag_tf_drop_count = 0
+        self.new_measurement_count = 0
         self.tf_counters = {
             'camera_tag_tf_success': 0,
             'camera_tag_tf_lookup_failed': 0,
@@ -227,10 +233,7 @@ class VisualEePoseEstimator(Node):
 
         detection_age_sec = ns_to_sec(now_ns - self.latest_target_detection_stamp_ns)
         if detection_age_sec > self.detection_timeout_sec:
-            if self.last_valid:
-                self.valid_pub.publish(Bool(data=False))
-            self.last_valid = False
-            self.last_reason = 'detection_timeout'
+            self.publish_valid(False)
             self.publish_periodic_debug('detection_timeout')
             return
 
@@ -251,6 +254,10 @@ class VisualEePoseEstimator(Node):
         if tf_stamp_ns <= 0:
             self.tf_counters['camera_tag_tf_stale'] += 1
             self.publish_invalid('tag_tf_missing_stamp', now.to_msg())
+            return
+        if tf_stamp_ns <= self.last_published_tag_tf_stamp_ns:
+            self.duplicate_tag_tf_drop_count += 1
+            self.publish_invalid('duplicate_tag_tf', tf_stamp)
             return
         tf_age_sec = ns_to_sec(now_ns - tf_stamp_ns)
         if tf_age_sec < -self.max_tag_tf_age_sec:
@@ -283,6 +290,7 @@ class VisualEePoseEstimator(Node):
                 'tag_tf_mode': self.tag_tf_mode,
                 'tag_tf_age_sec': tf_age_sec,
                 'target_detection_age_sec': detection_age_sec,
+                'tag_tf_stamp_sec': ns_to_sec(tf_stamp_ns),
             })
 
     def process_detection(self, stamp, detection):
@@ -354,10 +362,13 @@ class VisualEePoseEstimator(Node):
         pose_msg = matrix_to_pose_stamped(world_to_ee, self.world_frame, stamp)
         self.pose_pub.publish(pose_msg)
         self.valid_pose_count += 1
+        self.new_measurement_count += 1
         self.latest_valid_stamp_ns = stamp_to_ns(stamp)
-        self.last_valid = True
+        tag_tf_stamp_ns = stamp_to_ns(camera_to_tag_tf.header.stamp)
+        if tag_tf_stamp_ns > 0:
+            self.last_published_tag_tf_stamp_ns = tag_tf_stamp_ns
         self.last_reason = 'ok'
-        self.valid_pub.publish(Bool(data=True))
+        self.publish_valid(True)
         debug_extra = {
             'target_id': target_id,
             'ee_position': [
@@ -423,10 +434,20 @@ class VisualEePoseEstimator(Node):
 
     def publish_invalid(self, reason, stamp):
         self.invalid_count += 1
-        self.last_valid = False
         self.last_reason = reason
-        self.valid_pub.publish(Bool(data=False))
+        self.publish_valid(False)
         self.publish_debug(valid=False, reason=reason, stamp=stamp)
+
+    def publish_valid(self, valid):
+        valid = bool(valid)
+        if valid:
+            self.visual_valid_true_count += 1
+        else:
+            self.visual_valid_false_count += 1
+        if valid != self.last_valid:
+            self.visual_valid_toggle_count += 1
+        self.last_valid = valid
+        self.valid_pub.publish(Bool(data=valid))
 
     def record_tf_failure(self, prefix, exc):
         text = str(exc).lower()
@@ -451,9 +472,7 @@ class VisualEePoseEstimator(Node):
             return
         age_sec = ns_to_sec(now_ns - latest_ns)
         if age_sec > self.detection_timeout_sec:
-            if self.last_valid:
-                self.valid_pub.publish(Bool(data=False))
-            self.last_valid = False
+            self.publish_valid(False)
             self.last_reason = 'detection_timeout'
             self.publish_periodic_debug('detection_timeout')
 
@@ -476,6 +495,11 @@ class VisualEePoseEstimator(Node):
             'target_detection_count': self.target_detection_count,
             'valid_pose_count': self.valid_pose_count,
             'invalid_count': self.invalid_count,
+            'new_measurement_count': self.new_measurement_count,
+            'duplicate_tag_tf_drop_count': self.duplicate_tag_tf_drop_count,
+            'visual_valid_true_count': self.visual_valid_true_count,
+            'visual_valid_false_count': self.visual_valid_false_count,
+            'visual_valid_toggle_count': self.visual_valid_toggle_count,
             'stamp_sec': ns_to_sec(stamp_ns) if stamp_ns > 0 else None,
             'measurement_age_sec': age_sec,
             'world_frame': self.world_frame,
@@ -491,6 +515,9 @@ class VisualEePoseEstimator(Node):
             'latest_target_detection_stamp_sec': (
                 ns_to_sec(self.latest_target_detection_stamp_ns)
                 if self.latest_target_detection_stamp_ns > 0 else None),
+            'last_published_tag_tf_stamp_sec': (
+                ns_to_sec(self.last_published_tag_tf_stamp_ns)
+                if self.last_published_tag_tf_stamp_ns > 0 else None),
             'tf_counters': dict(self.tf_counters),
         }
         if extra:

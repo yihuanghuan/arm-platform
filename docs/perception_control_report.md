@@ -1,5 +1,93 @@
 # Perception-Control 阶段 0：现有仿真基线冻结报告
 
+## 阶段 4.2：动态视觉闭环调试修正
+
+本次修正目标是把阶段 4.1 中“机械臂大幅乱晃”的问题拆成可验证的几个环节：视觉测量时效性、target 锁定语义、CLIK/Jacobian 方向、Gazebo 动力学干扰，以及视觉链路和控制算法本身的差异。
+
+已完成修改：
+
+- `visual_ee_pose_estimator.py` 的 `latest` 模式现在只在 `camera_color_optical_frame -> apriltag_36h11_00000` 出现新的 TF stamp 时发布新的 `/visual_ee_pose`。重复 TF 不再被刷新成新的有效测量，而是计为 `duplicate_tag_tf`。
+- `/visual_ee_pose_valid` 现在反映严格测量条件：目标检测存在、Tag TF 新鲜、TF 未被处理过，才发布 `true`。新增 `new_measurement_count`、`duplicate_tag_tf_drop_count`、`visual_valid_true_count`、`visual_valid_false_count`、`visual_valid_toggle_count`。
+- `visual_ee_stabilization_controller.py` 改为 target 只锁定一次。视觉丢失时保持原始 target，速度目标回零，不再默认 relock。大视觉误差默认触发 safety stop，而不是重置 target。
+- 控制器改成“新视觉测量更新 `dq_target`，100 Hz timer 只做限加速度发布”。默认 `max_joint_acceleration_rad_s2:=0.3`，避免视觉有效/无效抖动时速度命令突变。
+- 新增 `/visual_stabilization/status`，记录 `target_lock_count`、`target_reset_count`、`target_position`、`safety_stop_reason`、`dq_target`、`dq_command`。
+- `moving_base_stabilization.launch.py` 新增 `experiment_mode:=ground_truth_xyz`，用 Gazebo `/link_states` 中的 `windylab_arm::link6` 位置做同样的 XYZ 控制，用于隔离视觉链路。
+- 新增 `check_clik_direction.py`，用于小脉冲验证 Jacobian/坐标轴方向，输出 `/tmp/phase4_2_clik_direction.csv`。
+- 新增 `phase4_joint_pulse_check.py`，用于固定 base 与 moving base 下的单关节脉冲对比，输出自定义 CSV。
+- `phase4_visual_chain_diagnostics.py` 的 CSV 新增视觉新测量、重复 TF、valid toggle 等直接列。
+
+阶段 4.2 默认参数已收紧：
+
+```text
+visual_detection_timeout_sec:=0.30
+visual_max_tag_tf_age_sec:=0.20
+visual_stabilization_measurement_timeout:=0.30
+visual_relock_after_visual_loss_sec:=0.0
+visual_target_relock_enabled:=false
+visual_stop_on_large_error:=true
+visual_max_joint_acceleration_rad_s2:=0.3
+```
+
+建议验收顺序：
+
+```bash
+cd /home/yihuang/westlake/windylab-arm-for6/windylab_ws
+source setup_env.bash
+colcon build --packages-select manipulator --symlink-install
+```
+
+先跑视觉链路严格时效诊断，不急着看控制效果：
+
+```bash
+ros2 launch manipulator moving_base_stabilization.launch.py \
+  experiment_mode:=visual_xyz gui:=true use_rviz:=false \
+  disturbance_csv:=/tmp/base_disturbance.csv \
+  replay_output_csv:=/tmp/phase4_2_visual_xyz_replay.csv \
+  run_phase4_diagnostics:=true \
+  phase4_diagnostics_output_csv:=/tmp/phase4_2_visual_chain.csv \
+  start_delay_sec:=35.0
+```
+
+如果视觉链路仍大量 `duplicate_tag_tf` 或 `target_not_detected`，先不要调高控制增益。下一步运行 GT 对照：
+
+```bash
+ros2 launch manipulator moving_base_stabilization.launch.py \
+  experiment_mode:=ground_truth_xyz gui:=true use_rviz:=false \
+  disturbance_csv:=/tmp/base_disturbance.csv \
+  replay_output_csv:=/tmp/phase4_2_ground_truth_xyz_replay.csv \
+  start_delay_sec:=35.0
+```
+
+方向检查在仿真已经启动、且没有 visual/GT controller 抢同一个命令 topic 时执行：
+
+```bash
+ros2 run manipulator check_clik_direction.py \
+  --source ground_truth \
+  --output-csv /tmp/phase4_2_clik_direction.csv \
+  --use-sim-time
+```
+
+关节脉冲检查同样需要在没有其他 controller 发布 `/arm_velocity_controller/commands` 时执行：
+
+```bash
+ros2 run manipulator phase4_joint_pulse_check.py \
+  --output-csv /tmp/phase4_2_joint_pulse_moving_base.csv \
+  --joint-name joint2 \
+  --velocity 0.02 \
+  --pulse-duration-sec 0.5 \
+  --use-sim-time
+```
+
+当前阶段的判断标准：如果 `ground_truth_xyz` 稳定而 `visual_xyz` 不稳定，主因仍在视觉时效/可见性/坐标估计；如果 `ground_truth_xyz` 也乱晃，则优先检查 CLIK 方向、Jacobian frame 和 Gazebo moving-base 动力学冲突。
+
+本次自主 smoke test 结果：
+
+- `colcon build --packages-select manipulator --symlink-install` 通过，只有既有 CMake/C++ warning。
+- `ground_truth_xyz` 可启动并锁定 GT target；4 秒短扰动回放中产生非零关节命令，说明新增 launch 模式和 GT controller 路径可运行。
+- `visual_xyz` 可启动，AprilTag target detection 约 15Hz，`camera->tag` TF 新 stamp 约 2Hz，strict estimator 发布新 `/visual_ee_pose` 约 3-4Hz，同时大量记录 `duplicate_tag_tf`。这符合 phase4.2 对重复 TF 的暴露预期。
+- 原 `start_delay_sec:=12` 时 replay 会早于 visual target lock，导致全程零命令；因此 phase4.2 默认改为 `35.0`。
+- 使用 `start_delay_sec:=35` 后 visual controller 能在 replay 前锁定 target，但短扰动 CSV 仍显示 `visual_error` 和 `velocity_command` 为零，而 Gazebo `actual_link6_x` 在同一回放中变化约 0.20m。当前剩余问题已经从“机械臂乱晃”收敛为“视觉估计/控制输入没有反映 moving-base 下 link6 的世界位移”。
+
 ## 目标与结论
 
 本阶段只冻结并验证现有仿真基线，不加入任何控制算法。验证入口以 moving-base baseline 为准：

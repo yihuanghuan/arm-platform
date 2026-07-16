@@ -14,8 +14,9 @@ import os
 
 def _validate_arguments(context, *args, **kwargs):
     experiment_mode = LaunchConfiguration('experiment_mode').perform(context)
-    if experiment_mode not in ('baseline', 'visual_xyz'):
-        raise RuntimeError('experiment_mode must be baseline or visual_xyz')
+    if experiment_mode not in ('baseline', 'visual_xyz', 'ground_truth_xyz'):
+        raise RuntimeError(
+            'experiment_mode must be baseline, visual_xyz, or ground_truth_xyz')
     return []
 
 
@@ -29,6 +30,8 @@ def generate_launch_description():
         "'", LaunchConfiguration('experiment_mode'), "' == 'baseline'"]))
     visual_condition = IfCondition(PythonExpression([
         "'", LaunchConfiguration('experiment_mode'), "' == 'visual_xyz'"]))
+    ground_truth_condition = IfCondition(PythonExpression([
+        "'", LaunchConfiguration('experiment_mode'), "' == 'ground_truth_xyz'"]))
     diagnostics_condition = IfCondition(PythonExpression([
         "'", LaunchConfiguration('experiment_mode'), "' == 'visual_xyz' and '",
         LaunchConfiguration('run_phase4_diagnostics'),
@@ -53,7 +56,7 @@ def generate_launch_description():
     experiment_mode_arg = DeclareLaunchArgument(
         'experiment_mode',
         default_value='baseline',
-        description='Experiment mode: baseline or visual_xyz')
+        description='Experiment mode: baseline, visual_xyz, or ground_truth_xyz')
     disturbance_csv_arg = DeclareLaunchArgument(
         'disturbance_csv',
         default_value='/tmp/base_disturbance.csv',
@@ -110,7 +113,7 @@ def generate_launch_description():
         description='Visual XYZ position deadband in meters')
     visual_stabilization_measurement_timeout_arg = DeclareLaunchArgument(
         'visual_stabilization_measurement_timeout',
-        default_value='5.0',
+        default_value='0.30',
         description='Maximum visual measurement age before zero velocity')
     visual_stabilization_joint_state_timeout_arg = DeclareLaunchArgument(
         'visual_stabilization_joint_state_timeout',
@@ -122,15 +125,27 @@ def generate_launch_description():
         description='Valid visual pose samples required before locking a target')
     visual_relock_after_visual_loss_sec_arg = DeclareLaunchArgument(
         'visual_relock_after_visual_loss_sec',
-        default_value='0.5',
+        default_value='0.0',
         description='Reset locked target after this much continuous visual loss')
     visual_max_visual_error_norm_m_arg = DeclareLaunchArgument(
         'visual_max_visual_error_norm_m',
         default_value='0.20',
-        description='Reset target and zero command if visual XYZ error exceeds this')
+        description='Safety stop threshold if visual XYZ error exceeds this')
+    visual_target_relock_enabled_arg = DeclareLaunchArgument(
+        'visual_target_relock_enabled',
+        default_value='false',
+        description='Allow target relock/reset after visual loss; false for phase4.2')
+    visual_stop_on_large_error_arg = DeclareLaunchArgument(
+        'visual_stop_on_large_error',
+        default_value='true',
+        description='Safety-stop instead of relocking when visual error is too large')
+    visual_max_joint_acceleration_arg = DeclareLaunchArgument(
+        'visual_max_joint_acceleration_rad_s2',
+        default_value='0.3',
+        description='Joint command acceleration clamp in rad/s^2')
     visual_detection_timeout_sec_arg = DeclareLaunchArgument(
         'visual_detection_timeout_sec',
-        default_value='5.0',
+        default_value='0.30',
         description='Maximum AprilTag detection age before visual pose invalid')
     visual_tf_timeout_sec_arg = DeclareLaunchArgument(
         'visual_tf_timeout_sec',
@@ -142,7 +157,7 @@ def generate_launch_description():
         description='Tag TF lookup mode for visual estimation: stamped or latest')
     visual_max_tag_tf_age_sec_arg = DeclareLaunchArgument(
         'visual_max_tag_tf_age_sec',
-        default_value='1.5',
+        default_value='0.20',
         description='Maximum latest camera->tag TF age before visual pose invalid')
     rgbd_update_rate_arg = DeclareLaunchArgument(
         'rgbd_update_rate',
@@ -186,7 +201,7 @@ def generate_launch_description():
         description='Use Gazebo /clock for launched ROS nodes')
     start_delay_sec_arg = DeclareLaunchArgument(
         'start_delay_sec',
-        default_value='12.0',
+        default_value='35.0',
         description='Delay before replay starts, after Gazebo spawn/controller startup')
 
     gazebo = IncludeLaunchDescription(
@@ -308,6 +323,58 @@ def generate_launch_description():
             'max_visual_error_norm_m': ParameterValue(
                 LaunchConfiguration('visual_max_visual_error_norm_m'),
                 value_type=float),
+            'target_relock_enabled': ParameterValue(
+                LaunchConfiguration('visual_target_relock_enabled'),
+                value_type=bool),
+            'stop_on_large_visual_error': ParameterValue(
+                LaunchConfiguration('visual_stop_on_large_error'),
+                value_type=bool),
+            'max_joint_acceleration_rad_s2': ParameterValue(
+                LaunchConfiguration('visual_max_joint_acceleration_rad_s2'),
+                value_type=float),
+        }],
+    )
+
+    ground_truth_controller = Node(
+        condition=ground_truth_condition,
+        package='manipulator',
+        executable='ground_truth_xyz_controller.py',
+        name='ground_truth_xyz_controller',
+        output='screen',
+        parameters=[{
+            'use_sim_time': LaunchConfiguration('use_sim_time'),
+            'urdf_path': arm_urdf_path,
+            'ee_frame': 'link6',
+            'link_states_topic': '/link_states',
+            'ee_link_name': 'windylab_arm::link6',
+            'dry_run': False,
+            'command_topic': '/arm_velocity_controller/commands',
+            'control_rate': ParameterValue(
+                LaunchConfiguration('visual_stabilization_control_rate'),
+                value_type=float),
+            'max_joint_velocity': ParameterValue(
+                LaunchConfiguration('visual_stabilization_max_joint_velocity'),
+                value_type=float),
+            'max_task_velocity_xyz': LaunchConfiguration(
+                'visual_stabilization_max_task_velocity_xyz'),
+            'position_deadband_m': ParameterValue(
+                LaunchConfiguration('visual_stabilization_position_deadband_m'),
+                value_type=float),
+            'measurement_timeout_sec': ParameterValue(
+                LaunchConfiguration('visual_stabilization_measurement_timeout'),
+                value_type=float),
+            'joint_state_timeout_sec': ParameterValue(
+                LaunchConfiguration('visual_stabilization_joint_state_timeout'),
+                value_type=float),
+            'max_visual_error_norm_m': ParameterValue(
+                LaunchConfiguration('visual_max_visual_error_norm_m'),
+                value_type=float),
+            'stop_on_large_error': ParameterValue(
+                LaunchConfiguration('visual_stop_on_large_error'),
+                value_type=bool),
+            'max_joint_acceleration_rad_s2': ParameterValue(
+                LaunchConfiguration('visual_max_joint_acceleration_rad_s2'),
+                value_type=float),
         }],
     )
 
@@ -370,6 +437,9 @@ def generate_launch_description():
         visual_required_consecutive_valid_poses_arg,
         visual_relock_after_visual_loss_sec_arg,
         visual_max_visual_error_norm_m_arg,
+        visual_target_relock_enabled_arg,
+        visual_stop_on_large_error_arg,
+        visual_max_joint_acceleration_arg,
         visual_detection_timeout_sec_arg,
         visual_tf_timeout_sec_arg,
         visual_tag_tf_mode_arg,
@@ -391,6 +461,7 @@ def generate_launch_description():
         apriltag,
         visual_ee_estimator,
         visual_controller,
+        ground_truth_controller,
         diagnostics,
         replay,
     ])

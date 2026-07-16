@@ -256,10 +256,13 @@ install(PROGRAMS
   scripts/check_camera_mount_regression.py
   scripts/visual_ee_pose_estimator.py
   scripts/visual_ee_stabilization_controller.py
+  scripts/ground_truth_xyz_controller.py
   scripts/check_visual_ee_pose.py
   scripts/static_xyz_closed_loop_check.py
   scripts/phase4_dynamic_xyz_metrics.py
   scripts/phase4_visual_chain_diagnostics.py
+  scripts/check_clik_direction.py
+  scripts/phase4_joint_pulse_check.py
   DESTINATION lib/${PROJECT_NAME}
 )
 

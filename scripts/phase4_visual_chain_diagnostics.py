@@ -153,6 +153,12 @@ class Phase4VisualChainDiagnostics(Node):
             'visual_pose_age_sec',
             'visual_valid',
             'visual_debug_reason',
+            'visual_new_measurement_count',
+            'visual_duplicate_tag_tf_drop_count',
+            'visual_valid_true_count',
+            'visual_valid_false_count',
+            'visual_valid_toggle_count',
+            'visual_last_published_tag_tf_stamp_sec',
             'visual_debug_payload',
         ]
         self.writer = csv.DictWriter(self.output_handle, fieldnames=self.fieldnames)
@@ -294,6 +300,18 @@ class Phase4VisualChainDiagnostics(Node):
                 self.age_sec(self.last_visual_pose_stamp_ns, now_ns)),
             'visual_valid': format_bool(self.latest_visual_valid),
             'visual_debug_reason': self.latest_debug_reason,
+            'visual_new_measurement_count': self.latest_debug_payload.get(
+                'new_measurement_count', ''),
+            'visual_duplicate_tag_tf_drop_count': self.latest_debug_payload.get(
+                'duplicate_tag_tf_drop_count', ''),
+            'visual_valid_true_count': self.latest_debug_payload.get(
+                'visual_valid_true_count', ''),
+            'visual_valid_false_count': self.latest_debug_payload.get(
+                'visual_valid_false_count', ''),
+            'visual_valid_toggle_count': self.latest_debug_payload.get(
+                'visual_valid_toggle_count', ''),
+            'visual_last_published_tag_tf_stamp_sec': self.latest_debug_payload.get(
+                'last_published_tag_tf_stamp_sec', ''),
             'visual_debug_payload': json.dumps(
                 self.latest_debug_payload,
                 sort_keys=True,
@@ -345,6 +363,13 @@ def main(argv=None):
             rclpy.spin_once(node, timeout_sec=0.1)
     except KeyboardInterrupt:
         pass
+    except Exception as exc:
+        text = str(exc)
+        shutdown_exception = (
+            'context is not valid' in text
+            or 'Unable to convert call argument to Python object' in text)
+        if rclpy.ok() and not shutdown_exception:
+            raise
     finally:
         try:
             node.get_logger().info(f'Diagnostics CSV: {args.output_csv}')

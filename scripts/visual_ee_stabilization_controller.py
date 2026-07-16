@@ -3,6 +3,7 @@
 import math
 import os
 import sys
+import json
 
 import numpy as np
 import pinocchio as pin
@@ -13,12 +14,26 @@ from sensor_msgs.msg import JointState
 from scipy.spatial.transform import Rotation
 from std_msgs.msg import Bool
 from std_msgs.msg import Float64MultiArray
+from std_msgs.msg import String
 
 
-DEFAULT_URDF = os.path.join(
-    os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-    'config',
-    'arm.urdf')
+def default_urdf_path():
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    candidates = [
+        os.path.join(
+            os.path.dirname(os.path.dirname(script_dir)),
+            'share',
+            'manipulator',
+            'arm.urdf'),
+        os.path.join(os.path.dirname(script_dir), 'config', 'arm.urdf'),
+    ]
+    for candidate in candidates:
+        if os.path.exists(candidate):
+            return candidate
+    return candidates[-1]
+
+
+DEFAULT_URDF = default_urdf_path()
 
 
 def pose_to_se3(pose):
@@ -110,6 +125,12 @@ class VisualEeStabilizationController(Node):
             'relock_after_visual_loss_sec', 0.0).value)
         self.max_visual_error_norm_m = float(self.declare_parameter(
             'max_visual_error_norm_m', 0.0).value)
+        self.target_relock_enabled = bool(self.declare_parameter(
+            'target_relock_enabled', False).value)
+        self.stop_on_large_visual_error = bool(self.declare_parameter(
+            'stop_on_large_visual_error', True).value)
+        self.max_joint_acceleration = float(self.declare_parameter(
+            'max_joint_acceleration_rad_s2', 0.3).value)
 
         if len(self.joint_names) != 6:
             raise ValueError('joint_names must contain exactly 6 names')
@@ -133,6 +154,8 @@ class VisualEeStabilizationController(Node):
             raise ValueError('relock_after_visual_loss_sec must be non-negative')
         if self.max_visual_error_norm_m < 0.0:
             raise ValueError('max_visual_error_norm_m must be non-negative')
+        if self.max_joint_acceleration < 0.0:
+            raise ValueError('max_joint_acceleration_rad_s2 must be non-negative')
 
         self.model = pin.buildModelFromUrdf(self.urdf_path)
         self.data = self.model.createData()
@@ -162,14 +185,23 @@ class VisualEeStabilizationController(Node):
         self.last_joint_state_ns = 0
         self.latest_visual_pose = None
         self.latest_visual_stamp_ns = 0
+        self.pending_visual_measurement = False
         self.counted_visual_stamp_ns = 0
         self.consecutive_valid_poses = 0
         self.visual_invalid_since_ns = 0
         self.visual_valid = False
         self.target_pose = None
         self.target_lock_ns = 0
-        self.consecutive_valid_poses = 0
-        self.counted_visual_stamp_ns = self.latest_visual_stamp_ns
+        self.target_lock_count = 0
+        self.target_reset_count = 0
+        self.latest_processed_visual_stamp_ns = 0
+        self.dq_target = np.zeros(6, dtype=float)
+        self.dq_command = np.zeros(6, dtype=float)
+        self.last_error = np.zeros(6, dtype=float)
+        self.last_dq_raw = np.zeros(6, dtype=float)
+        self.last_control_ns = 0
+        self.safety_stop = False
+        self.safety_stop_reason = ''
         self.last_status = 'waiting_for_inputs'
 
         self.create_subscription(
@@ -197,6 +229,10 @@ class VisualEeStabilizationController(Node):
             Float64MultiArray, '/visual_stabilization/dq_limited', 10)
         self.target_pose_pub = self.create_publisher(
             Float64MultiArray, '/visual_stabilization/target_pose', 10)
+        self.dq_target_pub = self.create_publisher(
+            Float64MultiArray, '/visual_stabilization/dq_target', 10)
+        self.status_pub = self.create_publisher(
+            String, '/visual_stabilization/status', 10)
         self.command_pub = None
         if not self.dry_run:
             self.command_pub = self.create_publisher(
@@ -261,6 +297,7 @@ class VisualEeStabilizationController(Node):
         self.latest_visual_stamp_ns = (
             stamp_ns if stamp_ns > 0 else self.get_clock().now().nanoseconds)
         self.latest_visual_pose = pose
+        self.pending_visual_measurement = True
         if not self.use_visual_valid_topic:
             self.visual_valid = True
 
@@ -286,49 +323,85 @@ class VisualEeStabilizationController(Node):
             self.get_logger().info(
                 f'Resetting visual EE target: {reason}',
                 throttle_duration_sec=1.0)
+            self.target_reset_count += 1
         self.target_pose = None
         self.target_lock_ns = 0
+        self.consecutive_valid_poses = 0
+        self.counted_visual_stamp_ns = 0
+        self.latest_processed_visual_stamp_ns = 0
+        self.dq_target = np.zeros(6, dtype=float)
 
     def control_loop(self):
-        error = np.zeros(6, dtype=float)
-        dq_raw = np.zeros(6, dtype=float)
-        dq_limited = np.zeros(6, dtype=float)
+        now_ns = self.get_clock().now().nanoseconds
+        dt = self.compute_control_dt(now_ns)
+        reason = 'ok'
 
-        ready, reason = self.inputs_ready()
-        if ready:
-            self.record_valid_visual_pose(self.latest_visual_stamp_ns)
-            if self.target_pose is None:
-                if self.consecutive_valid_poses < self.required_consecutive_valid_poses:
-                    reason = (
-                        'warming_visual_pose_'
-                        f'{self.consecutive_valid_poses}/'
-                        f'{self.required_consecutive_valid_poses}')
-                    self.last_status = reason
-                    self.publish_outputs(error, dq_raw, dq_limited)
-                    self.publish_command(dq_limited)
-                    return
-                self.target_pose = self.latest_visual_pose.copy()
-                self.target_lock_ns = self.get_clock().now().nanoseconds
-                self.get_logger().info(
-                    'Locked visual EE target at '
-                    f'[{self.target_pose.translation[0]:.4f}, '
-                    f'{self.target_pose.translation[1]:.4f}, '
-                    f'{self.target_pose.translation[2]:.4f}]')
-
-            try:
-                error, dq_raw, dq_limited = self.compute_command()
-                reason = 'ok'
-            except Exception as exc:
-                reason = f'compute_failed: {exc}'
-                error = np.zeros(6, dtype=float)
-                dq_raw = np.zeros(6, dtype=float)
-                dq_limited = np.zeros(6, dtype=float)
+        if self.safety_stop:
+            self.dq_target = np.zeros(6, dtype=float)
+            reason = self.safety_stop_reason or 'safety_stop'
         else:
-            self.handle_not_ready(reason)
+            ready, reason = self.inputs_ready()
+            if ready:
+                reason = self.handle_ready_visual_measurement()
+            else:
+                self.handle_not_ready(reason)
+
+        self.dq_command = self.ramp_joint_velocity(self.dq_command, self.dq_target, dt)
+        if self.command_would_push_joint_limit(self.dq_command):
+            self.dq_command = np.zeros(6, dtype=float)
+            self.dq_target = np.zeros(6, dtype=float)
+            reason = 'joint_limit_guard'
 
         self.last_status = reason
-        self.publish_outputs(error, dq_raw, dq_limited)
-        self.publish_command(dq_limited)
+        self.publish_outputs(self.last_error, self.last_dq_raw, self.dq_command)
+        self.publish_command(self.dq_command)
+        self.publish_status(reason)
+
+    def compute_control_dt(self, now_ns):
+        if self.last_control_ns <= 0 or now_ns <= self.last_control_ns:
+            dt = 1.0 / self.control_rate
+        else:
+            dt = (now_ns - self.last_control_ns) * 1e-9
+        self.last_control_ns = now_ns
+        return max(0.0, min(dt, 0.1))
+
+    def handle_ready_visual_measurement(self):
+        if not self.pending_visual_measurement:
+            return 'waiting_for_new_visual_measurement'
+
+        self.latest_processed_visual_stamp_ns = self.latest_visual_stamp_ns
+        self.pending_visual_measurement = False
+        self.last_error = np.zeros(6, dtype=float)
+        self.last_dq_raw = np.zeros(6, dtype=float)
+
+        self.record_valid_visual_pose(self.latest_visual_stamp_ns)
+        if self.target_pose is None:
+            if self.consecutive_valid_poses < self.required_consecutive_valid_poses:
+                self.dq_target = np.zeros(6, dtype=float)
+                return (
+                    'warming_visual_pose_'
+                    f'{self.consecutive_valid_poses}/'
+                    f'{self.required_consecutive_valid_poses}')
+            self.target_pose = self.latest_visual_pose.copy()
+            self.target_lock_ns = self.get_clock().now().nanoseconds
+            self.target_lock_count += 1
+            self.get_logger().info(
+                'Locked visual EE target at '
+                f'[{self.target_pose.translation[0]:.4f}, '
+                f'{self.target_pose.translation[1]:.4f}, '
+                f'{self.target_pose.translation[2]:.4f}]')
+
+        try:
+            error, dq_raw, dq_limited = self.compute_command()
+            self.last_error = error
+            self.last_dq_raw = dq_raw
+            self.dq_target = dq_limited
+            return 'ok'
+        except Exception as exc:
+            self.dq_target = np.zeros(6, dtype=float)
+            self.last_error = np.zeros(6, dtype=float)
+            self.last_dq_raw = np.zeros(6, dtype=float)
+            return f'compute_failed: {exc}'
 
     def inputs_ready(self):
         now_ns = self.get_clock().now().nanoseconds
@@ -338,19 +411,23 @@ class VisualEeStabilizationController(Node):
             return False, 'joint_state_timeout'
         if self.latest_visual_pose is None:
             return False, 'waiting_for_visual_pose'
-        if self.use_visual_valid_topic and not self.visual_valid:
+        has_unprocessed_pose = (
+            self.pending_visual_measurement
+            or self.latest_visual_stamp_ns > self.latest_processed_visual_stamp_ns)
+        if self.use_visual_valid_topic and not self.visual_valid and not has_unprocessed_pose:
             return False, 'visual_pose_invalid'
         if now_ns - self.latest_visual_stamp_ns > int(self.measurement_timeout_sec * 1e9):
             return False, 'visual_pose_timeout'
         return True, 'ok'
 
     def handle_not_ready(self, reason):
+        self.dq_target = np.zeros(6, dtype=float)
         if not reason.startswith('visual_pose') and reason != 'waiting_for_visual_pose':
             return
         now_ns = self.get_clock().now().nanoseconds
         if self.visual_invalid_since_ns <= 0:
             self.visual_invalid_since_ns = now_ns
-        if self.relock_after_visual_loss_sec <= 0.0:
+        if not self.target_relock_enabled or self.relock_after_visual_loss_sec <= 0.0:
             return
         elapsed_sec = (now_ns - self.visual_invalid_since_ns) * 1e-9
         if elapsed_sec >= self.relock_after_visual_loss_sec:
@@ -371,7 +448,12 @@ class VisualEeStabilizationController(Node):
 
         error_norm = np.linalg.norm(position_error)
         if self.max_visual_error_norm_m > 0.0 and error_norm > self.max_visual_error_norm_m:
-            self.reset_target(f'visual_error_norm_{error_norm:.4f}')
+            reason = f'visual_error_norm_{error_norm:.4f}'
+            if self.stop_on_large_visual_error:
+                self.safety_stop = True
+                self.safety_stop_reason = reason
+            elif self.target_relock_enabled:
+                self.reset_target(reason)
             return error, np.zeros(6, dtype=float), np.zeros(6, dtype=float)
 
         task_velocity = self.task_gain[:3] * position_error
@@ -403,6 +485,13 @@ class VisualEeStabilizationController(Node):
         if not finite_vector(dq_raw) or not finite_vector(dq_limited):
             raise ValueError('non-finite joint velocity')
         return error, dq_raw, dq_limited
+
+    def ramp_joint_velocity(self, current, target, dt):
+        if self.max_joint_acceleration <= 0.0:
+            return np.array(target, dtype=float)
+        max_step = self.max_joint_acceleration * dt
+        delta = np.clip(target - current, -max_step, max_step)
+        return current + delta
 
     def compute_se3_debug_command(self):
         delta = self.latest_visual_pose.inverse() * self.target_pose
@@ -472,6 +561,7 @@ class VisualEeStabilizationController(Node):
         self.error_pub.publish(self.make_array(error))
         self.dq_raw_pub.publish(self.make_array(dq_raw))
         self.dq_limited_pub.publish(self.make_array(dq_limited))
+        self.dq_target_pub.publish(self.make_array(self.dq_target))
         if self.target_pose is None:
             self.target_pose_pub.publish(self.make_array([0.0] * 7))
         else:
@@ -486,6 +576,31 @@ class VisualEeStabilizationController(Node):
             if elapsed_sec < self.command_start_delay_sec:
                 return
         self.command_pub.publish(self.make_array(dq_limited))
+
+    def publish_status(self, reason):
+        target_position = None
+        if self.target_pose is not None:
+            target_position = [
+                float(self.target_pose.translation[0]),
+                float(self.target_pose.translation[1]),
+                float(self.target_pose.translation[2]),
+            ]
+        payload = {
+            'status': reason,
+            'target_locked': self.target_pose is not None,
+            'target_lock_count': self.target_lock_count,
+            'target_reset_count': self.target_reset_count,
+            'target_position': target_position,
+            'visual_valid': self.visual_valid,
+            'latest_visual_stamp_sec': self.latest_visual_stamp_ns * 1e-9,
+            'latest_processed_visual_stamp_sec': self.latest_processed_visual_stamp_ns * 1e-9,
+            'consecutive_valid_poses': self.consecutive_valid_poses,
+            'safety_stop': self.safety_stop,
+            'safety_stop_reason': self.safety_stop_reason,
+            'dq_target': [float(value) for value in self.dq_target],
+            'dq_command': [float(value) for value in self.dq_command],
+        }
+        self.status_pub.publish(String(data=json.dumps(payload, sort_keys=True)))
 
     @staticmethod
     def make_array(values):
