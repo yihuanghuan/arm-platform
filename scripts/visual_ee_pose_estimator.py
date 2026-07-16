@@ -100,6 +100,12 @@ class VisualEePoseEstimator(Node):
             'detection_timeout_sec', 0.5).value)
         self.tf_timeout_sec = float(self.declare_parameter(
             'tf_timeout_sec', 0.1).value)
+        self.tag_tf_mode = self.declare_parameter(
+            'tag_tf_mode', 'stamped').value
+        if self.tag_tf_mode not in ('stamped', 'latest'):
+            raise ValueError('tag_tf_mode must be stamped or latest')
+        self.max_tag_tf_age_sec = float(self.declare_parameter(
+            'max_tag_tf_age_sec', 0.5).value)
         self.debug_publish_period_sec = float(self.declare_parameter(
             'debug_publish_period_sec', 0.5).value)
         self.position_estimation_mode = self.declare_parameter(
@@ -125,22 +131,44 @@ class VisualEePoseEstimator(Node):
         self.valid_pub = self.create_publisher(Bool, self.valid_topic, 10)
         self.debug_pub = self.create_publisher(String, self.debug_topic, 10)
         self.pending_detections = deque()
-        self.create_timer(0.02, self.process_pending_detections)
-        self.create_timer(0.1, self.timeout_check)
 
         self.message_count = 0
         self.target_detection_count = 0
         self.valid_pose_count = 0
         self.invalid_count = 0
         self.latest_detection_stamp_ns = 0
+        self.latest_target_detection_stamp_ns = 0
+        self.latest_target_detection_id = None
         self.latest_valid_stamp_ns = 0
         self.last_debug_wall_time = 0.0
         self.last_valid = False
         self.last_reason = 'waiting_for_detection'
+        self.tf_counters = {
+            'camera_tag_tf_success': 0,
+            'camera_tag_tf_lookup_failed': 0,
+            'camera_tag_tf_connectivity_failed': 0,
+            'camera_tag_tf_future_extrapolation': 0,
+            'camera_tag_tf_past_extrapolation': 0,
+            'camera_tag_tf_stale': 0,
+            'ee_camera_tf_success': 0,
+            'ee_camera_tf_lookup_failed': 0,
+            'ee_camera_tf_connectivity_failed': 0,
+            'ee_camera_tf_future_extrapolation': 0,
+            'ee_camera_tf_past_extrapolation': 0,
+            'ee_camera_tf_latest_fallback_success': 0,
+            'ee_orientation_tf_success': 0,
+            'ee_orientation_tf_latest_fallback_success': 0,
+            'detection_tf_timeout': 0,
+            'detection_tf_superseded': 0,
+        }
+
+        self.create_timer(0.02, self.process_measurements)
+        self.create_timer(0.1, self.timeout_check)
 
         self.get_logger().info(
             f'Publishing {self.pose_topic} as {self.world_frame}->{self.ee_frame} '
-            f'from {self.camera_frame}->{self.detected_tag_frame}')
+            f'from {self.camera_frame}->{self.detected_tag_frame}; '
+            f'tag_tf_mode={self.tag_tf_mode}')
 
     def detections_callback(self, msg):
         self.message_count += 1
@@ -155,7 +183,17 @@ class VisualEePoseEstimator(Node):
             return
 
         self.target_detection_count += 1
+        self.latest_target_detection_stamp_ns = detection_stamp_ns
+        self.latest_target_detection_id = detection.id
+        if self.tag_tf_mode == 'latest':
+            return
         self.pending_detections.append((detection_stamp_ns, msg.header.stamp, detection))
+
+    def process_measurements(self):
+        if self.tag_tf_mode == 'latest':
+            self.process_latest_tag_tf()
+        else:
+            self.process_pending_detections()
 
     def process_pending_detections(self):
         while self.pending_detections:
@@ -166,6 +204,7 @@ class VisualEePoseEstimator(Node):
                 if now_ns > 0 and detection_stamp_ns > 0 else 0.0)
             if age_sec > self.detection_timeout_sec:
                 self.pending_detections.popleft()
+                self.tf_counters['detection_tf_timeout'] += 1
                 self.publish_invalid('detection_tf_timeout', stamp)
                 continue
 
@@ -173,10 +212,78 @@ class VisualEePoseEstimator(Node):
             if status == 'waiting':
                 if len(self.pending_detections) > 1:
                     self.pending_detections.popleft()
+                    self.tf_counters['detection_tf_superseded'] += 1
                     self.publish_invalid('detection_tf_superseded', stamp)
                     continue
                 return
             self.pending_detections.popleft()
+
+    def process_latest_tag_tf(self):
+        now = self.get_clock().now()
+        now_ns = now.nanoseconds
+        if self.latest_target_detection_stamp_ns <= 0:
+            self.publish_periodic_debug('waiting_for_detection')
+            return
+
+        detection_age_sec = ns_to_sec(now_ns - self.latest_target_detection_stamp_ns)
+        if detection_age_sec > self.detection_timeout_sec:
+            if self.last_valid:
+                self.valid_pub.publish(Bool(data=False))
+            self.last_valid = False
+            self.last_reason = 'detection_timeout'
+            self.publish_periodic_debug('detection_timeout')
+            return
+
+        try:
+            camera_to_tag_tf = self.tf_buffer.lookup_transform(
+                self.camera_frame,
+                self.detected_tag_frame,
+                Time(),
+                timeout=Duration(seconds=self.tf_timeout_sec))
+            self.tf_counters['camera_tag_tf_success'] += 1
+        except Exception as exc:
+            self.record_tf_failure('camera_tag_tf', exc)
+            self.publish_invalid(f'tag_tf_lookup_failed_latest: {exc}', now.to_msg())
+            return
+
+        tf_stamp = camera_to_tag_tf.header.stamp
+        tf_stamp_ns = stamp_to_ns(tf_stamp)
+        if tf_stamp_ns <= 0:
+            self.tf_counters['camera_tag_tf_stale'] += 1
+            self.publish_invalid('tag_tf_missing_stamp', now.to_msg())
+            return
+        tf_age_sec = ns_to_sec(now_ns - tf_stamp_ns)
+        if tf_age_sec < -self.max_tag_tf_age_sec:
+            self.tf_counters['camera_tag_tf_future_extrapolation'] += 1
+            self.publish_invalid(f'tag_tf_future_age:{tf_age_sec:.6f}', tf_stamp)
+            return
+        if tf_age_sec > self.max_tag_tf_age_sec:
+            self.tf_counters['camera_tag_tf_stale'] += 1
+            self.publish_invalid(f'tag_tf_stale:{tf_age_sec:.6f}', tf_stamp)
+            return
+
+        try:
+            ee_to_camera_tf = self.tf_buffer.lookup_transform(
+                self.ee_frame,
+                self.camera_frame,
+                Time(),
+                timeout=Duration(seconds=self.tf_timeout_sec))
+            self.tf_counters['ee_camera_tf_success'] += 1
+        except Exception as exc:
+            self.record_tf_failure('ee_camera_tf', exc)
+            self.publish_invalid(f'ee_camera_tf_lookup_failed_latest: {exc}', tf_stamp)
+            return
+
+        self.publish_pose_from_transforms(
+            camera_to_tag_tf,
+            ee_to_camera_tf,
+            tf_stamp,
+            self.latest_target_detection_id,
+            extra={
+                'tag_tf_mode': self.tag_tf_mode,
+                'tag_tf_age_sec': tf_age_sec,
+                'target_detection_age_sec': detection_age_sec,
+            })
 
     def process_detection(self, stamp, detection):
         stamp_time = Time.from_msg(stamp)
@@ -186,8 +293,10 @@ class VisualEePoseEstimator(Node):
                 self.detected_tag_frame,
                 stamp_time,
                 timeout=Duration(seconds=self.tf_timeout_sec))
+            self.tf_counters['camera_tag_tf_success'] += 1
         except Exception as exc:
-            if 'extrapolation into the future' in str(exc).lower():
+            category = self.record_tf_failure('camera_tag_tf', exc)
+            if category == 'future_extrapolation':
                 return 'waiting'
             self.publish_invalid(f'tag_tf_lookup_failed: {exc}', stamp)
             return 'done'
@@ -198,19 +307,33 @@ class VisualEePoseEstimator(Node):
                 self.camera_frame,
                 stamp_time,
                 timeout=Duration(seconds=self.tf_timeout_sec))
+            self.tf_counters['ee_camera_tf_success'] += 1
         except Exception as exc:
+            self.record_tf_failure('ee_camera_tf', exc)
             try:
                 ee_to_camera_tf = self.tf_buffer.lookup_transform(
                     self.ee_frame,
                     self.camera_frame,
                     Time(),
                     timeout=Duration(seconds=self.tf_timeout_sec))
+                self.tf_counters['ee_camera_tf_latest_fallback_success'] += 1
             except Exception as fallback_exc:
+                self.record_tf_failure('ee_camera_tf', fallback_exc)
                 self.publish_invalid(
                     f'ee_camera_tf_lookup_failed: {exc}; latest: {fallback_exc}',
                     stamp)
                 return 'done'
 
+        self.publish_pose_from_transforms(
+            camera_to_tag_tf,
+            ee_to_camera_tf,
+            stamp,
+            detection.id,
+            extra={'tag_tf_mode': self.tag_tf_mode})
+        return 'done'
+
+    def publish_pose_from_transforms(
+            self, camera_to_tag_tf, ee_to_camera_tf, stamp, target_id, extra=None):
         camera_to_tag = transform_to_matrix(camera_to_tag_tf.transform)
         ee_to_camera = transform_to_matrix(ee_to_camera_tf.transform)
         world_to_ee_full = (
@@ -226,7 +349,7 @@ class VisualEePoseEstimator(Node):
 
         if not np.all(np.isfinite(world_to_ee)):
             self.publish_invalid('non_finite_pose', stamp)
-            return 'done'
+            return
 
         pose_msg = matrix_to_pose_stamped(world_to_ee, self.world_frame, stamp)
         self.pose_pub.publish(pose_msg)
@@ -235,19 +358,21 @@ class VisualEePoseEstimator(Node):
         self.last_valid = True
         self.last_reason = 'ok'
         self.valid_pub.publish(Bool(data=True))
+        debug_extra = {
+            'target_id': target_id,
+            'ee_position': [
+                pose_msg.pose.position.x,
+                pose_msg.pose.position.y,
+                pose_msg.pose.position.z,
+            ],
+        }
+        if extra:
+            debug_extra.update(extra)
         self.publish_debug(
             valid=True,
             reason='ok',
             stamp=stamp,
-            extra={
-                'target_id': detection.id,
-                'ee_position': [
-                    pose_msg.pose.position.x,
-                    pose_msg.pose.position.y,
-                    pose_msg.pose.position.z,
-                ],
-            })
-        return 'done'
+            extra=debug_extra)
 
     def estimate_position_with_kinematic_orientation(
             self, stamp, camera_to_tag, ee_to_camera, fallback_world_to_ee):
@@ -276,6 +401,7 @@ class VisualEePoseEstimator(Node):
                     source_frame,
                     stamp_time,
                     timeout=Duration(seconds=self.tf_timeout_sec))
+                self.tf_counters['ee_orientation_tf_success'] += 1
             except Exception:
                 try:
                     tf_msg = self.tf_buffer.lookup_transform(
@@ -283,6 +409,7 @@ class VisualEePoseEstimator(Node):
                         source_frame,
                         Time(),
                         timeout=Duration(seconds=self.tf_timeout_sec))
+                    self.tf_counters['ee_orientation_tf_latest_fallback_success'] += 1
                 except Exception:
                     continue
             return transform_to_matrix(tf_msg.transform)[:3, :3]
@@ -300,6 +427,21 @@ class VisualEePoseEstimator(Node):
         self.last_reason = reason
         self.valid_pub.publish(Bool(data=False))
         self.publish_debug(valid=False, reason=reason, stamp=stamp)
+
+    def record_tf_failure(self, prefix, exc):
+        text = str(exc).lower()
+        if 'extrapolation into the future' in text:
+            category = 'future_extrapolation'
+        elif 'extrapolation into the past' in text:
+            category = 'past_extrapolation'
+        elif 'could not find a connection' in text or 'connectivity' in text:
+            category = 'connectivity_failed'
+        else:
+            category = 'lookup_failed'
+        key = f'{prefix}_{category}'
+        if key in self.tf_counters:
+            self.tf_counters[key] += 1
+        return category
 
     def timeout_check(self):
         latest_ns = max(self.latest_detection_stamp_ns, self.latest_valid_stamp_ns)
@@ -342,8 +484,14 @@ class VisualEePoseEstimator(Node):
             'camera_frame': self.camera_frame,
             'detected_tag_frame': self.detected_tag_frame,
             'position_estimation_mode': self.position_estimation_mode,
+            'tag_tf_mode': self.tag_tf_mode,
+            'max_tag_tf_age_sec': self.max_tag_tf_age_sec,
             'tag_family': self.tag_family,
             'tag_id': self.tag_id,
+            'latest_target_detection_stamp_sec': (
+                ns_to_sec(self.latest_target_detection_stamp_ns)
+                if self.latest_target_detection_stamp_ns > 0 else None),
+            'tf_counters': dict(self.tf_counters),
         }
         if extra:
             payload.update(extra)

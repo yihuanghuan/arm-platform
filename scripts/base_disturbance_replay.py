@@ -9,6 +9,8 @@ import sys
 import time
 
 from gazebo_msgs.msg import EntityState
+from gazebo_msgs.msg import LinkStates
+from gazebo_msgs.msg import ModelStates
 from gazebo_msgs.srv import GetEntityState
 from gazebo_msgs.srv import SetEntityState
 from geometry_msgs.msg import Pose
@@ -131,6 +133,31 @@ def stamp_to_nanoseconds(stamp):
     return int(stamp.sec) * 1000000000 + int(stamp.nanosec)
 
 
+def pose_is_physical(pose, max_abs_position_m):
+    values = [
+        pose.position.x,
+        pose.position.y,
+        pose.position.z,
+        pose.orientation.x,
+        pose.orientation.y,
+        pose.orientation.z,
+        pose.orientation.w,
+    ]
+    if not all(math.isfinite(value) for value in values):
+        return False
+    if max(
+            abs(pose.position.x),
+            abs(pose.position.y),
+            abs(pose.position.z)) > max_abs_position_m:
+        return False
+    q_norm = math.sqrt(
+        pose.orientation.x * pose.orientation.x
+        + pose.orientation.y * pose.orientation.y
+        + pose.orientation.z * pose.orientation.z
+        + pose.orientation.w * pose.orientation.w)
+    return q_norm > 1e-6
+
+
 def load_trajectory(path):
     with open(path, 'r', encoding='utf-8') as handle:
         reader = csv.DictReader(handle)
@@ -168,6 +195,9 @@ class BaseDisturbanceReplay(Node):
         self.latest_base_pose = None
         self.latest_ee_pose = None
         self.latest_camera_pose = None
+        self.model_poses = {}
+        self.link_poses = {}
+        self.entity_stable_count = 0
         self.rows = []
         self.wall_stamps = []
         self.output_rows = []
@@ -202,6 +232,16 @@ class BaseDisturbanceReplay(Node):
             args.visual_dq_topic,
             self.visual_dq_callback,
             50)
+        self.create_subscription(
+            ModelStates,
+            args.model_states_topic,
+            self.model_states_callback,
+            10)
+        self.create_subscription(
+            LinkStates,
+            args.link_states_topic,
+            self.link_states_callback,
+            10)
 
     def joint_state_callback(self, msg):
         if not msg.name or len(msg.position) < len(msg.name):
@@ -236,28 +276,84 @@ class BaseDisturbanceReplay(Node):
     def visual_dq_callback(self, msg):
         self.latest_visual_dq_limited = list(msg.data)
 
+    def model_states_callback(self, msg):
+        self.model_poses = {
+            name: pose for name, pose in zip(msg.name, msg.pose)
+            if pose_is_physical(pose, self.args.gt_max_abs_position_m)
+        }
+        pose = self.model_poses.get(self.args.entity_name)
+        if pose is not None:
+            self.latest_model_pose = pose
+
+    def link_states_callback(self, msg):
+        self.link_poses = {
+            name: pose for name, pose in zip(msg.name, msg.pose)
+            if pose_is_physical(pose, self.args.gt_max_abs_position_m)
+        }
+        self.refresh_latest_entity_poses()
+
+    def refresh_latest_entity_poses(self):
+        self.latest_model_pose = self.model_poses.get(
+            self.args.entity_name, self.latest_model_pose)
+        self.latest_base_pose = self.link_poses.get(
+            self.args.base_entity_name, self.latest_base_pose)
+        self.latest_ee_pose = self.link_poses.get(
+            self.args.ee_entity_name, self.latest_ee_pose)
+        self.latest_camera_pose = self.link_poses.get(
+            self.args.camera_entity_name, self.latest_camera_pose)
+
+    def cached_pose_for_entity(self, entity_name):
+        if entity_name in self.model_poses:
+            return self.model_poses[entity_name]
+        if entity_name in self.link_poses:
+            return self.link_poses[entity_name]
+        return None
+
     def wait_for_services(self):
-        for client, name in (
-            (self.set_client, self.args.set_entity_state_service),
-            (self.get_client, self.args.get_entity_state_service),
-        ):
-            if not client.wait_for_service(timeout_sec=self.args.service_timeout):
-                raise RuntimeError(f'Gazebo service not available: {name}')
+        if not self.set_client.wait_for_service(timeout_sec=self.args.service_timeout):
+            raise RuntimeError(
+                f'Gazebo service not available: {self.args.set_entity_state_service}')
+        self.get_client.wait_for_service(timeout_sec=0.2)
 
     def wait_for_entities(self):
         required = [
             self.args.entity_name,
             self.args.base_entity_name,
             self.args.ee_entity_name,
+            self.args.camera_entity_name,
         ]
         deadline = time.monotonic() + self.args.entity_ready_timeout
         while rclpy.ok() and time.monotonic() < deadline:
+            self.refresh_latest_entity_poses()
             missing = [
                 entity_name for entity_name in required
-                if self.call_get_state(entity_name) is None
+                if self.cached_pose_for_entity(entity_name) is None
             ]
+            if missing and self.get_client.service_is_ready():
+                still_missing = []
+                for entity_name in missing:
+                    state = self.call_get_state(entity_name)
+                    if (
+                            state is None
+                            or not pose_is_physical(
+                                state.pose, self.args.gt_max_abs_position_m)):
+                        still_missing.append(entity_name)
+                        continue
+                    if entity_name == self.args.entity_name:
+                        self.latest_model_pose = state.pose
+                    elif entity_name == self.args.base_entity_name:
+                        self.latest_base_pose = state.pose
+                    elif entity_name == self.args.ee_entity_name:
+                        self.latest_ee_pose = state.pose
+                    elif entity_name == self.args.camera_entity_name:
+                        self.latest_camera_pose = state.pose
+                missing = still_missing
             if not missing:
-                return
+                self.entity_stable_count += 1
+                if self.entity_stable_count >= self.args.entity_stable_samples:
+                    return
+            else:
+                self.entity_stable_count = 0
             rclpy.spin_once(self, timeout_sec=0.05)
             time.sleep(0.1)
         raise RuntimeError(
@@ -298,6 +394,9 @@ class BaseDisturbanceReplay(Node):
         self.get_logger().info(
             f'Replaying {len(rows)} samples to {self.args.entity_name} at '
             f'{self.args.rate_hz:.1f} Hz target')
+        self.get_logger().info(
+            'Sampling Gazebo state from /model_states and /link_states caches; '
+            'get_entity_state is only used during startup readiness checks')
 
         start = time.monotonic() + self.args.start_delay_sec
         while rclpy.ok() and time.monotonic() < start:
@@ -320,19 +419,7 @@ class BaseDisturbanceReplay(Node):
             self.wall_stamps.append(after_call)
 
             command_pose = make_pose(row)
-            if index % self.args.state_sample_stride == 0:
-                actual_model = self.call_get_state(self.args.entity_name)
-                actual_base = self.call_get_state(self.args.base_entity_name)
-                actual_ee = self.call_get_state(self.args.ee_entity_name)
-                actual_camera = self.call_get_state(self.args.camera_entity_name)
-                self.latest_model_pose = (
-                    actual_model.pose if actual_model is not None else self.latest_model_pose)
-                self.latest_base_pose = (
-                    actual_base.pose if actual_base is not None else self.latest_base_pose)
-                self.latest_ee_pose = (
-                    actual_ee.pose if actual_ee is not None else self.latest_ee_pose)
-                self.latest_camera_pose = (
-                    actual_camera.pose if actual_camera is not None else self.latest_camera_pose)
+            self.refresh_latest_entity_poses()
 
             model_pose = self.latest_model_pose
             base_pose = self.latest_base_pose
@@ -462,6 +549,8 @@ def parse_args(argv):
     parser.add_argument('--world-frame', default='world')
     parser.add_argument('--set-entity-state-service', default='/set_entity_state')
     parser.add_argument('--get-entity-state-service', default='/get_entity_state')
+    parser.add_argument('--model-states-topic', default='/model_states')
+    parser.add_argument('--link-states-topic', default='/link_states')
     parser.add_argument('--joint-state-topic', default='/joint_states')
     parser.add_argument('--velocity-command-topic', default='/arm_velocity_controller/commands')
     parser.add_argument('--visual-valid-topic', default='/visual_ee_pose_valid')
@@ -475,6 +564,8 @@ def parse_args(argv):
     parser.add_argument('--service-timeout', type=float, default=10.0)
     parser.add_argument('--service-call-timeout', type=float, default=0.05)
     parser.add_argument('--entity-ready-timeout', type=float, default=20.0)
+    parser.add_argument('--entity-stable-samples', type=int, default=3)
+    parser.add_argument('--gt-max-abs-position-m', type=float, default=5.0)
     parser.add_argument('--start-delay-sec', type=float, default=2.0)
     parser.add_argument('--use-sim-time', action='store_true')
     args, _ = parser.parse_known_args(argv)
@@ -482,6 +573,10 @@ def parse_args(argv):
         raise SystemExit('--rate-hz must be positive')
     if args.state_sample_stride <= 0:
         raise SystemExit('--state-sample-stride must be positive')
+    if args.entity_stable_samples <= 0:
+        raise SystemExit('--entity-stable-samples must be positive')
+    if args.gt_max_abs_position_m <= 0.0:
+        raise SystemExit('--gt-max-abs-position-m must be positive')
     if not args.joint_names:
         raise SystemExit('--joint-names must not be empty')
     return args

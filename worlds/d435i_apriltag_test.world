@@ -42,7 +42,7 @@
     </model>
 
     <model name="apriltag_back_wall">
-      <pose>1.26 0.0 0.55 0 0 0</pose>
+      <pose>1.63 0.0 0.55 0 0 0</pose>
       <static>true</static>
       <link name="link">
         <visual name="visual">
@@ -62,7 +62,7 @@
     <include>
       <name>apriltag_36h11_00000_target</name>
       <uri>model://apriltag_36h11_00000</uri>
-      <pose>1.23 0.0 0.35 0 -1.57079632679 0</pose>
+      <pose>1.60 0.0 0.35 0 -1.57079632679 0</pose>
     </include>
 
     <model name="depth_reference_green_box">

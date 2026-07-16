@@ -929,3 +929,141 @@ Summary: 1 package finished
 - 优先检查 Gazebo `set_entity_state` service 调用与 RGB-D sensor update 的互相影响；
 - 若 service replay 会持续干扰传感器，应改为 Gazebo 插件、模型速度控制或更轻量的 base 扰动机制；
 - 修复后重新运行本阶段 5 个 profile 的 baseline/visual_xyz 对比，确认 visual XYZ RMS 明显低于 baseline。
+
+## 阶段 4 Visual Chain Debug 修复
+
+根据 `phase4_visual_chain_debug_plan.md`，本次先修复最可能导致 `/visual_ee_pose` 中断的两类问题：
+
+- `base_disturbance_replay.py` 的主 replay 循环不再高频调用 `/get_entity_state`。现在循环内只调用 `/set_entity_state`，Gazebo 真值 pose 通过 `/model_states` 和 `/link_states` 订阅缓存采样；`/get_entity_state` 仅保留为启动阶段实体存在性检查的后备路径。
+- `visual_ee_pose_estimator.py` 新增 `tag_tf_mode:=stamped|latest`。阶段 4 launch 默认使用 `latest`，按最新 `camera_color_optical_frame -> apriltag_36h11_00000` TF 估计视觉 pose，同时用 `visual_max_tag_tf_age_sec` 严格限制 TF 年龄，避免使用陈旧 TF。
+- `/visual_ee_pose_debug` 增加 TF 诊断计数，包括 camera->tag lookup、future/past extrapolation、stale TF、ee->camera lookup 和 fallback 成功次数。
+- 新增 `phase4_visual_chain_diagnostics.py`，可持续记录 RGB、CameraInfo、AprilTag detections、tag TF、`/visual_ee_pose`、valid/debug 和 `/clock` 速率到 CSV。
+- `moving_base_stabilization.launch.py` 新增诊断和负载隔离参数：`run_phase4_diagnostics`、`phase4_diagnostics_output_csv`、`visual_tag_tf_mode`、`visual_max_tag_tf_age_sec`、`rgbd_update_rate`、`rgbd_width`、`rgbd_height`、`imu_enabled`、`imu_update_rate`。
+
+推荐先用低 replay 频率和低传感器负载复测视觉链路：
+
+```bash
+source /opt/ros/humble/setup.bash
+source install/setup.bash
+
+python3 src/arm-platform/scripts/generate_base_disturbance.py \
+  --profile sine_x \
+  --output-csv /tmp/phase4_debug_sine_x.csv
+
+timeout -s INT -k 10s 70s \
+  ros2 launch manipulator moving_base_stabilization.launch.py \
+  gui:=false use_rviz:=false \
+  experiment_mode:=visual_xyz \
+  disturbance_csv:=/tmp/phase4_debug_sine_x.csv \
+  replay_output_csv:=/tmp/phase4_debug_sine_x_visual_replay.csv \
+  replay_rate_hz:=5.0 \
+  start_delay_sec:=8.0 \
+  run_phase4_diagnostics:=true \
+  phase4_diagnostics_output_csv:=/tmp/phase4_debug_visual_chain.csv \
+  rgbd_update_rate:=10 \
+  rgbd_width:=320 \
+  rgbd_height:=240 \
+  imu_enabled:=false
+```
+
+复测时优先查看：
+
+- `/tmp/phase4_debug_visual_chain.csv` 中 `image_rate_hz`、`apriltag_msg_rate_hz`、`target_detection_rate_hz`、`tag_tf_update_rate_hz`、`visual_pose_rate_hz` 是否持续非零；
+- `tag_tf_age_sec` 是否稳定低于 `visual_max_tag_tf_age_sec`；
+- `visual_debug_reason` 是否从 `waiting_for_detection`、`tag_tf_stale`、`tag_tf_lookup_failed_latest` 转为 `ok`；
+- replay CSV 中 `visual_valid` 是否大部分为 `true`，`velocity_command` 是否出现非零关节速度。
+
+若 5 Hz replay 仍出现 RGB 或 AprilTag rate 归零，说明 `set_entity_state` 方式仍会压制 Gazebo sensor，应按调试计划继续切换到 Gazebo ModelPlugin 或虚拟 Base 关节扰动方案。若视觉链路持续有效，再扫描 `replay_rate_hz:=10/15/20` 并重新跑 5 个阶段 4 profile 的 baseline/visual_xyz 对比。
+
+## 阶段 4 修复后自主短测
+
+测试设置：
+
+- profile：`sine_x`
+- duration：20 s
+- trajectory sample rate / replay rate：5 Hz
+- RGB-D：10 Hz，320x240
+- IMU：关闭
+- visual mode：`visual_tag_tf_mode:=latest`
+
+输出文件：
+
+```text
+/tmp/phase4_short_sine_x.csv
+/tmp/phase4_short_sine_x_baseline_replay.csv
+/tmp/phase4_short_sine_x_visual_replay.csv
+/tmp/phase4_short_visual_chain.csv
+/tmp/phase4_short_sine_x_visual_slow_replay.csv
+/tmp/phase4_short_visual_slow_chain.csv
+```
+
+主要结果：
+
+| run | set failures | visual loss | visual pose age mean/max s | joint velocity peak rad/s | diagnostics target detection mean Hz | diagnostics visual pose mean Hz |
+|---|---:|---:|---:|---:|---:|---:|
+| baseline | 0 | n/a | n/a | 0.0 | n/a | n/a |
+| visual default | 0 | 0.832 | 4.578 / 12.985 | 1.0 | 1.677 | 1.048 |
+| visual slow, max joint 0.2 rad/s | 0 | 0.535 | 0.651 / 4.518 | 0.2 | 4.362 | 2.332 |
+
+诊断结论：
+
+- RGB、CameraInfo、AprilTag detection topic 本身已经稳定恢复到约 10 Hz，说明之前的“视觉链路完全停止”问题已被缓解；
+- `/clock` 诊断订阅 QoS 已修正，短测中 clock rate 约 9.8-10.0 Hz；
+- visual pose 已不再是 0 Hz，但默认控制参数下 `visual_loss_rate` 仍高达 0.832，主要 debug reason 是 `target_not_detected`；
+- 默认控制多次打到 1.0 rad/s 限幅，保守限速后 visual loss 降到 0.535，说明控制动作过猛会把相机/末端带出可检测范围；
+- 保守限速仍未达到阶段 4 验收标准，visual loss 仍远高于 10%。
+
+指标注意事项：
+
+- visual 两组 replay CSV 的第 0 行出现一次 Gazebo link state 瞬态异常，`actual_link6`/`actual_camera` 为几十米量级；
+- 当前 `phase4_dynamic_xyz_metrics.py` 使用第一个 GT 样本作为原点，因此 visual 两组官方 summary 的 78-80 m 级 `xyz_rms_m` 被第 0 行污染；
+- 剔除第 0 行并使用首个正常 GT 样本作为原点后，短测 XYZ RMS 约为：
+  - baseline：0.0114 m
+  - visual default：0.3728 m
+  - visual slow：0.2840 m
+- 因此结论不变：修复后视觉链路恢复，但阶段 4 闭环仍失败，visual 未优于 baseline。
+
+下一步建议：
+
+- 先修 replay 记录侧的初始 GT 原点问题：等待 `/model_states`/`/link_states` 稳定并丢弃明显非物理首样本，再开始写 CSV 或在 metrics 中跳过异常原点；
+- 将阶段 4 visual 控制参数调低并加入目标可见性约束，避免短暂视觉误差直接打满关节速度；
+- 继续用 diagnostics 区分 `target_not_detected` 与 `tag_tf_stale`，优先解决 tag 在 FOV 中持续可见的问题，再做 10/15/20 Hz replay rate 扫描。
+
+## 阶段 4 二次修正实施
+
+本次修正落实上述两个阻塞点：
+
+- replay 侧只缓存物理合理的 Gazebo GT pose，默认任一坐标绝对值超过 `5.0 m` 的 `/model_states` 或 `/link_states` 样本会被丢弃；正式 replay 前要求关键实体连续 `3` 个稳定样本；
+- metrics 侧新增 `invalid_gt_samples`，并使用首个正常 `actual_link6` 样本作为 GT origin，避免第 0 行 Gazebo 瞬态污染 RMS；
+- AprilTag 从 `x=1.23 m` 后移到 `x=1.60 m`，背景墙同步移动到 `x=1.63 m`；`moving_base_stabilization.launch.py` 中 `world_to_tag_xyz` 同步更新为带既有标定偏移的 `1.60042456 0.000976374 0.35065986`；
+- visual_xyz 默认限速改为 `visual_stabilization_max_joint_velocity:=0.2` 和 `visual_stabilization_max_task_velocity_xyz:=0.05 0.05 0.05`；
+- visual 控制器新增可见性门控：出现 `1` 个 ready 视觉 pose 后锁定目标，视觉连续丢失 `0.5 s` 后重置目标，XYZ 视觉误差超过 `0.20 m` 时重置目标并输出零速度。
+
+新增/更新的关键 launch 参数：
+
+```text
+replay_gt_max_abs_position_m:=5.0
+replay_entity_stable_samples:=3
+visual_required_consecutive_valid_poses:=1
+visual_relock_after_visual_loss_sec:=0.5
+visual_max_visual_error_norm_m:=0.20
+visual_max_tag_tf_age_sec:=1.5
+```
+
+后续复测仍按先短测、再三轴、最后复合扰动的顺序执行。短测优先看 `visual_loss_rate`、`invalid_gt_samples`、`target_detection_rate_hz`、`visual_pose_rate_hz` 和 corrected `xyz_rms_m`。
+
+实施后 20 s `sine_x` 短测结果：
+
+| run | invalid GT | set failures | visual loss | joint velocity peak rad/s | target detection mean Hz | visual pose mean Hz | XYZ RMS m |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| baseline | 0 | 0 | n/a | 0.0 | n/a | n/a | 0.0684 |
+| tag moved, no lock due strict gate | 0 | 0 | 0.139 | 0.0 | 9.857 | 4.112 | 0.0684 |
+| tag moved, relaxed lock | 0 | 0 | 0.277 | 0.2 | 3.948 | 2.353 | 6.4170 |
+
+结论：
+
+- GT 首样本异常已修复，`invalid_gt_samples=0`；
+- Tag 后移对静态可见性有效，未运动时 `target_detection_rate_hz` 可稳定接近 10 Hz，`target_not_detected` 基本消失；
+- 放宽门控后控制器可以进入闭环并输出非零速度；
+- 但闭环运动会再次显著降低 target detection，且当前视觉控制会造成过大的机械臂运动，visual 仍明显差于 baseline；
+- 因此阶段 4 仍未通过，下一轮应重点审查视觉 pose 到关节速度的控制符号、雅可比坐标系、目标锁定策略，而不是继续单纯放宽可见性门控。

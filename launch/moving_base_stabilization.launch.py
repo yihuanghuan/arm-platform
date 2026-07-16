@@ -29,6 +29,10 @@ def generate_launch_description():
         "'", LaunchConfiguration('experiment_mode'), "' == 'baseline'"]))
     visual_condition = IfCondition(PythonExpression([
         "'", LaunchConfiguration('experiment_mode'), "' == 'visual_xyz'"]))
+    diagnostics_condition = IfCondition(PythonExpression([
+        "'", LaunchConfiguration('experiment_mode'), "' == 'visual_xyz' and '",
+        LaunchConfiguration('run_phase4_diagnostics'),
+        "'.lower() in ('1', 'true', 'yes', 'on')"]))
 
     gui_arg = DeclareLaunchArgument(
         'gui',
@@ -75,7 +79,15 @@ def generate_launch_description():
     replay_state_sample_stride_arg = DeclareLaunchArgument(
         'replay_state_sample_stride',
         default_value='1',
-        description='Query Gazebo entity states once every N replay samples')
+        description='Compatibility option; replay now samples Gazebo state from topics')
+    replay_gt_max_abs_position_m_arg = DeclareLaunchArgument(
+        'replay_gt_max_abs_position_m',
+        default_value='5.0',
+        description='Reject Gazebo GT samples with any position magnitude above this')
+    replay_entity_stable_samples_arg = DeclareLaunchArgument(
+        'replay_entity_stable_samples',
+        default_value='3',
+        description='Required consecutive physical GT samples before replay starts')
     baseline_rate_hz_arg = DeclareLaunchArgument(
         'baseline_rate_hz',
         default_value='100.0',
@@ -86,11 +98,11 @@ def generate_launch_description():
         description='Visual XYZ stabilization control rate')
     visual_stabilization_max_joint_velocity_arg = DeclareLaunchArgument(
         'visual_stabilization_max_joint_velocity',
-        default_value='1.0',
+        default_value='0.2',
         description='Visual XYZ joint velocity clamp in rad/s')
     visual_stabilization_max_task_velocity_xyz_arg = DeclareLaunchArgument(
         'visual_stabilization_max_task_velocity_xyz',
-        default_value='0.25 0.25 0.25',
+        default_value='0.05 0.05 0.05',
         description='Visual XYZ task velocity clamp in m/s')
     visual_stabilization_position_deadband_arg = DeclareLaunchArgument(
         'visual_stabilization_position_deadband_m',
@@ -104,6 +116,18 @@ def generate_launch_description():
         'visual_stabilization_joint_state_timeout',
         default_value='0.35',
         description='Maximum joint-state age before zero velocity')
+    visual_required_consecutive_valid_poses_arg = DeclareLaunchArgument(
+        'visual_required_consecutive_valid_poses',
+        default_value='1',
+        description='Valid visual pose samples required before locking a target')
+    visual_relock_after_visual_loss_sec_arg = DeclareLaunchArgument(
+        'visual_relock_after_visual_loss_sec',
+        default_value='0.5',
+        description='Reset locked target after this much continuous visual loss')
+    visual_max_visual_error_norm_m_arg = DeclareLaunchArgument(
+        'visual_max_visual_error_norm_m',
+        default_value='0.20',
+        description='Reset target and zero command if visual XYZ error exceeds this')
     visual_detection_timeout_sec_arg = DeclareLaunchArgument(
         'visual_detection_timeout_sec',
         default_value='5.0',
@@ -112,6 +136,50 @@ def generate_launch_description():
         'visual_tf_timeout_sec',
         default_value='0.1',
         description='TF lookup timeout for visual end-effector pose estimation')
+    visual_tag_tf_mode_arg = DeclareLaunchArgument(
+        'visual_tag_tf_mode',
+        default_value='latest',
+        description='Tag TF lookup mode for visual estimation: stamped or latest')
+    visual_max_tag_tf_age_sec_arg = DeclareLaunchArgument(
+        'visual_max_tag_tf_age_sec',
+        default_value='1.5',
+        description='Maximum latest camera->tag TF age before visual pose invalid')
+    rgbd_update_rate_arg = DeclareLaunchArgument(
+        'rgbd_update_rate',
+        default_value='15',
+        description='RGB-D sensor update rate passed to gazebo_arm.launch.py')
+    rgbd_width_arg = DeclareLaunchArgument(
+        'rgbd_width',
+        default_value='640',
+        description='RGB-D image width passed to gazebo_arm.launch.py')
+    rgbd_height_arg = DeclareLaunchArgument(
+        'rgbd_height',
+        default_value='480',
+        description='RGB-D image height passed to gazebo_arm.launch.py')
+    imu_enabled_arg = DeclareLaunchArgument(
+        'imu_enabled',
+        default_value='true',
+        description='Attach the Gazebo D435i IMU plugin')
+    imu_update_rate_arg = DeclareLaunchArgument(
+        'imu_update_rate',
+        default_value='200',
+        description='Gazebo D435i IMU update rate in Hz')
+    run_phase4_diagnostics_arg = DeclareLaunchArgument(
+        'run_phase4_diagnostics',
+        default_value='false',
+        description='Start phase4_visual_chain_diagnostics.py in visual_xyz mode')
+    phase4_diagnostics_output_csv_arg = DeclareLaunchArgument(
+        'phase4_diagnostics_output_csv',
+        default_value='/tmp/phase4_visual_chain_diagnostics.csv',
+        description='CSV output path for phase 4 visual chain diagnostics')
+    phase4_diagnostics_duration_sec_arg = DeclareLaunchArgument(
+        'phase4_diagnostics_duration_sec',
+        default_value='0.0',
+        description='Diagnostics duration; 0 means run until launch exits')
+    phase4_diagnostics_sample_hz_arg = DeclareLaunchArgument(
+        'phase4_diagnostics_sample_hz',
+        default_value='2.0',
+        description='Diagnostics CSV sample rate in Hz')
     use_sim_time_arg = DeclareLaunchArgument(
         'use_sim_time',
         default_value='true',
@@ -133,7 +201,11 @@ def generate_launch_description():
             'camera_enabled': 'true',
             'rgbd_enabled': 'true',
             'rgbd_frame_name': 'camera_color_optical_frame',
-            'imu_enabled': 'true',
+            'rgbd_update_rate': LaunchConfiguration('rgbd_update_rate'),
+            'rgbd_width': LaunchConfiguration('rgbd_width'),
+            'rgbd_height': LaunchConfiguration('rgbd_height'),
+            'imu_enabled': LaunchConfiguration('imu_enabled'),
+            'imu_update_rate': LaunchConfiguration('imu_update_rate'),
             'use_ros2_control': 'true',
             'fix_base_to_world': 'false',
             'use_sim_time': LaunchConfiguration('use_sim_time'),
@@ -181,7 +253,7 @@ def generate_launch_description():
             'ee_frame': 'link6',
             'camera_frame': 'camera_color_optical_frame',
             'detected_tag_frame': 'apriltag_36h11_00000',
-            'world_to_tag_xyz': '1.23042456 0.000976374 0.35065986',
+            'world_to_tag_xyz': '1.60042456 0.000976374 0.35065986',
             'world_to_tag_rpy': '-3.12204785 -1.56214388 3.12103003',
             'position_estimation_mode': 'kinematic_orientation',
             'detection_timeout_sec': ParameterValue(
@@ -189,6 +261,10 @@ def generate_launch_description():
                 value_type=float),
             'tf_timeout_sec': ParameterValue(
                 LaunchConfiguration('visual_tf_timeout_sec'),
+                value_type=float),
+            'tag_tf_mode': LaunchConfiguration('visual_tag_tf_mode'),
+            'max_tag_tf_age_sec': ParameterValue(
+                LaunchConfiguration('visual_max_tag_tf_age_sec'),
                 value_type=float),
         }],
     )
@@ -223,6 +299,15 @@ def generate_launch_description():
             'joint_state_timeout_sec': ParameterValue(
                 LaunchConfiguration('visual_stabilization_joint_state_timeout'),
                 value_type=float),
+            'required_consecutive_valid_poses': ParameterValue(
+                LaunchConfiguration('visual_required_consecutive_valid_poses'),
+                value_type=int),
+            'relock_after_visual_loss_sec': ParameterValue(
+                LaunchConfiguration('visual_relock_after_visual_loss_sec'),
+                value_type=float),
+            'max_visual_error_norm_m': ParameterValue(
+                LaunchConfiguration('visual_max_visual_error_norm_m'),
+                value_type=float),
         }],
     )
 
@@ -236,11 +321,29 @@ def generate_launch_description():
             '--output-csv', LaunchConfiguration('replay_output_csv'),
             '--rate-hz', LaunchConfiguration('replay_rate_hz'),
             '--state-sample-stride', LaunchConfiguration('replay_state_sample_stride'),
+            '--entity-stable-samples', LaunchConfiguration('replay_entity_stable_samples'),
+            '--gt-max-abs-position-m', LaunchConfiguration('replay_gt_max_abs_position_m'),
             '--service-call-timeout', LaunchConfiguration('replay_service_call_timeout'),
             '--start-delay-sec', LaunchConfiguration('start_delay_sec'),
             '--camera-entity-name', LaunchConfiguration('camera_entity_name'),
             '--use-sim-time',
         ]
+    )
+
+    diagnostics = Node(
+        condition=diagnostics_condition,
+        package='manipulator',
+        executable='phase4_visual_chain_diagnostics.py',
+        name='phase4_visual_chain_diagnostics',
+        output='screen',
+        arguments=[
+            '--output-csv', LaunchConfiguration('phase4_diagnostics_output_csv'),
+            '--duration-sec', LaunchConfiguration('phase4_diagnostics_duration_sec'),
+            '--sample-hz', LaunchConfiguration('phase4_diagnostics_sample_hz'),
+            '--camera-frame', 'camera_color_optical_frame',
+            '--detected-tag-frame', 'apriltag_36h11_00000',
+            '--use-sim-time',
+        ],
     )
 
     return LaunchDescription([
@@ -255,6 +358,8 @@ def generate_launch_description():
         replay_rate_hz_arg,
         replay_service_call_timeout_arg,
         replay_state_sample_stride_arg,
+        replay_gt_max_abs_position_m_arg,
+        replay_entity_stable_samples_arg,
         baseline_rate_hz_arg,
         visual_stabilization_control_rate_arg,
         visual_stabilization_max_joint_velocity_arg,
@@ -262,8 +367,22 @@ def generate_launch_description():
         visual_stabilization_position_deadband_arg,
         visual_stabilization_measurement_timeout_arg,
         visual_stabilization_joint_state_timeout_arg,
+        visual_required_consecutive_valid_poses_arg,
+        visual_relock_after_visual_loss_sec_arg,
+        visual_max_visual_error_norm_m_arg,
         visual_detection_timeout_sec_arg,
         visual_tf_timeout_sec_arg,
+        visual_tag_tf_mode_arg,
+        visual_max_tag_tf_age_sec_arg,
+        rgbd_update_rate_arg,
+        rgbd_width_arg,
+        rgbd_height_arg,
+        imu_enabled_arg,
+        imu_update_rate_arg,
+        run_phase4_diagnostics_arg,
+        phase4_diagnostics_output_csv_arg,
+        phase4_diagnostics_duration_sec_arg,
+        phase4_diagnostics_sample_hz_arg,
         use_sim_time_arg,
         start_delay_sec_arg,
         OpaqueFunction(function=_validate_arguments),
@@ -272,5 +391,6 @@ def generate_launch_description():
         apriltag,
         visual_ee_estimator,
         visual_controller,
+        diagnostics,
         replay,
     ])

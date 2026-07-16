@@ -104,6 +104,12 @@ class VisualEeStabilizationController(Node):
             6)
         self.use_visual_valid_topic = bool(self.declare_parameter(
             'use_visual_valid_topic', True).value)
+        self.required_consecutive_valid_poses = int(self.declare_parameter(
+            'required_consecutive_valid_poses', 1).value)
+        self.relock_after_visual_loss_sec = float(self.declare_parameter(
+            'relock_after_visual_loss_sec', 0.0).value)
+        self.max_visual_error_norm_m = float(self.declare_parameter(
+            'max_visual_error_norm_m', 0.0).value)
 
         if len(self.joint_names) != 6:
             raise ValueError('joint_names must contain exactly 6 names')
@@ -121,6 +127,12 @@ class VisualEeStabilizationController(Node):
             raise ValueError('joint_limit_margin_rad must be non-negative')
         if self.command_start_delay_sec < 0.0:
             raise ValueError('command_start_delay_sec must be non-negative')
+        if self.required_consecutive_valid_poses <= 0:
+            raise ValueError('required_consecutive_valid_poses must be positive')
+        if self.relock_after_visual_loss_sec < 0.0:
+            raise ValueError('relock_after_visual_loss_sec must be non-negative')
+        if self.max_visual_error_norm_m < 0.0:
+            raise ValueError('max_visual_error_norm_m must be non-negative')
 
         self.model = pin.buildModelFromUrdf(self.urdf_path)
         self.data = self.model.createData()
@@ -150,9 +162,14 @@ class VisualEeStabilizationController(Node):
         self.last_joint_state_ns = 0
         self.latest_visual_pose = None
         self.latest_visual_stamp_ns = 0
+        self.counted_visual_stamp_ns = 0
+        self.consecutive_valid_poses = 0
+        self.visual_invalid_since_ns = 0
         self.visual_valid = False
         self.target_pose = None
         self.target_lock_ns = 0
+        self.consecutive_valid_poses = 0
+        self.counted_visual_stamp_ns = self.latest_visual_stamp_ns
         self.last_status = 'waiting_for_inputs'
 
         self.create_subscription(
@@ -249,6 +266,28 @@ class VisualEeStabilizationController(Node):
 
     def visual_valid_callback(self, msg):
         self.visual_valid = bool(msg.data)
+        if self.visual_valid:
+            self.visual_invalid_since_ns = 0
+        else:
+            self.consecutive_valid_poses = 0
+            self.counted_visual_stamp_ns = 0
+            if self.visual_invalid_since_ns <= 0:
+                self.visual_invalid_since_ns = self.get_clock().now().nanoseconds
+
+    def record_valid_visual_pose(self, stamp_ns):
+        if stamp_ns <= 0 or stamp_ns == self.counted_visual_stamp_ns:
+            return
+        self.counted_visual_stamp_ns = stamp_ns
+        self.consecutive_valid_poses += 1
+        self.visual_invalid_since_ns = 0
+
+    def reset_target(self, reason):
+        if self.target_pose is not None:
+            self.get_logger().info(
+                f'Resetting visual EE target: {reason}',
+                throttle_duration_sec=1.0)
+        self.target_pose = None
+        self.target_lock_ns = 0
 
     def control_loop(self):
         error = np.zeros(6, dtype=float)
@@ -257,7 +296,17 @@ class VisualEeStabilizationController(Node):
 
         ready, reason = self.inputs_ready()
         if ready:
+            self.record_valid_visual_pose(self.latest_visual_stamp_ns)
             if self.target_pose is None:
+                if self.consecutive_valid_poses < self.required_consecutive_valid_poses:
+                    reason = (
+                        'warming_visual_pose_'
+                        f'{self.consecutive_valid_poses}/'
+                        f'{self.required_consecutive_valid_poses}')
+                    self.last_status = reason
+                    self.publish_outputs(error, dq_raw, dq_limited)
+                    self.publish_command(dq_limited)
+                    return
                 self.target_pose = self.latest_visual_pose.copy()
                 self.target_lock_ns = self.get_clock().now().nanoseconds
                 self.get_logger().info(
@@ -274,6 +323,8 @@ class VisualEeStabilizationController(Node):
                 error = np.zeros(6, dtype=float)
                 dq_raw = np.zeros(6, dtype=float)
                 dq_limited = np.zeros(6, dtype=float)
+        else:
+            self.handle_not_ready(reason)
 
         self.last_status = reason
         self.publish_outputs(error, dq_raw, dq_limited)
@@ -293,6 +344,18 @@ class VisualEeStabilizationController(Node):
             return False, 'visual_pose_timeout'
         return True, 'ok'
 
+    def handle_not_ready(self, reason):
+        if not reason.startswith('visual_pose') and reason != 'waiting_for_visual_pose':
+            return
+        now_ns = self.get_clock().now().nanoseconds
+        if self.visual_invalid_since_ns <= 0:
+            self.visual_invalid_since_ns = now_ns
+        if self.relock_after_visual_loss_sec <= 0.0:
+            return
+        elapsed_sec = (now_ns - self.visual_invalid_since_ns) * 1e-9
+        if elapsed_sec >= self.relock_after_visual_loss_sec:
+            self.reset_target(reason)
+
     def compute_command(self):
         if self.control_mode == 'xyz':
             return self.compute_xyz_command()
@@ -306,8 +369,13 @@ class VisualEeStabilizationController(Node):
         if not finite_vector(error):
             raise ValueError('non-finite XYZ error')
 
+        error_norm = np.linalg.norm(position_error)
+        if self.max_visual_error_norm_m > 0.0 and error_norm > self.max_visual_error_norm_m:
+            self.reset_target(f'visual_error_norm_{error_norm:.4f}')
+            return error, np.zeros(6, dtype=float), np.zeros(6, dtype=float)
+
         task_velocity = self.task_gain[:3] * position_error
-        if np.linalg.norm(position_error) <= self.position_deadband_m:
+        if error_norm <= self.position_deadband_m:
             task_velocity = np.zeros(3, dtype=float)
             error[:3] = np.zeros(3, dtype=float)
         task_velocity = np.clip(

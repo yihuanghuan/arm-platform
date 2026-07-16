@@ -79,9 +79,27 @@ def actual_link6_position(row):
     return values
 
 
+def position_is_physical(position, max_abs_position_m):
+    return (
+        position is not None
+        and all(math.isfinite(value) for value in position)
+        and max(abs(value) for value in position) <= max_abs_position_m)
+
+
+def physical_actual_link6_position(row, max_abs_position_m):
+    position = actual_link6_position(row)
+    if not position_is_physical(position, max_abs_position_m):
+        return None
+    return position
+
+
 def summarize(label, path, args):
     rows = load_rows(path)
-    origin = first_position(rows)
+    origin = None
+    for row in rows:
+        origin = physical_actual_link6_position(row, args.gt_max_abs_position_m)
+        if origin is not None:
+            break
     errors = []
     wall_times = []
     velocity_peaks = []
@@ -91,6 +109,7 @@ def summarize(label, path, args):
     saturated_count = 0
     command_count = 0
     set_failures = 0
+    invalid_gt_samples = 0
     max_joint_step = 0.0
 
     for row in rows:
@@ -101,7 +120,10 @@ def summarize(label, path, args):
         if joint_step is not None:
             max_joint_step = max(max_joint_step, joint_step)
 
-        position = actual_link6_position(row)
+        raw_position = actual_link6_position(row)
+        position = physical_actual_link6_position(row, args.gt_max_abs_position_m)
+        if raw_position is not None and position is None:
+            invalid_gt_samples += 1
         if origin is not None and position is not None:
             errors.append(norm([current - start for current, start in zip(position, origin)]))
             wall_time = parse_float(row.get('wall_time_sec'))
@@ -141,6 +163,7 @@ def summarize(label, path, args):
         'csv': path,
         'samples': len(rows),
         'valid_gt_samples': len(errors),
+        'invalid_gt_samples': invalid_gt_samples,
         'set_failures': set_failures,
         'xyz_rms_m': rms(errors),
         'xyz_max_m': max(errors) if errors else None,
@@ -183,6 +206,7 @@ def write_summary(path, summaries):
         'csv',
         'samples',
         'valid_gt_samples',
+        'invalid_gt_samples',
         'set_failures',
         'xyz_rms_m',
         'xyz_max_m',
@@ -214,6 +238,7 @@ def print_summary(summaries, output_csv):
         for key in (
                 'samples',
                 'valid_gt_samples',
+                'invalid_gt_samples',
                 'set_failures',
                 'xyz_rms_m',
                 'xyz_max_m',
@@ -245,6 +270,7 @@ def parse_args(argv):
     parser.add_argument('--steady-window-sec', type=float, default=5.0)
     parser.add_argument('--max-joint-velocity', type=float, default=0.35)
     parser.add_argument('--saturation-epsilon', type=float, default=1e-4)
+    parser.add_argument('--gt-max-abs-position-m', type=float, default=5.0)
     return parser.parse_args(argv)
 
 
@@ -254,6 +280,8 @@ def main(argv=None):
         raise SystemExit('--steady-window-sec must be positive')
     if args.max_joint_velocity <= 0.0:
         raise SystemExit('--max-joint-velocity must be positive')
+    if args.gt_max_abs_position_m <= 0.0:
+        raise SystemExit('--gt-max-abs-position-m must be positive')
 
     summaries = [summarize(label, path, args) for label, path in args.run]
     write_summary(args.output_csv, summaries)
