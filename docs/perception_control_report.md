@@ -735,3 +735,197 @@ Static XYZ closed-loop summary
 ## 项目状态评估
 
 阶段 3 已完成静态 XYZ 视觉闭环接入和可复现实验脚本。下一阶段可以在相同控制节点基础上使用 moving-base 扰动入口，将 `fix_base_to_world:=false` 并引入 base 扰动 CSV，对比 baseline 零速度与 visual XYZ 闭环的世界系末端 RMS 误差、最大误差、关节速度峰值和 AprilTag 丢失率。
+
+# Perception-Control 阶段 4：连续 Base 平移扰动下的 XYZ 稳定
+
+## 目标与结论
+
+本阶段实现 moving-base 动态扰动实验入口和指标汇总工具，用同一套 Gazebo replay CSV 对比：
+
+```text
+baseline    : /arm_velocity_controller/commands 始终为零
+visual_xyz  : /visual_ee_pose + Pinocchio XYZ CLIK 输出关节速度
+```
+
+评价主指标使用 Gazebo 真值 `actual_link6` 相对实验首个有效样本的位置偏移，避免控制输入和评价同源。
+
+结论：
+
+- 阶段 4 的实验框架、扰动 profile、CSV 记录和指标汇总已经实现；
+- `sine_x`、`sine_y`、`sine_z`、`sine_xyz`、`random_translation_3d` 均已完成 baseline/visual_xyz headless 实测；
+- 当前 visual_xyz 实测未达到验收标准：visual 组 `visual_loss_rate=1.0`，关节速度峰值为 `0`，Gazebo 真值 RMS 与 baseline 基本相同；
+- 因此当前项目状态不适合进入阶段 5，必须先修复 moving-base replay 下 AprilTag/visual pose 持续失效的问题。
+
+## 修改内容
+
+新增：
+
+- `scripts/phase4_dynamic_xyz_metrics.py`
+
+修改：
+
+- `scripts/generate_base_disturbance.py`
+- `scripts/base_disturbance_replay.py`
+- `scripts/visual_ee_pose_estimator.py`
+- `launch/moving_base_stabilization.launch.py`
+- `config/base_disturbance_profiles.yaml`
+- `CMakeLists.txt`
+- `docs/perception_control_report.md`
+
+扰动生成：
+
+- 新增 `sine_xyz` profile；
+- `random_translation_3d` 增加 `max_translation_norm: 0.10`，保证三维平移模长最大为 10 cm；
+- `sine_x/y/z/xyz` 和 `random_translation_3d` 均可用同一脚本生成固定 duration、sample rate、seed 的 CSV。
+
+moving-base launch：
+
+- `experiment_mode:=baseline|visual_xyz`；
+- `visual_xyz` 自动启动 `apriltag_ros`、`visual_ee_pose_estimator.py` 和 `visual_ee_stabilization_controller.py`；
+- 默认 `visual_xyz` 使用 `max_joint_velocity=1.0 rad/s`、`max_task_velocity_xyz=0.25 0.25 0.25 m/s`，覆盖 10 cm、0.35 Hz 平移扰动所需的任务空间速度；
+- replay 增加 `replay_state_sample_stride`，允许降低 Gazebo get-entity-state 查询频率，减少对 RGB/AprilTag 的干扰。
+
+replay CSV 新增字段：
+
+```text
+visual_valid
+latest_visual_pose_age_sec
+visual_error
+visual_dq_limited
+```
+
+指标脚本输出：
+
+```text
+xyz_rms_m
+xyz_max_m
+steady_xyz_mean_m
+steady_xyz_max_m
+joint_velocity_peak_rad_s
+joint_max_step_rad
+command_saturation_ratio
+visual_loss_rate
+visual_pose_age_mean_sec
+visual_pose_age_max_sec
+visual_error_rms_m
+visual_error_max_m
+```
+
+视觉估计器修正：
+
+- `camera->tag` TF 和 `ee->camera` TF 分开 lookup；
+- `ee->camera` 固定外参允许回退 latest TF，避免动态时间戳微小超前阻塞；
+- pending detection 若被后续 detection 超越，会丢弃旧样本继续处理；
+- shutdown race 增加保护，避免 timeout 清理时误报。
+
+## 验收命令
+
+静态检查和构建：
+
+```bash
+cd /home/yihuang/westlake/windylab-arm-for6/windylab_ws
+source setup_env.bash
+python3 -m py_compile \
+  src/arm-platform/scripts/generate_base_disturbance.py \
+  src/arm-platform/scripts/base_disturbance_replay.py \
+  src/arm-platform/scripts/visual_ee_pose_estimator.py \
+  src/arm-platform/scripts/phase4_dynamic_xyz_metrics.py \
+  src/arm-platform/launch/moving_base_stabilization.launch.py
+
+colcon build --packages-select manipulator --symlink-install
+```
+
+生成扰动并运行全量实验：
+
+```bash
+source setup_env.bash
+profiles=(sine_x sine_y sine_z sine_xyz random_translation_3d)
+outdir=/tmp/windylab_phase4_full
+mkdir -p "$outdir"
+
+for profile in "${profiles[@]}"; do
+  python3 src/arm-platform/scripts/generate_base_disturbance.py \
+    --config src/arm-platform/config/base_disturbance_profiles.yaml \
+    --profile "$profile" \
+    --duration-sec 30 \
+    --sample-rate-hz 20 \
+    --output-csv "$outdir/${profile}.csv"
+
+  for mode in baseline visual_xyz; do
+    timeout -s INT -k 10s 65s \
+      ros2 launch manipulator moving_base_stabilization.launch.py \
+      gui:=false use_rviz:=false \
+      experiment_mode:=$mode \
+      disturbance_csv:="$outdir/${profile}.csv" \
+      replay_output_csv:="$outdir/${profile}_${mode}_replay.csv" \
+      replay_rate_hz:=20.0 \
+      replay_state_sample_stride:=4 \
+      start_delay_sec:=6.0
+  done
+done
+```
+
+汇总指标：
+
+```bash
+python3 src/arm-platform/scripts/phase4_dynamic_xyz_metrics.py \
+  --run sine_x_baseline=/tmp/windylab_phase4_full/sine_x_baseline_replay.csv \
+  --run sine_x_visual=/tmp/windylab_phase4_full/sine_x_visual_xyz_replay.csv \
+  --run sine_y_baseline=/tmp/windylab_phase4_full/sine_y_baseline_replay.csv \
+  --run sine_y_visual=/tmp/windylab_phase4_full/sine_y_visual_xyz_replay.csv \
+  --run sine_z_baseline=/tmp/windylab_phase4_full/sine_z_baseline_replay.csv \
+  --run sine_z_visual=/tmp/windylab_phase4_full/sine_z_visual_xyz_replay.csv \
+  --run sine_xyz_baseline=/tmp/windylab_phase4_full/sine_xyz_baseline_replay.csv \
+  --run sine_xyz_visual=/tmp/windylab_phase4_full/sine_xyz_visual_xyz_replay.csv \
+  --run random_baseline=/tmp/windylab_phase4_full/random_translation_3d_baseline_replay.csv \
+  --run random_visual=/tmp/windylab_phase4_full/random_translation_3d_visual_xyz_replay.csv \
+  --output-csv /tmp/windylab_phase4_full/phase4_summary.csv
+```
+
+## 本次验收结果
+
+构建结果：
+
+```text
+colcon build --packages-select manipulator --symlink-install
+Summary: 1 package finished
+```
+
+全量实验结果：
+
+| profile | mode | XYZ RMS m | XYZ max m | joint vel peak rad/s | visual loss | set failures |
+|---|---|---:|---:|---:|---:|---:|
+| sine_x | baseline | 0.067577 | 0.100000 | 0.000000 | n/a | 0 |
+| sine_x | visual_xyz | 0.067582 | 0.100000 | 0.000000 | 1.000 | 0 |
+| sine_y | baseline | 0.067576 | 0.100000 | 0.000000 | n/a | 0 |
+| sine_y | visual_xyz | 0.067577 | 0.100000 | 0.000000 | 1.000 | 0 |
+| sine_z | baseline | 0.040609 | 0.060000 | 0.000000 | n/a | 20 |
+| sine_z | visual_xyz | 0.040546 | 0.060000 | 0.000000 | 1.000 | 0 |
+| sine_xyz | baseline | 0.103815 | 0.153623 | 0.000000 | n/a | 0 |
+| sine_xyz | visual_xyz | 0.103815 | 0.153623 | 0.000000 | 1.000 | 0 |
+| random_translation_3d | baseline | 0.059898 | 0.099977 | 0.000000 | n/a | 0 |
+| random_translation_3d | visual_xyz | 0.059896 | 0.099977 | 0.000000 | 1.000 | 0 |
+
+结果文件：
+
+```text
+/tmp/windylab_phase4_full/phase4_summary.csv
+/tmp/windylab_phase4_full/*_baseline_replay.csv
+/tmp/windylab_phase4_full/*_visual_xyz_replay.csv
+```
+
+说明：
+
+- baseline 与 visual_xyz 的 Gazebo 真值 RMS 未出现明显差异；
+- visual_xyz 组 `visual_loss_rate=1.000`，`latest_visual_pose_age_sec` 在 18-35 s 量级，说明 replay 期间 `/visual_ee_pose` 没有持续刷新；
+- visual_xyz 组 `joint_velocity_peak_rad_s=0`，说明控制器因视觉失效安全输出零速度；
+- `sine_z_baseline` 出现 20 个 set failures，但 visual 对应组为 0；该单项不影响“visual 未实际闭环”的主要结论。
+
+## 项目状态评估
+
+阶段 4 的工程入口和指标工具已经完成，但闭环验收未通过。下一步不应进入阶段 5，而应先修复阶段 4 阻塞项：
+
+- 在 `moving_base_stabilization.launch.py` + `base_disturbance_replay.py` 组合下，定位为什么 AprilTag 同步/`/visual_ee_pose` 会在 replay 开始后失效；
+- 优先检查 Gazebo `set_entity_state` service 调用与 RGB-D sensor update 的互相影响；
+- 若 service replay 会持续干扰传感器，应改为 Gazebo 插件、模型速度控制或更轻量的 base 扰动机制；
+- 修复后重新运行本阶段 5 个 profile 的 baseline/visual_xyz 对比，确认 visual XYZ RMS 明显低于 baseline。

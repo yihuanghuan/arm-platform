@@ -258,6 +258,7 @@ install(PROGRAMS
   scripts/visual_ee_stabilization_controller.py
   scripts/check_visual_ee_pose.py
   scripts/static_xyz_closed_loop_check.py
+  scripts/phase4_dynamic_xyz_metrics.py
   DESTINATION lib/${PROJECT_NAME}
 )
 

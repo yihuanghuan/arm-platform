@@ -171,27 +171,45 @@ class VisualEePoseEstimator(Node):
 
             status = self.process_detection(stamp, detection)
             if status == 'waiting':
+                if len(self.pending_detections) > 1:
+                    self.pending_detections.popleft()
+                    self.publish_invalid('detection_tf_superseded', stamp)
+                    continue
                 return
             self.pending_detections.popleft()
 
     def process_detection(self, stamp, detection):
+        stamp_time = Time.from_msg(stamp)
         try:
-            stamp_time = Time.from_msg(stamp)
             camera_to_tag_tf = self.tf_buffer.lookup_transform(
                 self.camera_frame,
                 self.detected_tag_frame,
                 stamp_time,
                 timeout=Duration(seconds=self.tf_timeout_sec))
+        except Exception as exc:
+            if 'extrapolation into the future' in str(exc).lower():
+                return 'waiting'
+            self.publish_invalid(f'tag_tf_lookup_failed: {exc}', stamp)
+            return 'done'
+
+        try:
             ee_to_camera_tf = self.tf_buffer.lookup_transform(
                 self.ee_frame,
                 self.camera_frame,
                 stamp_time,
                 timeout=Duration(seconds=self.tf_timeout_sec))
         except Exception as exc:
-            if 'extrapolation into the future' in str(exc).lower():
-                return 'waiting'
-            self.publish_invalid(f'tf_lookup_failed: {exc}', stamp)
-            return 'done'
+            try:
+                ee_to_camera_tf = self.tf_buffer.lookup_transform(
+                    self.ee_frame,
+                    self.camera_frame,
+                    Time(),
+                    timeout=Duration(seconds=self.tf_timeout_sec))
+            except Exception as fallback_exc:
+                self.publish_invalid(
+                    f'ee_camera_tf_lookup_failed: {exc}; latest: {fallback_exc}',
+                    stamp)
+                return 'done'
 
         camera_to_tag = transform_to_matrix(camera_to_tag_tf.transform)
         ee_to_camera = transform_to_matrix(ee_to_camera_tf.transform)
@@ -344,8 +362,15 @@ def main(argv=None):
         rclpy.spin(node)
     except KeyboardInterrupt:
         pass
+    except Exception as exc:
+        if rclpy.ok():
+            raise
+        node.get_logger().debug(f'Ignoring shutdown exception: {exc}')
     finally:
-        node.destroy_node()
+        try:
+            node.destroy_node()
+        except KeyboardInterrupt:
+            pass
         if rclpy.ok():
             rclpy.shutdown()
 

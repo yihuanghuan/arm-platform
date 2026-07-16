@@ -27,6 +27,11 @@ profiles:
     type: sine
     axis: z
 
+  sine_xyz:
+    type: sine
+    axis: xyz
+
   random_translation_3d:
     type: random_translation_3d
     component_count: 6
+    max_translation_norm: 0.10

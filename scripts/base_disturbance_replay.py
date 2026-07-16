@@ -12,11 +12,13 @@ from gazebo_msgs.msg import EntityState
 from gazebo_msgs.srv import GetEntityState
 from gazebo_msgs.srv import SetEntityState
 from geometry_msgs.msg import Pose
+from geometry_msgs.msg import PoseStamped
 from geometry_msgs.msg import Twist
 import rclpy
 from rclpy.node import Node
 from rclpy.parameter import Parameter
 from sensor_msgs.msg import JointState
+from std_msgs.msg import Bool
 from std_msgs.msg import Float64MultiArray
 
 
@@ -125,6 +127,10 @@ def serialize_values(values):
     return ';'.join(f'{value:.9g}' for value in values)
 
 
+def stamp_to_nanoseconds(stamp):
+    return int(stamp.sec) * 1000000000 + int(stamp.nanosec)
+
+
 def load_trajectory(path):
     with open(path, 'r', encoding='utf-8') as handle:
         reader = csv.DictReader(handle)
@@ -154,6 +160,14 @@ class BaseDisturbanceReplay(Node):
         self.previous_joint_positions = None
         self.max_joint_step = 0.0
         self.latest_velocity_command = None
+        self.latest_visual_valid = None
+        self.latest_visual_pose_stamp_ns = 0
+        self.latest_visual_error = None
+        self.latest_visual_dq_limited = None
+        self.latest_model_pose = None
+        self.latest_base_pose = None
+        self.latest_ee_pose = None
+        self.latest_camera_pose = None
         self.rows = []
         self.wall_stamps = []
         self.output_rows = []
@@ -167,6 +181,26 @@ class BaseDisturbanceReplay(Node):
             Float64MultiArray,
             args.velocity_command_topic,
             self.velocity_command_callback,
+            50)
+        self.create_subscription(
+            Bool,
+            args.visual_valid_topic,
+            self.visual_valid_callback,
+            50)
+        self.create_subscription(
+            PoseStamped,
+            args.visual_pose_topic,
+            self.visual_pose_callback,
+            50)
+        self.create_subscription(
+            Float64MultiArray,
+            args.visual_error_topic,
+            self.visual_error_callback,
+            50)
+        self.create_subscription(
+            Float64MultiArray,
+            args.visual_dq_topic,
+            self.visual_dq_callback,
             50)
 
     def joint_state_callback(self, msg):
@@ -190,6 +224,18 @@ class BaseDisturbanceReplay(Node):
     def velocity_command_callback(self, msg):
         self.latest_velocity_command = list(msg.data)
 
+    def visual_valid_callback(self, msg):
+        self.latest_visual_valid = bool(msg.data)
+
+    def visual_pose_callback(self, msg):
+        self.latest_visual_pose_stamp_ns = stamp_to_nanoseconds(msg.header.stamp)
+
+    def visual_error_callback(self, msg):
+        self.latest_visual_error = list(msg.data)
+
+    def visual_dq_callback(self, msg):
+        self.latest_visual_dq_limited = list(msg.data)
+
     def wait_for_services(self):
         for client, name in (
             (self.set_client, self.args.set_entity_state_service),
@@ -197,6 +243,25 @@ class BaseDisturbanceReplay(Node):
         ):
             if not client.wait_for_service(timeout_sec=self.args.service_timeout):
                 raise RuntimeError(f'Gazebo service not available: {name}')
+
+    def wait_for_entities(self):
+        required = [
+            self.args.entity_name,
+            self.args.base_entity_name,
+            self.args.ee_entity_name,
+        ]
+        deadline = time.monotonic() + self.args.entity_ready_timeout
+        while rclpy.ok() and time.monotonic() < deadline:
+            missing = [
+                entity_name for entity_name in required
+                if self.call_get_state(entity_name) is None
+            ]
+            if not missing:
+                return
+            rclpy.spin_once(self, timeout_sec=0.05)
+            time.sleep(0.1)
+        raise RuntimeError(
+            'Timed out waiting for Gazebo entities: ' + ', '.join(required))
 
     def call_set_state(self, row):
         request = SetEntityState.Request()
@@ -229,6 +294,7 @@ class BaseDisturbanceReplay(Node):
     def run(self, rows):
         self.rows = rows
         self.wait_for_services()
+        self.wait_for_entities()
         self.get_logger().info(
             f'Replaying {len(rows)} samples to {self.args.entity_name} at '
             f'{self.args.rate_hz:.1f} Hz target')
@@ -254,16 +320,30 @@ class BaseDisturbanceReplay(Node):
             self.wall_stamps.append(after_call)
 
             command_pose = make_pose(row)
-            actual_model = self.call_get_state(self.args.entity_name)
-            actual_base = self.call_get_state(self.args.base_entity_name)
-            actual_ee = self.call_get_state(self.args.ee_entity_name)
-            actual_camera = self.call_get_state(self.args.camera_entity_name)
+            if index % self.args.state_sample_stride == 0:
+                actual_model = self.call_get_state(self.args.entity_name)
+                actual_base = self.call_get_state(self.args.base_entity_name)
+                actual_ee = self.call_get_state(self.args.ee_entity_name)
+                actual_camera = self.call_get_state(self.args.camera_entity_name)
+                self.latest_model_pose = (
+                    actual_model.pose if actual_model is not None else self.latest_model_pose)
+                self.latest_base_pose = (
+                    actual_base.pose if actual_base is not None else self.latest_base_pose)
+                self.latest_ee_pose = (
+                    actual_ee.pose if actual_ee is not None else self.latest_ee_pose)
+                self.latest_camera_pose = (
+                    actual_camera.pose if actual_camera is not None else self.latest_camera_pose)
 
-            model_pose = actual_model.pose if actual_model is not None else None
-            base_pose = actual_base.pose if actual_base is not None else None
-            ee_pose = actual_ee.pose if actual_ee is not None else None
-            camera_pose = actual_camera.pose if actual_camera is not None else None
+            model_pose = self.latest_model_pose
+            base_pose = self.latest_base_pose
+            ee_pose = self.latest_ee_pose
+            camera_pose = self.latest_camera_pose
             tracking_pose = base_pose if base_pose is not None else model_pose
+            latest_visual_pose_age_sec = ''
+            now_ns = self.get_clock().now().nanoseconds
+            if self.latest_visual_pose_stamp_ns > 0 and now_ns > self.latest_visual_pose_stamp_ns:
+                latest_visual_pose_age_sec = (
+                    f'{(now_ns - self.latest_visual_pose_stamp_ns) * 1e-9:.9f}')
             row_out = {
                 'trajectory_time_sec': f'{float(row["time_sec"]):.9f}',
                 'wall_time_sec': f'{after_call - start:.9f}',
@@ -278,6 +358,12 @@ class BaseDisturbanceReplay(Node):
                 'joint_max_step_rad': f'{self.max_joint_step:.9f}',
                 'joint_positions': serialize_values(self.latest_joint_positions),
                 'velocity_command': serialize_values(self.latest_velocity_command),
+                'visual_valid': (
+                    '' if self.latest_visual_valid is None
+                    else str(bool(self.latest_visual_valid)).lower()),
+                'latest_visual_pose_age_sec': latest_visual_pose_age_sec,
+                'visual_error': serialize_values(self.latest_visual_error),
+                'visual_dq_limited': serialize_values(self.latest_visual_dq_limited),
             }
             row_out.update(serialize_pose('command', command_pose))
             row_out.update(serialize_pose('actual_model', model_pose))
@@ -337,6 +423,10 @@ class BaseDisturbanceReplay(Node):
             'joint_max_step_rad',
             'joint_positions',
             'velocity_command',
+            'visual_valid',
+            'latest_visual_pose_age_sec',
+            'visual_error',
+            'visual_dq_limited',
         ]
         for prefix in ('command', 'actual_model', 'actual_base', 'actual_link6', 'actual_camera'):
             fieldnames.extend([
@@ -374,16 +464,24 @@ def parse_args(argv):
     parser.add_argument('--get-entity-state-service', default='/get_entity_state')
     parser.add_argument('--joint-state-topic', default='/joint_states')
     parser.add_argument('--velocity-command-topic', default='/arm_velocity_controller/commands')
+    parser.add_argument('--visual-valid-topic', default='/visual_ee_pose_valid')
+    parser.add_argument('--visual-pose-topic', default='/visual_ee_pose')
+    parser.add_argument('--visual-error-topic', default='/visual_stabilization/error')
+    parser.add_argument('--visual-dq-topic', default='/visual_stabilization/dq_limited')
     parser.add_argument('--joint-names', type=parse_joint_names, default=parse_joint_names(
         'joint1 joint2 joint3 joint4 joint5 joint6'))
     parser.add_argument('--rate-hz', type=float, default=100.0)
+    parser.add_argument('--state-sample-stride', type=int, default=1)
     parser.add_argument('--service-timeout', type=float, default=10.0)
     parser.add_argument('--service-call-timeout', type=float, default=0.05)
+    parser.add_argument('--entity-ready-timeout', type=float, default=20.0)
     parser.add_argument('--start-delay-sec', type=float, default=2.0)
     parser.add_argument('--use-sim-time', action='store_true')
     args, _ = parser.parse_known_args(argv)
     if args.rate_hz <= 0.0:
         raise SystemExit('--rate-hz must be positive')
+    if args.state_sample_stride <= 0:
+        raise SystemExit('--state-sample-stride must be positive')
     if not args.joint_names:
         raise SystemExit('--joint-names must not be empty')
     return args

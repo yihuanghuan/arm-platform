@@ -88,10 +88,11 @@ def generate_static(times):
 def generate_sine(times, profile):
     positions, velocities = generate_static(times)
     axis = str(profile.get('axis', 'x'))
-    if axis not in AXES:
-        raise ValueError(f'sine axis must be one of {AXES}, got {axis}')
+    axes = AXES if axis == 'xyz' else (axis,)
+    invalid = [item for item in axes if item not in AXES]
+    if invalid:
+        raise ValueError(f'sine axis must be one of {AXES} or xyz, got {axis}')
     amplitudes = profile['translation_amplitude']
-    amplitude = float(amplitudes[axis])
     frequency_hz = float(profile.get('frequency_hz', profile.get('sine_frequency_hz', 0.2)))
     duration_sec = float(profile['duration_sec'])
     ramp_sec = float(profile.get('ramp_sec', min(2.0, duration_sec * 0.1)))
@@ -100,8 +101,10 @@ def generate_sine(times, profile):
         envelope, envelope_dot = smooth_envelope(t, duration_sec, ramp_sec)
         raw = math.sin(omega * t)
         raw_dot = omega * math.cos(omega * t)
-        positions[axis][index] = amplitude * envelope * raw
-        velocities[axis][index] = amplitude * (envelope_dot * raw + envelope * raw_dot)
+        for item in axes:
+            amplitude = float(amplitudes[item])
+            positions[item][index] = amplitude * envelope * raw
+            velocities[item][index] = amplitude * (envelope_dot * raw + envelope * raw_dot)
     return positions, velocities
 
 
@@ -172,6 +175,20 @@ def generate_random_translation_3d(times, profile):
             scale = scales[axis]
             positions[axis].append(scale * envelope * raw)
             velocities[axis].append(scale * (envelope_dot * raw + envelope * raw_dot))
+
+    max_translation_norm = profile.get('max_translation_norm')
+    if max_translation_norm is not None:
+        max_translation_norm = float(max_translation_norm)
+        if max_translation_norm <= 0.0:
+            raise ValueError('max_translation_norm must be positive')
+        max_norm = max(
+            math.sqrt(sum(positions[axis][index] ** 2 for axis in AXES))
+            for index in range(len(times)))
+        if max_norm > max_translation_norm:
+            scale = max_translation_norm / max_norm
+            for axis in AXES:
+                positions[axis] = [value * scale for value in positions[axis]]
+                velocities[axis] = [value * scale for value in velocities[axis]]
     return positions, velocities
 
 
