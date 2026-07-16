@@ -578,6 +578,7 @@ class VisualEeStabilizationController(Node):
         self.command_pub.publish(self.make_array(dq_limited))
 
     def publish_status(self, reason):
+        now_ns = self.get_clock().now().nanoseconds
         target_position = None
         if self.target_pose is not None:
             target_position = [
@@ -585,13 +586,34 @@ class VisualEeStabilizationController(Node):
                 float(self.target_pose.translation[1]),
                 float(self.target_pose.translation[2]),
             ]
+        latest_visual_position = None
+        position_error = None
+        if self.latest_visual_pose is not None:
+            latest_visual_position = [
+                float(self.latest_visual_pose.translation[0]),
+                float(self.latest_visual_pose.translation[1]),
+                float(self.latest_visual_pose.translation[2]),
+            ]
+            if self.target_pose is not None:
+                error_xyz = (
+                    self.target_pose.translation - self.latest_visual_pose.translation)
+                position_error = [float(value) for value in error_xyz]
+        measurement_age_sec = None
+        if self.latest_visual_stamp_ns > 0 and now_ns > 0:
+            measurement_age_sec = (
+                now_ns - self.latest_visual_stamp_ns) * 1e-9
         payload = {
             'status': reason,
             'target_locked': self.target_pose is not None,
             'target_lock_count': self.target_lock_count,
             'target_reset_count': self.target_reset_count,
             'target_position': target_position,
+            'latest_visual_position': latest_visual_position,
+            'position_error': position_error,
+            'latest_control_update_error': [float(value) for value in self.last_error],
+            'measurement_age_sec': measurement_age_sec,
             'visual_valid': self.visual_valid,
+            'pending_visual_measurement': self.pending_visual_measurement,
             'latest_visual_stamp_sec': self.latest_visual_stamp_ns * 1e-9,
             'latest_processed_visual_stamp_sec': self.latest_processed_visual_stamp_ns * 1e-9,
             'consecutive_valid_poses': self.consecutive_valid_poses,

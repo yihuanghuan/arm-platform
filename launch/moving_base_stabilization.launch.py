@@ -36,6 +36,10 @@ def generate_launch_description():
         "'", LaunchConfiguration('experiment_mode'), "' == 'visual_xyz' and '",
         LaunchConfiguration('run_phase4_diagnostics'),
         "'.lower() in ('1', 'true', 'yes', 'on')"]))
+    transform_chain_diagnostics_condition = IfCondition(PythonExpression([
+        "'", LaunchConfiguration('experiment_mode'), "' == 'visual_xyz' and '",
+        LaunchConfiguration('run_phase4_transform_chain_diagnostics'),
+        "'.lower() in ('1', 'true', 'yes', 'on')"]))
 
     gui_arg = DeclareLaunchArgument(
         'gui',
@@ -195,6 +199,22 @@ def generate_launch_description():
         'phase4_diagnostics_sample_hz',
         default_value='2.0',
         description='Diagnostics CSV sample rate in Hz')
+    run_phase4_transform_chain_diagnostics_arg = DeclareLaunchArgument(
+        'run_phase4_transform_chain_diagnostics',
+        default_value='false',
+        description='Start phase4.3 transform-chain diagnostics in visual_xyz mode')
+    phase4_transform_chain_output_csv_arg = DeclareLaunchArgument(
+        'phase4_transform_chain_output_csv',
+        default_value='/tmp/phase4_3_visual_pose_transform_chain.csv',
+        description='CSV output path for phase 4.3 transform-chain diagnostics')
+    phase4_transform_chain_duration_sec_arg = DeclareLaunchArgument(
+        'phase4_transform_chain_duration_sec',
+        default_value='0.0',
+        description='Transform-chain diagnostics duration; 0 means run until launch exits')
+    phase4_transform_chain_sample_hz_arg = DeclareLaunchArgument(
+        'phase4_transform_chain_sample_hz',
+        default_value='5.0',
+        description='Transform-chain diagnostics CSV sample rate in Hz')
     use_sim_time_arg = DeclareLaunchArgument(
         'use_sim_time',
         default_value='true',
@@ -413,6 +433,28 @@ def generate_launch_description():
         ],
     )
 
+    transform_chain_diagnostics = Node(
+        condition=transform_chain_diagnostics_condition,
+        package='manipulator',
+        executable='check_visual_pose_transform_chain.py',
+        name='check_visual_pose_transform_chain',
+        output='screen',
+        arguments=[
+            '--output-csv', LaunchConfiguration('phase4_transform_chain_output_csv'),
+            '--duration-sec', LaunchConfiguration('phase4_transform_chain_duration_sec'),
+            '--sample-hz', LaunchConfiguration('phase4_transform_chain_sample_hz'),
+            '--camera-frame', 'camera_color_optical_frame',
+            '--detected-tag-frame', 'apriltag_36h11_00000',
+            '--ee-frame', 'link6',
+            '--base-link-name', 'windylab_arm::base_link',
+            '--ee-link-name', 'windylab_arm::link6',
+            '--tag-model-name', 'apriltag_36h11_00000_target',
+            '--world-to-tag-xyz', '1.60042456 0.000976374 0.35065986',
+            '--world-to-tag-rpy', '-3.12204785 -1.56214388 3.12103003',
+            '--use-sim-time',
+        ],
+    )
+
     return LaunchDescription([
         gui_arg,
         use_rviz_arg,
@@ -453,6 +495,10 @@ def generate_launch_description():
         phase4_diagnostics_output_csv_arg,
         phase4_diagnostics_duration_sec_arg,
         phase4_diagnostics_sample_hz_arg,
+        run_phase4_transform_chain_diagnostics_arg,
+        phase4_transform_chain_output_csv_arg,
+        phase4_transform_chain_duration_sec_arg,
+        phase4_transform_chain_sample_hz_arg,
         use_sim_time_arg,
         start_delay_sec_arg,
         OpaqueFunction(function=_validate_arguments),
@@ -463,5 +509,6 @@ def generate_launch_description():
         visual_controller,
         ground_truth_controller,
         diagnostics,
+        transform_chain_diagnostics,
         replay,
     ])

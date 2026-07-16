@@ -76,6 +76,30 @@ def matrix_to_pose_stamped(matrix, frame_id, stamp):
     return msg
 
 
+def matrix_to_xyz_quat(matrix):
+    quat = Rotation.from_matrix(matrix[:3, :3]).as_quat()
+    return [
+        float(matrix[0, 3]),
+        float(matrix[1, 3]),
+        float(matrix[2, 3]),
+        float(quat[0]),
+        float(quat[1]),
+        float(quat[2]),
+        float(quat[3]),
+    ]
+
+
+def rotation_angle_between(a_matrix, b_matrix):
+    relative = a_matrix[:3, :3].T @ b_matrix[:3, :3]
+    return float(Rotation.from_matrix(relative).magnitude())
+
+
+def transform_delta(a_matrix, b_matrix):
+    translation_delta = float(np.linalg.norm(a_matrix[:3, 3] - b_matrix[:3, 3]))
+    rotation_delta = rotation_angle_between(a_matrix, b_matrix)
+    return translation_delta, rotation_delta
+
+
 class VisualEePoseEstimator(Node):
     def __init__(self):
         super().__init__('visual_ee_pose_estimator')
@@ -106,6 +130,10 @@ class VisualEePoseEstimator(Node):
             raise ValueError('tag_tf_mode must be stamped or latest')
         self.max_tag_tf_age_sec = float(self.declare_parameter(
             'max_tag_tf_age_sec', 0.5).value)
+        self.duplicate_translation_epsilon_m = float(self.declare_parameter(
+            'duplicate_translation_epsilon_m', 1e-6).value)
+        self.duplicate_rotation_epsilon_rad = float(self.declare_parameter(
+            'duplicate_rotation_epsilon_rad', 1e-6).value)
         self.debug_publish_period_sec = float(self.declare_parameter(
             'debug_publish_period_sec', 0.5).value)
         self.position_estimation_mode = self.declare_parameter(
@@ -141,6 +169,7 @@ class VisualEePoseEstimator(Node):
         self.latest_target_detection_id = None
         self.latest_valid_stamp_ns = 0
         self.last_published_tag_tf_stamp_ns = 0
+        self.last_published_camera_to_tag = None
         self.last_debug_wall_time = 0.0
         self.last_valid = False
         self.last_reason = 'waiting_for_detection'
@@ -148,6 +177,10 @@ class VisualEePoseEstimator(Node):
         self.visual_valid_false_count = 0
         self.visual_valid_toggle_count = 0
         self.duplicate_tag_tf_drop_count = 0
+        self.duplicate_same_stamp_same_value_count = 0
+        self.same_stamp_changed_transform_count = 0
+        self.new_stamp_new_transform_count = 0
+        self.new_stamp_same_transform_count = 0
         self.new_measurement_count = 0
         self.tf_counters = {
             'camera_tag_tf_success': 0,
@@ -185,7 +218,13 @@ class VisualEePoseEstimator(Node):
 
         detection = self.find_target_detection(msg)
         if detection is None:
-            self.publish_invalid('target_not_detected', msg.header.stamp)
+            now_ns = self.get_clock().now().nanoseconds
+            if self.latest_target_detection_stamp_ns <= 0:
+                self.publish_periodic_debug('target_not_detected')
+                return
+            target_age_sec = ns_to_sec(now_ns - self.latest_target_detection_stamp_ns)
+            if target_age_sec > self.detection_timeout_sec:
+                self.publish_invalid('target_not_detected_timeout', msg.header.stamp)
             return
 
         self.target_detection_count += 1
@@ -255,10 +294,6 @@ class VisualEePoseEstimator(Node):
             self.tf_counters['camera_tag_tf_stale'] += 1
             self.publish_invalid('tag_tf_missing_stamp', now.to_msg())
             return
-        if tf_stamp_ns <= self.last_published_tag_tf_stamp_ns:
-            self.duplicate_tag_tf_drop_count += 1
-            self.publish_invalid('duplicate_tag_tf', tf_stamp)
-            return
         tf_age_sec = ns_to_sec(now_ns - tf_stamp_ns)
         if tf_age_sec < -self.max_tag_tf_age_sec:
             self.tf_counters['camera_tag_tf_future_extrapolation'] += 1
@@ -267,6 +302,26 @@ class VisualEePoseEstimator(Node):
         if tf_age_sec > self.max_tag_tf_age_sec:
             self.tf_counters['camera_tag_tf_stale'] += 1
             self.publish_invalid(f'tag_tf_stale:{tf_age_sec:.6f}', tf_stamp)
+            return
+
+        camera_to_tag = transform_to_matrix(camera_to_tag_tf.transform)
+        duplicate_status = self.classify_camera_tag_measurement(
+            tf_stamp_ns, camera_to_tag)
+        if duplicate_status['is_duplicate']:
+            self.duplicate_tag_tf_drop_count += 1
+            self.duplicate_same_stamp_same_value_count += 1
+            self.last_reason = 'duplicate_tag_tf'
+            self.publish_debug(
+                valid=self.last_valid,
+                reason='duplicate_tag_tf',
+                stamp=tf_stamp,
+                extra={
+                    'tag_tf_mode': self.tag_tf_mode,
+                    'tag_tf_age_sec': tf_age_sec,
+                    'target_detection_age_sec': detection_age_sec,
+                    'tag_tf_stamp_sec': ns_to_sec(tf_stamp_ns),
+                    **duplicate_status,
+                })
             return
 
         try:
@@ -291,7 +346,56 @@ class VisualEePoseEstimator(Node):
                 'tag_tf_age_sec': tf_age_sec,
                 'target_detection_age_sec': detection_age_sec,
                 'tag_tf_stamp_sec': ns_to_sec(tf_stamp_ns),
+                **duplicate_status,
             })
+
+    def classify_camera_tag_measurement(self, tf_stamp_ns, camera_to_tag):
+        if self.last_published_camera_to_tag is None:
+            return {
+                'is_duplicate': False,
+                'tag_tf_stamp_changed': True,
+                'tag_tf_translation_delta_m': None,
+                'tag_tf_rotation_delta_rad': None,
+                'tag_tf_translation_changed': True,
+                'tag_tf_rotation_changed': True,
+                'tag_tf_change_class': 'first_measurement',
+            }
+
+        translation_delta, rotation_delta = transform_delta(
+            self.last_published_camera_to_tag,
+            camera_to_tag)
+        translation_changed = (
+            translation_delta > self.duplicate_translation_epsilon_m)
+        rotation_changed = (
+            rotation_delta > self.duplicate_rotation_epsilon_rad)
+        value_changed = translation_changed or rotation_changed
+        stamp_changed = tf_stamp_ns != self.last_published_tag_tf_stamp_ns
+
+        if not stamp_changed and not value_changed:
+            change_class = 'duplicate_same_stamp_same_value'
+            is_duplicate = True
+        elif not stamp_changed and value_changed:
+            self.same_stamp_changed_transform_count += 1
+            change_class = 'same_stamp_changed_transform'
+            is_duplicate = False
+        elif stamp_changed and value_changed:
+            self.new_stamp_new_transform_count += 1
+            change_class = 'new_stamp_new_transform'
+            is_duplicate = False
+        else:
+            self.new_stamp_same_transform_count += 1
+            change_class = 'new_stamp_same_transform'
+            is_duplicate = False
+
+        return {
+            'is_duplicate': is_duplicate,
+            'tag_tf_stamp_changed': stamp_changed,
+            'tag_tf_translation_delta_m': translation_delta,
+            'tag_tf_rotation_delta_rad': rotation_delta,
+            'tag_tf_translation_changed': translation_changed,
+            'tag_tf_rotation_changed': rotation_changed,
+            'tag_tf_change_class': change_class,
+        }
 
     def process_detection(self, stamp, detection):
         stamp_time = Time.from_msg(stamp)
@@ -349,11 +453,12 @@ class VisualEePoseEstimator(Node):
             @ np.linalg.inv(camera_to_tag)
             @ np.linalg.inv(ee_to_camera)
         )
+        world_to_ee_kinematic = self.estimate_position_with_kinematic_orientation(
+            stamp, camera_to_tag, ee_to_camera, world_to_ee_full)
         if self.position_estimation_mode == 'full_pose':
             world_to_ee = world_to_ee_full
         else:
-            world_to_ee = self.estimate_position_with_kinematic_orientation(
-                stamp, camera_to_tag, ee_to_camera, world_to_ee_full)
+            world_to_ee = world_to_ee_kinematic
 
         if not np.all(np.isfinite(world_to_ee)):
             self.publish_invalid('non_finite_pose', stamp)
@@ -367,6 +472,7 @@ class VisualEePoseEstimator(Node):
         tag_tf_stamp_ns = stamp_to_ns(camera_to_tag_tf.header.stamp)
         if tag_tf_stamp_ns > 0:
             self.last_published_tag_tf_stamp_ns = tag_tf_stamp_ns
+            self.last_published_camera_to_tag = camera_to_tag
         self.last_reason = 'ok'
         self.publish_valid(True)
         debug_extra = {
@@ -376,6 +482,13 @@ class VisualEePoseEstimator(Node):
                 pose_msg.pose.position.y,
                 pose_msg.pose.position.z,
             ],
+            'camera_to_tag_measured': matrix_to_xyz_quat(camera_to_tag),
+            'ee_to_camera': matrix_to_xyz_quat(ee_to_camera),
+            'world_to_ee_full': matrix_to_xyz_quat(world_to_ee_full),
+            'world_to_ee_kinematic': matrix_to_xyz_quat(world_to_ee_kinematic),
+            'world_to_ee_full_kinematic_position_delta_m': float(
+                np.linalg.norm(
+                    world_to_ee_full[:3, 3] - world_to_ee_kinematic[:3, 3])),
         }
         if extra:
             debug_extra.update(extra)
@@ -470,11 +583,19 @@ class VisualEePoseEstimator(Node):
         if latest_ns <= 0 or now_ns <= 0:
             self.publish_periodic_debug('waiting_for_detection')
             return
-        age_sec = ns_to_sec(now_ns - latest_ns)
-        if age_sec > self.detection_timeout_sec:
+        target_age_sec = ns_to_sec(now_ns - self.latest_target_detection_stamp_ns)
+        if target_age_sec > self.detection_timeout_sec:
             self.publish_valid(False)
             self.last_reason = 'detection_timeout'
             self.publish_periodic_debug('detection_timeout')
+            return
+        if self.latest_valid_stamp_ns <= 0:
+            return
+        valid_age_sec = ns_to_sec(now_ns - self.latest_valid_stamp_ns)
+        if valid_age_sec > self.detection_timeout_sec:
+            self.publish_valid(False)
+            self.last_reason = 'visual_measurement_timeout'
+            self.publish_periodic_debug('visual_measurement_timeout')
 
     def publish_periodic_debug(self, reason):
         wall_now = time.monotonic()
@@ -497,6 +618,12 @@ class VisualEePoseEstimator(Node):
             'invalid_count': self.invalid_count,
             'new_measurement_count': self.new_measurement_count,
             'duplicate_tag_tf_drop_count': self.duplicate_tag_tf_drop_count,
+            'duplicate_same_stamp_same_value_count': (
+                self.duplicate_same_stamp_same_value_count),
+            'same_stamp_changed_transform_count': (
+                self.same_stamp_changed_transform_count),
+            'new_stamp_new_transform_count': self.new_stamp_new_transform_count,
+            'new_stamp_same_transform_count': self.new_stamp_same_transform_count,
             'visual_valid_true_count': self.visual_valid_true_count,
             'visual_valid_false_count': self.visual_valid_false_count,
             'visual_valid_toggle_count': self.visual_valid_toggle_count,
@@ -510,6 +637,8 @@ class VisualEePoseEstimator(Node):
             'position_estimation_mode': self.position_estimation_mode,
             'tag_tf_mode': self.tag_tf_mode,
             'max_tag_tf_age_sec': self.max_tag_tf_age_sec,
+            'duplicate_translation_epsilon_m': self.duplicate_translation_epsilon_m,
+            'duplicate_rotation_epsilon_rad': self.duplicate_rotation_epsilon_rad,
             'tag_family': self.tag_family,
             'tag_id': self.tag_id,
             'latest_target_detection_stamp_sec': (

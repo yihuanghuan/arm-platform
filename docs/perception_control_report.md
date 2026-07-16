@@ -1,5 +1,94 @@
 # Perception-Control 阶段 0：现有仿真基线冻结报告
 
+## 阶段 4.3：视觉位姿变换链路诊断修正
+
+本阶段针对阶段 4.2 剩余问题：
+
+```text
+Gazebo GT 中 link6 随 moving-base 明显移动，但 /visual_ee_pose 和 visual_error 基本不变。
+```
+
+已完成修改：
+
+- `visual_ee_pose_estimator.py` 不再把真正重复的 Tag TF 发布成 `/visual_ee_pose_valid=false`。重复 TF 现在只更新 debug/计数，不触发 valid 抖动。
+- duplicate 判定从“只看 TF stamp”改为“stamp + translation + rotation”联合判断。新增计数：
+  - `duplicate_same_stamp_same_value_count`
+  - `same_stamp_changed_transform_count`
+  - `new_stamp_new_transform_count`
+  - `new_stamp_same_transform_count`
+- 单帧 `target_not_detected` 不再立即 invalid；只有持续超过 timeout 才发布 `target_not_detected_timeout`。
+- estimator debug 同时记录：
+  - `camera_to_tag_measured`
+  - `ee_to_camera`
+  - `world_to_ee_full`
+  - `world_to_ee_kinematic`
+  - full 与 kinematic 位置差
+- 新增 `check_visual_pose_transform_chain.py`，同时记录 Gazebo GT、理论 `camera_to_tag_gt`、AprilTag measured `camera_to_tag_measured`、以及 `/visual_ee_pose`。
+- 新增 `check_visual_pose_transform_math.py`，用纯 Python 构造已知变换验证 estimator 完整公式：
+
+```text
+world_to_ee = world_to_tag * inv(camera_to_tag) * inv(ee_to_camera)
+```
+
+- `/visual_stabilization/status` 新增：
+  - `latest_visual_position`
+  - `position_error`
+  - `latest_control_update_error`
+  - `measurement_age_sec`
+  - `pending_visual_measurement`
+- `moving_base_stabilization.launch.py` 新增可选 transform-chain 诊断：
+  - `run_phase4_transform_chain_diagnostics`
+  - `phase4_transform_chain_output_csv`
+  - `phase4_transform_chain_duration_sec`
+  - `phase4_transform_chain_sample_hz`
+
+建议运行：
+
+```bash
+cd /home/yihuang/westlake/windylab-arm-for6/windylab_ws
+source setup_env.bash
+colcon build --packages-select manipulator --symlink-install
+```
+
+先跑公式自检：
+
+```bash
+ros2 run manipulator check_visual_pose_transform_math.py
+```
+
+再跑 moving-base transform-chain 诊断：
+
+```bash
+ros2 launch manipulator moving_base_stabilization.launch.py \
+  experiment_mode:=visual_xyz gui:=true use_rviz:=false \
+  disturbance_csv:=/tmp/base_disturbance.csv \
+  replay_output_csv:=/tmp/phase4_3_visual_xyz_replay.csv \
+  run_phase4_diagnostics:=true \
+  phase4_diagnostics_output_csv:=/tmp/phase4_3_visual_chain.csv \
+  run_phase4_transform_chain_diagnostics:=true \
+  phase4_transform_chain_output_csv:=/tmp/phase4_3_visual_pose_transform_chain.csv \
+  start_delay_sec:=35.0
+```
+
+CSV 判断标准：
+
+| 现象 | 根因位置 |
+|---|---|
+| `camera_tag_gt` 明显变化，`camera_tag_measured` 不变化 | Gazebo 相机、图像、AprilTag 或 TF 发布链 |
+| `camera_tag_measured` 明显变化，`visual_ee` 不变化 | estimator 公式、frame 方向或外参 |
+| full/kinematic debug 中 full 变化、kinematic 不变 | `kinematic_orientation` 分支问题 |
+| `visual_ee` 变化，但 status 中 `position_error` 为 0 | controller target/error 数据流 |
+
+当前阶段仍不建议调控制增益、速度上限或 acceleration limit。只有 transform-chain CSV 明确显示视觉位姿变化正确后，才进入控制参数验收。
+
+本次自主 smoke test 结果：
+
+- `check_visual_pose_transform_math.py` 通过 5 个构造用例，最大误差在 `1e-16` 量级。
+- `colcon build --packages-select manipulator --symlink-install` 通过，只有既有 Boost/Python CMake warning。
+- `run_phase4_transform_chain_diagnostics:=true` 可随 `visual_xyz` launch 启动并生成 `/tmp/phase4_3_smoke_transform_chain.csv`。
+- duplicate TF 不再作为 invalid 原因；测试末尾 visual debug reason 为 `target_not_detected_timeout`，duplicate 只体现在计数中。
+- 2 秒短扰动 smoke 中 `/visual_stabilization/status`/replay 已出现非零 visual error 和非零 command，说明 controller 能接收到变化后的视觉输入；但同一次短测仍出现 target loss，完整闭环稳定性仍未验收通过。
+
 ## 阶段 4.2：动态视觉闭环调试修正
 
 本次修正目标是把阶段 4.1 中“机械臂大幅乱晃”的问题拆成可验证的几个环节：视觉测量时效性、target 锁定语义、CLIK/Jacobian 方向、Gazebo 动力学干扰，以及视觉链路和控制算法本身的差异。

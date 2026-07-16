@@ -263,6 +263,8 @@ install(PROGRAMS
   scripts/phase4_visual_chain_diagnostics.py
   scripts/check_clik_direction.py
   scripts/phase4_joint_pulse_check.py
+  scripts/check_visual_pose_transform_chain.py
+  scripts/check_visual_pose_transform_math.py
   DESTINATION lib/${PROJECT_NAME}
 )
 

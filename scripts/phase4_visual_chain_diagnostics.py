@@ -155,6 +155,10 @@ class Phase4VisualChainDiagnostics(Node):
             'visual_debug_reason',
             'visual_new_measurement_count',
             'visual_duplicate_tag_tf_drop_count',
+            'visual_duplicate_same_stamp_same_value_count',
+            'visual_same_stamp_changed_transform_count',
+            'visual_new_stamp_new_transform_count',
+            'visual_new_stamp_same_transform_count',
             'visual_valid_true_count',
             'visual_valid_false_count',
             'visual_valid_toggle_count',
@@ -304,6 +308,14 @@ class Phase4VisualChainDiagnostics(Node):
                 'new_measurement_count', ''),
             'visual_duplicate_tag_tf_drop_count': self.latest_debug_payload.get(
                 'duplicate_tag_tf_drop_count', ''),
+            'visual_duplicate_same_stamp_same_value_count': self.latest_debug_payload.get(
+                'duplicate_same_stamp_same_value_count', ''),
+            'visual_same_stamp_changed_transform_count': self.latest_debug_payload.get(
+                'same_stamp_changed_transform_count', ''),
+            'visual_new_stamp_new_transform_count': self.latest_debug_payload.get(
+                'new_stamp_new_transform_count', ''),
+            'visual_new_stamp_same_transform_count': self.latest_debug_payload.get(
+                'new_stamp_same_transform_count', ''),
             'visual_valid_true_count': self.latest_debug_payload.get(
                 'visual_valid_true_count', ''),
             'visual_valid_false_count': self.latest_debug_payload.get(
