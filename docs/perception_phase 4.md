@@ -20,7 +20,7 @@
 | 0 | 冻结当前失败基线和判废规则 | 15 次固定矩阵数据完整；失败链路重复 3 次；异常初态不输出正式成绩 | 已通过 |
 | 1 | 修正 Gazebo Base plant | 已知小关节脉冲下 Base 不发生非指令位移；3 次结果通过阈值 | 已通过 |
 | 2 | 统一仿真时间和回放时序 | 回放、感知、控制都使用同一仿真时间；暂停/恢复不破坏轨迹 | 已通过 |
-| 3 | 验证 Pinocchio 与 Gazebo 运动学一致 | 多构型、多轴小脉冲的方向、尺度和 frame 一致 | 未开始，锁定 |
+| 3 | 验证 Pinocchio 与 Gazebo 运动学一致 | 多构型、多轴小脉冲的方向、尺度和 frame 一致 | 已通过 |
 | 4 | 仅用 Gazebo GT 完成动态 XYZ 闭环 | GT 相比 baseline 的 RMS 明显下降，且不发散、可重复 | 未开始，锁定 |
 | 5 | 修正安全状态机 | safety 可区分等待、可恢复丢帧和故障锁存；命令行为逐项通过 | 未开始，锁定 |
 | 6 | 验收视觉开环链路 | 图像、Tag TF、世界系 EE 估计的频率、延迟、方向达到门槛 | 未开始，锁定 |
@@ -685,3 +685,172 @@ git rev-parse origin/develop
 ```
 
 只有工作区干净且两个提交 ID 一致，才允许开始子阶段 3。
+
+---
+
+## 子阶段 3：验证 Pinocchio 与 Gazebo 运动学一致
+
+### 状态
+
+通过。完成日期：2026-07-17。
+
+三次独立 Gazebo 实例共 72 个用例全部通过。完成本节提交、推送并确认 `HEAD == origin/develop` 之前，子阶段 4 仍保持锁定。
+
+### 目的
+
+本子阶段只回答运动学层问题，不修改 GT/视觉闭环、CLIK 参数、关节限幅或 safety：
+
+1. Pinocchio 的关节顺序和正方向是否与 Gazebo 一致。
+2. Pinocchio 的 `base_link -> link6` FK 是否与 Gazebo 的 `inv(T_world_base) * T_world_link6` 使用同一 frame、尺度和姿态约定。
+3. 一致性是否同时成立于零构型和一个非零构型，而不是只在初始点偶然成立。
+4. 六个关节正、反方向均产生足够的实际运动；平移很小的腕部轴仍必须通过完整姿态增量检查。
+
+### 固定验收配置
+
+| 项目 | 固定值 |
+|---|---|
+| Pinocchio 模型 | `config/arm.urdf` |
+| EE frame/link | `link6` / `windylab_arm::link6` |
+| Base link | `windylab_arm::base_link` |
+| 构型 0 | `[0, 0, 0, 0, 0, 0] rad` |
+| 构型 1 | `[0.20, -0.25, 0.30, -0.15, 0.10, -0.10] rad` |
+| 构型到位容差 | `0.005 rad`，使用实际 `/joint_states` 做 FK，不用名义目标代替 |
+| 单轴激励 | `+/-0.03 rad/s`，各持续 `1.80 s` 仿真时间 |
+| Base 输入 | 600 s static，100 Hz，seed 42 |
+| 重复方式 | 每次全新启动 Gazebo，共 3 次 |
+
+600 s static 轨迹为 60001 个样本，SHA-256：
+
+```text
+94a4d4ab7e82d4e73536189db3a02088c8ab1018b65fe0fb36089d9145897a18
+```
+
+### 修改内容
+
+- `scripts/phase4_kinematic_consistency.py`
+  - 新增独立运动学验收节点；不复用被测控制器输出的 FK 结果。
+  - 从按名称解析后的六关节实际位置计算 Pinocchio `base_link -> link6` FK。
+  - 从 `/link_states` 独立计算 Gazebo `inv(T_world_base) * T_world_link6`。
+  - 在两个构型下对六个关节逐一施加正、反向速度脉冲，共 24 个用例。
+  - 同时检查绝对位置/姿态、脉冲前后位置/姿态增量、平移方向余弦和尺度比。
+  - `/joint_states` 与 `/link_states` 的订阅深度固定为 1，避免处理大消息时使用积压状态。
+  - 到位过程中若关节状态超过 `0.10 s` 墙钟未刷新，立即持续发布零速度，不允许在陈旧反馈下保留旧命令。
+  - 到位超时按仿真时间计算；仿真停止推进另有墙钟超时。
+  - 正常结束和异常退出均重复发布 `0.25 s` 零速度，避免诊断节点退出后控制器保留最后一条速度。
+  - 每完成一个用例即更新 CSV，使中途失败仍保留已完成证据；`--require-pass` 在任一用例失败时返回非零状态。
+- `CMakeLists.txt`
+  - 安装新增验收脚本。
+
+没有修改 URDF 几何、Gazebo plant、replay、控制器、CLIK、视觉或 safety 参数。
+
+### 验收终端命令
+
+构建和静态检查：
+
+```bash
+cd /home/yihuang/westlake/windylab-arm-for6/windylab_ws
+PYTHONDONTWRITEBYTECODE=1 python3 -m py_compile \
+  src/arm-platform/scripts/phase4_kinematic_consistency.py
+git -C src/arm-platform diff --check
+source setup_env.bash
+colcon build --packages-select manipulator --symlink-install
+```
+
+生成足够覆盖整次诊断的 static 轨迹：
+
+```bash
+ros2 run manipulator generate_base_disturbance.py \
+  --config src/arm-platform/config/base_disturbance_profiles.yaml \
+  --profile static --duration-sec 600 --sample-rate-hz 100 --random-seed 42 \
+  --output-csv /tmp/windylab_phase4_stage3_static_600s.csv
+wc -l /tmp/windylab_phase4_stage3_static_600s.csv
+sha256sum /tmp/windylab_phase4_stage3_static_600s.csv
+```
+
+每个 `r1/r2/r3` 都独立启动以下 launch，只替换两个输出文件中的运行编号：
+
+```bash
+ros2 launch manipulator moving_base_stabilization.launch.py \
+  experiment_mode:=plant_test gui:=false use_rviz:=false \
+  disturbance_csv:=/tmp/windylab_phase4_stage3_static_600s.csv \
+  replay_output_csv:=/tmp/windylab_phase4_stage3_r1_replay.csv \
+  start_delay_sec:=5.0 replay_clock_source:=sim \
+  hold_initial_state_during_start_delay:=true \
+  replay_state_sample_stride:=10 \
+  rgbd_width:=320 rgbd_height:=240 rgbd_update_rate:=1.0 \
+  imu_enabled:=false
+```
+
+确认控制器 active 后，在另一个终端运行；命令返回 0 后停止本次 launch，再全新启动下一次：
+
+```bash
+ros2 control list_controllers
+
+ros2 run manipulator phase4_kinematic_consistency.py \
+  --output-csv /tmp/windylab_phase4_stage3_kinematic_r1.csv \
+  --require-pass --use-sim-time
+
+wc -l /tmp/windylab_phase4_stage3_kinematic_r1.csv
+```
+
+三个结果文件均为 25 行，即 1 行表头加 24 个完整用例。
+
+### 硬门禁与结果
+
+| 门禁 | 通过条件 | 三次最坏值 | 判定 |
+|---|---:|---:|---|
+| 独立重复与完整性 | 3 次均 24/24 | `72/72` | 通过 |
+| 实际关节运动 | 每轴每方向 `>=0.004 rad` | 最小 `0.005720577 rad` | 通过 |
+| 绝对位置一致 | `<=0.001 m` | `7.516971e-16 m` | 通过 |
+| 绝对姿态一致 | `<=0.005 rad` | `2.107342e-08 rad` | 通过 |
+| 位置增量一致 | `<=0.0005 m` | `9.539781e-16 m` | 通过 |
+| 姿态增量一致 | `<=0.005 rad` | `2.980232e-08 rad` | 通过 |
+| 平移方向 | 可观测平移的余弦 `>=0.98` | 最小 `1.0` | 通过 |
+| 平移尺度 | 相对误差 `<=10%` | 最大 `3.091971e-12` | 通过 |
+
+逐次汇总：
+
+| 运行 | 用例 | 最小实际关节位移 | 最大绝对位置误差 | 最大位置增量误差 | 最大姿态增量误差 |
+|---|---:|---:|---:|---:|---:|
+| r1 | 24/24 | `0.005720577 rad` | `7.185693e-16 m` | `6.359601e-16 m` | `2.980232e-08 rad` |
+| r2 | 24/24 | `0.007571358 rad` | `7.516971e-16 m` | `9.539781e-16 m` | `2.107342e-08 rad` |
+| r3 | 24/24 | `0.007571358 rad` | `5.748822e-16 m` | `8.471580e-16 m` | `2.980232e-08 rad` |
+
+构型 0 下 joint4 的末端平移低于 `1e-4 m`，因此不对该用例伪造平移方向成绩；其关节方向、绝对姿态和姿态增量仍全部通过。构型 1 下 joint4 产生可观测平移，其正反方向余弦和尺度同样通过。
+
+### 验收过程中发现并修正的问题
+
+1. 首次运行在采样前暴露 `configuration/configurations` 参数字段命名错误；修正后重新构建，未把该次计入正式结果。
+2. 初始 `0.2 s` 脉冲使不同关节只移动 `0.00088–0.00577 rad`。没有降低 `0.004 rad` 门禁，而是把脉冲延长到 `1.80 s`，正式三次的最小实际位移达到 `0.00572 rad`。
+3. 初版到位超时使用墙钟，实时因子变化时会提前退出；改为仿真时间后再验收。
+4. 异常退出时单次零速度可能尚未送达 BEST_EFFORT 控制器，旧速度会被保留；改为正常/异常退出都重复发布零速度。
+5. 一次探索运行在零构型 12/12 通过后，切换非零构型发散到 `1.862952 rad`。失败发生时仿真时间约 369 s，原 300 s Base 保持窗口已经结束，并且两个 100 Hz 状态订阅各积压 50 条。将 static 输入延长到 600 s、订阅深度改为 1，并增加陈旧关节反馈停机保护后，重新从 r1 计数的三次均为 24/24。
+
+这些失败均保留为诊断方法的修订依据；没有通过放宽 FK 误差、方向或尺度门限来获得通过结果。
+
+### 达到的效果
+
+- 已证明 Pinocchio 与 Gazebo 对六关节顺序、正负方向、米/弧度尺度及 `base_link -> link6` frame 的定义一致。
+- 该结论覆盖零构型、非零构型、正反方向和完整位置/姿态，不只是单点 XYZ 符号检查。
+- 因此，阶段 0 看到的整机大幅摆动和末端无抗扰意图不能归因于 Pinocchio/Gazebo 几何模型、关节顺序或 frame 符号不一致。
+- 子阶段 4 可以在提交推送完成后，单独检验 Gazebo GT 动态 XYZ 闭环；视觉链路仍保持锁定。
+
+### 版本控制验收
+
+本子阶段提交说明固定为：
+
+```text
+phase4: verify gazebo and pinocchio kinematics
+```
+
+提交、推送并执行：
+
+```bash
+cd /home/yihuang/westlake/windylab-arm-for6/windylab_ws/src/arm-platform
+git status --short --branch
+git log -1 --oneline
+git rev-parse HEAD
+git rev-parse origin/develop
+```
+
+只有工作区干净且两个提交 ID 一致，才允许开始子阶段 4。
