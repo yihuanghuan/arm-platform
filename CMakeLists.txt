@@ -265,6 +265,7 @@ install(PROGRAMS
   scripts/phase4_joint_pulse_check.py
   scripts/check_visual_pose_transform_chain.py
   scripts/check_visual_pose_transform_math.py
+  scripts/analyze_phase4_3_transform_chain.py
   DESTINATION lib/${PROJECT_NAME}
 )
 

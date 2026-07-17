@@ -38,6 +38,65 @@ def vector_parameter(node, name, default, expected_length):
     return [float(item) for item in value]
 
 
+def string_list_from_value(raw_value):
+    if raw_value is None:
+        return []
+    if isinstance(raw_value, str):
+        return [part for part in raw_value.replace(',', ' ').split() if part]
+    return [str(item) for item in raw_value]
+
+
+def int_list_from_value(raw_value):
+    return [int(item) for item in string_list_from_value(raw_value)]
+
+
+def vector_list_from_value(raw_value, expected_length):
+    if raw_value is None:
+        return []
+    if isinstance(raw_value, str):
+        text = raw_value.strip()
+        if not text:
+            return []
+        if ';' in text:
+            rows = []
+            for chunk in text.split(';'):
+                chunk = chunk.strip()
+                if not chunk:
+                    continue
+                rows.append([
+                    float(part) for part in chunk.replace(',', ' ').split()
+                ])
+        else:
+            values = [float(part) for part in text.replace(',', ' ').split()]
+            if not values:
+                return []
+            if len(values) % expected_length != 0:
+                raise ValueError(
+                    f'vector list must contain groups of {expected_length} values')
+            rows = [
+                values[index:index + expected_length]
+                for index in range(0, len(values), expected_length)
+            ]
+    else:
+        values = list(raw_value)
+        if not values:
+            return []
+        if all(isinstance(item, (list, tuple)) for item in values):
+            rows = [list(item) for item in values]
+        else:
+            if len(values) % expected_length != 0:
+                raise ValueError(
+                    f'vector list must contain groups of {expected_length} values')
+            rows = [
+                values[index:index + expected_length]
+                for index in range(0, len(values), expected_length)
+            ]
+    for row in rows:
+        if len(row) != expected_length:
+            raise ValueError(f'each vector must contain {expected_length} values')
+    return [[float(item) for item in row] for row in rows]
+
+
 def make_transform_matrix(xyz, rpy):
     matrix = np.eye(4)
     matrix[:3, :3] = Rotation.from_euler('xyz', rpy).as_matrix()
@@ -112,6 +171,9 @@ class VisualEePoseEstimator(Node):
             'detected_tag_frame', 'apriltag_36h11_00000').value
         self.tag_family = self.declare_parameter('tag_family', 'tag36h11').value
         self.tag_id = int(self.declare_parameter('tag_id', 0).value)
+        tag_ids_raw = self.declare_parameter('tag_ids', '').value
+        detected_tag_frames_raw = self.declare_parameter(
+            'detected_tag_frames', '').value
         self.detections_topic = self.declare_parameter(
             'detections_topic', '/apriltag/detections').value
         self.pose_topic = self.declare_parameter(
@@ -147,6 +209,49 @@ class VisualEePoseEstimator(Node):
         tag_rpy = vector_parameter(
             self, 'world_to_tag_rpy', '-3.12204785 -1.56214388 3.12103003', 3)
         self.world_to_tag = make_transform_matrix(tag_xyz, tag_rpy)
+        world_to_tag_xyzs = vector_list_from_value(
+            self.declare_parameter('world_to_tag_xyzs', '').value, 3)
+        world_to_tag_rpys = vector_list_from_value(
+            self.declare_parameter('world_to_tag_rpys', '').value, 3)
+        tag_ids = int_list_from_value(tag_ids_raw) or [self.tag_id]
+        detected_tag_frames = (
+            string_list_from_value(detected_tag_frames_raw)
+            or [self.detected_tag_frame])
+        if not world_to_tag_xyzs:
+            world_to_tag_xyzs = [tag_xyz]
+        if not world_to_tag_rpys:
+            world_to_tag_rpys = [tag_rpy]
+        if not (
+                len(tag_ids)
+                == len(detected_tag_frames)
+                == len(world_to_tag_xyzs)
+                == len(world_to_tag_rpys)):
+            raise ValueError(
+                'tag_ids, detected_tag_frames, world_to_tag_xyzs, and '
+                'world_to_tag_rpys must have the same length')
+        self.tag_configs = []
+        self.tag_configs_by_id = {}
+        for tag_id, frame, xyz, rpy in zip(
+                tag_ids, detected_tag_frames, world_to_tag_xyzs, world_to_tag_rpys):
+            if tag_id in self.tag_configs_by_id:
+                raise ValueError(f'duplicate tag id in tag_ids: {tag_id}')
+            config = {
+                'id': int(tag_id),
+                'frame': str(frame),
+                'world_to_tag': make_transform_matrix(xyz, rpy),
+                'world_to_tag_xyz': [float(item) for item in xyz],
+                'world_to_tag_rpy': [float(item) for item in rpy],
+                'latest_detection_stamp_ns': 0,
+                'last_published_tag_tf_stamp_ns': 0,
+                'last_published_camera_to_tag': None,
+                'duplicate_tag_tf_drop_count': 0,
+                'new_measurement_count': 0,
+            }
+            self.tag_configs.append(config)
+            self.tag_configs_by_id[int(tag_id)] = config
+        self.configured_tag_ids = [config['id'] for config in self.tag_configs]
+        self.configured_tag_frames = [config['frame'] for config in self.tag_configs]
+        self.primary_tag_config = self.tag_configs[0]
 
         self.tf_buffer = tf2_ros.Buffer(cache_time=Duration(seconds=10.0))
         self.tf_listener = tf2_ros.TransformListener(self.tf_buffer, self)
@@ -206,7 +311,7 @@ class VisualEePoseEstimator(Node):
 
         self.get_logger().info(
             f'Publishing {self.pose_topic} as {self.world_frame}->{self.ee_frame} '
-            f'from {self.camera_frame}->{self.detected_tag_frame}; '
+            f'from {self.camera_frame}->[{", ".join(self.configured_tag_frames)}]; '
             f'tag_tf_mode={self.tag_tf_mode}')
 
     def detections_callback(self, msg):
@@ -216,8 +321,8 @@ class VisualEePoseEstimator(Node):
             detection_stamp_ns = self.get_clock().now().nanoseconds
         self.latest_detection_stamp_ns = detection_stamp_ns
 
-        detection = self.find_target_detection(msg)
-        if detection is None:
+        detections = self.find_target_detections(msg)
+        if not detections:
             now_ns = self.get_clock().now().nanoseconds
             if self.latest_target_detection_stamp_ns <= 0:
                 self.publish_periodic_debug('target_not_detected')
@@ -227,12 +332,18 @@ class VisualEePoseEstimator(Node):
                 self.publish_invalid('target_not_detected_timeout', msg.header.stamp)
             return
 
-        self.target_detection_count += 1
+        self.target_detection_count += len(detections)
         self.latest_target_detection_stamp_ns = detection_stamp_ns
-        self.latest_target_detection_id = detection.id
+        self.latest_target_detection_id = int(detections[0].id)
+        for detection in detections:
+            config = self.tag_configs_by_id.get(int(detection.id))
+            if config is not None:
+                config['latest_detection_stamp_ns'] = detection_stamp_ns
         if self.tag_tf_mode == 'latest':
             return
-        self.pending_detections.append((detection_stamp_ns, msg.header.stamp, detection))
+        for detection in detections:
+            self.pending_detections.append(
+                (detection_stamp_ns, msg.header.stamp, detection))
 
     def process_measurements(self):
         if self.tag_tf_mode == 'latest':
@@ -270,59 +381,89 @@ class VisualEePoseEstimator(Node):
             self.publish_periodic_debug('waiting_for_detection')
             return
 
-        detection_age_sec = ns_to_sec(now_ns - self.latest_target_detection_stamp_ns)
-        if detection_age_sec > self.detection_timeout_sec:
+        active_configs = []
+        for config in self.tag_configs:
+            stamp_ns = config['latest_detection_stamp_ns']
+            if stamp_ns <= 0:
+                continue
+            detection_age_sec = ns_to_sec(now_ns - stamp_ns)
+            if detection_age_sec <= self.detection_timeout_sec:
+                active_configs.append((config, detection_age_sec))
+        if not active_configs:
             self.publish_valid(False)
             self.publish_periodic_debug('detection_timeout')
             return
 
-        try:
-            camera_to_tag_tf = self.tf_buffer.lookup_transform(
-                self.camera_frame,
-                self.detected_tag_frame,
-                Time(),
-                timeout=Duration(seconds=self.tf_timeout_sec))
-            self.tf_counters['camera_tag_tf_success'] += 1
-        except Exception as exc:
-            self.record_tf_failure('camera_tag_tf', exc)
-            self.publish_invalid(f'tag_tf_lookup_failed_latest: {exc}', now.to_msg())
+        candidates = []
+        duplicate_seen = False
+        last_error = None
+        for config, detection_age_sec in active_configs:
+            try:
+                camera_to_tag_tf = self.tf_buffer.lookup_transform(
+                    self.camera_frame,
+                    config['frame'],
+                    Time(),
+                    timeout=Duration(seconds=self.tf_timeout_sec))
+                self.tf_counters['camera_tag_tf_success'] += 1
+            except Exception as exc:
+                self.record_tf_failure('camera_tag_tf', exc)
+                last_error = f'{config["frame"]}: {exc}'
+                continue
+
+            tf_stamp = camera_to_tag_tf.header.stamp
+            tf_stamp_ns = stamp_to_ns(tf_stamp)
+            if tf_stamp_ns <= 0:
+                self.tf_counters['camera_tag_tf_stale'] += 1
+                last_error = f'{config["frame"]}: tag_tf_missing_stamp'
+                continue
+            tf_age_sec = ns_to_sec(now_ns - tf_stamp_ns)
+            if tf_age_sec < -self.max_tag_tf_age_sec:
+                self.tf_counters['camera_tag_tf_future_extrapolation'] += 1
+                last_error = f'{config["frame"]}: tag_tf_future_age:{tf_age_sec:.6f}'
+                continue
+            if tf_age_sec > self.max_tag_tf_age_sec:
+                self.tf_counters['camera_tag_tf_stale'] += 1
+                last_error = f'{config["frame"]}: tag_tf_stale:{tf_age_sec:.6f}'
+                continue
+
+            camera_to_tag = transform_to_matrix(camera_to_tag_tf.transform)
+            duplicate_status = self.classify_camera_tag_measurement(
+                config, tf_stamp_ns, camera_to_tag)
+            if duplicate_status['is_duplicate']:
+                duplicate_seen = True
+                config['duplicate_tag_tf_drop_count'] += 1
+                self.duplicate_tag_tf_drop_count += 1
+                self.duplicate_same_stamp_same_value_count += 1
+                continue
+            candidates.append({
+                'config': config,
+                'camera_to_tag_tf': camera_to_tag_tf,
+                'tf_stamp_ns': tf_stamp_ns,
+                'tf_age_sec': tf_age_sec,
+                'detection_age_sec': detection_age_sec,
+                'duplicate_status': duplicate_status,
+            })
+
+        if not candidates:
+            if duplicate_seen:
+                self.last_reason = 'duplicate_tag_tf'
+                self.publish_debug(
+                    valid=self.last_valid,
+                    reason='duplicate_tag_tf',
+                    stamp=now.to_msg(),
+                    extra={'tag_tf_mode': self.tag_tf_mode})
+            else:
+                self.publish_invalid(
+                    f'tag_tf_lookup_failed_latest: {last_error or "no active tag tf"}',
+                    now.to_msg())
             return
 
+        selected = max(
+            candidates,
+            key=lambda item: (item['tf_stamp_ns'], -item['tf_age_sec']))
+        config = selected['config']
+        camera_to_tag_tf = selected['camera_to_tag_tf']
         tf_stamp = camera_to_tag_tf.header.stamp
-        tf_stamp_ns = stamp_to_ns(tf_stamp)
-        if tf_stamp_ns <= 0:
-            self.tf_counters['camera_tag_tf_stale'] += 1
-            self.publish_invalid('tag_tf_missing_stamp', now.to_msg())
-            return
-        tf_age_sec = ns_to_sec(now_ns - tf_stamp_ns)
-        if tf_age_sec < -self.max_tag_tf_age_sec:
-            self.tf_counters['camera_tag_tf_future_extrapolation'] += 1
-            self.publish_invalid(f'tag_tf_future_age:{tf_age_sec:.6f}', tf_stamp)
-            return
-        if tf_age_sec > self.max_tag_tf_age_sec:
-            self.tf_counters['camera_tag_tf_stale'] += 1
-            self.publish_invalid(f'tag_tf_stale:{tf_age_sec:.6f}', tf_stamp)
-            return
-
-        camera_to_tag = transform_to_matrix(camera_to_tag_tf.transform)
-        duplicate_status = self.classify_camera_tag_measurement(
-            tf_stamp_ns, camera_to_tag)
-        if duplicate_status['is_duplicate']:
-            self.duplicate_tag_tf_drop_count += 1
-            self.duplicate_same_stamp_same_value_count += 1
-            self.last_reason = 'duplicate_tag_tf'
-            self.publish_debug(
-                valid=self.last_valid,
-                reason='duplicate_tag_tf',
-                stamp=tf_stamp,
-                extra={
-                    'tag_tf_mode': self.tag_tf_mode,
-                    'tag_tf_age_sec': tf_age_sec,
-                    'target_detection_age_sec': detection_age_sec,
-                    'tag_tf_stamp_sec': ns_to_sec(tf_stamp_ns),
-                    **duplicate_status,
-                })
-            return
 
         try:
             ee_to_camera_tf = self.tf_buffer.lookup_transform(
@@ -340,17 +481,19 @@ class VisualEePoseEstimator(Node):
             camera_to_tag_tf,
             ee_to_camera_tf,
             tf_stamp,
-            self.latest_target_detection_id,
+            config,
             extra={
                 'tag_tf_mode': self.tag_tf_mode,
-                'tag_tf_age_sec': tf_age_sec,
-                'target_detection_age_sec': detection_age_sec,
-                'tag_tf_stamp_sec': ns_to_sec(tf_stamp_ns),
-                **duplicate_status,
+                'tag_tf_age_sec': selected['tf_age_sec'],
+                'target_detection_age_sec': selected['detection_age_sec'],
+                'tag_tf_stamp_sec': ns_to_sec(selected['tf_stamp_ns']),
+                **selected['duplicate_status'],
             })
 
-    def classify_camera_tag_measurement(self, tf_stamp_ns, camera_to_tag):
-        if self.last_published_camera_to_tag is None:
+    def classify_camera_tag_measurement(self, config, tf_stamp_ns, camera_to_tag):
+        previous_camera_to_tag = config['last_published_camera_to_tag']
+        previous_stamp_ns = config['last_published_tag_tf_stamp_ns']
+        if previous_camera_to_tag is None:
             return {
                 'is_duplicate': False,
                 'tag_tf_stamp_changed': True,
@@ -362,14 +505,14 @@ class VisualEePoseEstimator(Node):
             }
 
         translation_delta, rotation_delta = transform_delta(
-            self.last_published_camera_to_tag,
+            previous_camera_to_tag,
             camera_to_tag)
         translation_changed = (
             translation_delta > self.duplicate_translation_epsilon_m)
         rotation_changed = (
             rotation_delta > self.duplicate_rotation_epsilon_rad)
         value_changed = translation_changed or rotation_changed
-        stamp_changed = tf_stamp_ns != self.last_published_tag_tf_stamp_ns
+        stamp_changed = tf_stamp_ns != previous_stamp_ns
 
         if not stamp_changed and not value_changed:
             change_class = 'duplicate_same_stamp_same_value'
@@ -400,9 +543,10 @@ class VisualEePoseEstimator(Node):
     def process_detection(self, stamp, detection):
         stamp_time = Time.from_msg(stamp)
         try:
+            config = self.tag_configs_by_id[int(detection.id)]
             camera_to_tag_tf = self.tf_buffer.lookup_transform(
                 self.camera_frame,
-                self.detected_tag_frame,
+                config['frame'],
                 stamp_time,
                 timeout=Duration(seconds=self.tf_timeout_sec))
             self.tf_counters['camera_tag_tf_success'] += 1
@@ -440,21 +584,22 @@ class VisualEePoseEstimator(Node):
             camera_to_tag_tf,
             ee_to_camera_tf,
             stamp,
-            detection.id,
+            config,
             extra={'tag_tf_mode': self.tag_tf_mode})
         return 'done'
 
     def publish_pose_from_transforms(
-            self, camera_to_tag_tf, ee_to_camera_tf, stamp, target_id, extra=None):
+            self, camera_to_tag_tf, ee_to_camera_tf, stamp, tag_config, extra=None):
         camera_to_tag = transform_to_matrix(camera_to_tag_tf.transform)
         ee_to_camera = transform_to_matrix(ee_to_camera_tf.transform)
+        world_to_tag = tag_config['world_to_tag']
         world_to_ee_full = (
-            self.world_to_tag
+            world_to_tag
             @ np.linalg.inv(camera_to_tag)
             @ np.linalg.inv(ee_to_camera)
         )
         world_to_ee_kinematic = self.estimate_position_with_kinematic_orientation(
-            stamp, camera_to_tag, ee_to_camera, world_to_ee_full)
+            stamp, camera_to_tag, ee_to_camera, world_to_tag, world_to_ee_full)
         if self.position_estimation_mode == 'full_pose':
             world_to_ee = world_to_ee_full
         else:
@@ -471,12 +616,17 @@ class VisualEePoseEstimator(Node):
         self.latest_valid_stamp_ns = stamp_to_ns(stamp)
         tag_tf_stamp_ns = stamp_to_ns(camera_to_tag_tf.header.stamp)
         if tag_tf_stamp_ns > 0:
+            tag_config['last_published_tag_tf_stamp_ns'] = tag_tf_stamp_ns
+            tag_config['last_published_camera_to_tag'] = camera_to_tag
+            tag_config['new_measurement_count'] += 1
             self.last_published_tag_tf_stamp_ns = tag_tf_stamp_ns
             self.last_published_camera_to_tag = camera_to_tag
         self.last_reason = 'ok'
         self.publish_valid(True)
         debug_extra = {
-            'target_id': target_id,
+            'target_id': tag_config['id'],
+            'selected_tag_id': tag_config['id'],
+            'selected_tag_frame': tag_config['frame'],
             'ee_position': [
                 pose_msg.pose.position.x,
                 pose_msg.pose.position.y,
@@ -484,6 +634,7 @@ class VisualEePoseEstimator(Node):
             ],
             'camera_to_tag_measured': matrix_to_xyz_quat(camera_to_tag),
             'ee_to_camera': matrix_to_xyz_quat(ee_to_camera),
+            'world_to_tag': matrix_to_xyz_quat(world_to_tag),
             'world_to_ee_full': matrix_to_xyz_quat(world_to_ee_full),
             'world_to_ee_kinematic': matrix_to_xyz_quat(world_to_ee_kinematic),
             'world_to_ee_full_kinematic_position_delta_m': float(
@@ -499,7 +650,8 @@ class VisualEePoseEstimator(Node):
             extra=debug_extra)
 
     def estimate_position_with_kinematic_orientation(
-            self, stamp, camera_to_tag, ee_to_camera, fallback_world_to_ee):
+            self, stamp, camera_to_tag, ee_to_camera, world_to_tag,
+            fallback_world_to_ee):
         orientation_matrix = self.lookup_ee_orientation_matrix(stamp)
         if orientation_matrix is None:
             orientation_matrix = fallback_world_to_ee[:3, :3]
@@ -507,7 +659,7 @@ class VisualEePoseEstimator(Node):
         world_to_ee = np.eye(4)
         world_to_ee[:3, :3] = orientation_matrix
         world_to_ee[:3, 3] = (
-            self.world_to_tag[:3, 3]
+            world_to_tag[:3, 3]
             - orientation_matrix @ ee_to_camera[:3, :3] @ camera_to_tag[:3, 3]
             - orientation_matrix @ ee_to_camera[:3, 3]
         )
@@ -539,11 +691,14 @@ class VisualEePoseEstimator(Node):
             return transform_to_matrix(tf_msg.transform)[:3, :3]
         return None
 
-    def find_target_detection(self, msg):
+    def find_target_detections(self, msg):
+        detections = []
         for detection in msg.detections:
-            if detection.family == self.tag_family and detection.id == self.tag_id:
-                return detection
-        return None
+            if (
+                    detection.family == self.tag_family
+                    and int(detection.id) in self.tag_configs_by_id):
+                detections.append(detection)
+        return detections
 
     def publish_invalid(self, reason, stamp):
         self.invalid_count += 1
@@ -634,6 +789,7 @@ class VisualEePoseEstimator(Node):
             'ee_frame': self.ee_frame,
             'camera_frame': self.camera_frame,
             'detected_tag_frame': self.detected_tag_frame,
+            'detected_tag_frames': list(self.configured_tag_frames),
             'position_estimation_mode': self.position_estimation_mode,
             'tag_tf_mode': self.tag_tf_mode,
             'max_tag_tf_age_sec': self.max_tag_tf_age_sec,
@@ -641,6 +797,7 @@ class VisualEePoseEstimator(Node):
             'duplicate_rotation_epsilon_rad': self.duplicate_rotation_epsilon_rad,
             'tag_family': self.tag_family,
             'tag_id': self.tag_id,
+            'tag_ids': list(self.configured_tag_ids),
             'latest_target_detection_stamp_sec': (
                 ns_to_sec(self.latest_target_detection_stamp_ns)
                 if self.latest_target_detection_stamp_ns > 0 else None),
@@ -648,6 +805,21 @@ class VisualEePoseEstimator(Node):
                 ns_to_sec(self.last_published_tag_tf_stamp_ns)
                 if self.last_published_tag_tf_stamp_ns > 0 else None),
             'tf_counters': dict(self.tf_counters),
+            'per_tag_state': {
+                str(config['id']): {
+                    'frame': config['frame'],
+                    'latest_detection_stamp_sec': (
+                        ns_to_sec(config['latest_detection_stamp_ns'])
+                        if config['latest_detection_stamp_ns'] > 0 else None),
+                    'last_published_tag_tf_stamp_sec': (
+                        ns_to_sec(config['last_published_tag_tf_stamp_ns'])
+                        if config['last_published_tag_tf_stamp_ns'] > 0 else None),
+                    'duplicate_tag_tf_drop_count': (
+                        config['duplicate_tag_tf_drop_count']),
+                    'new_measurement_count': config['new_measurement_count'],
+                }
+                for config in self.tag_configs
+            },
         }
         if extra:
             payload.update(extra)

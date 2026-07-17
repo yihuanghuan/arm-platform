@@ -1244,3 +1244,59 @@ visual_max_tag_tf_age_sec:=1.5
 - 放宽门控后控制器可以进入闭环并输出非零速度；
 - 但闭环运动会再次显著降低 target detection，且当前视觉控制会造成过大的机械臂运动，visual 仍明显差于 baseline；
 - 因此阶段 4 仍未通过，下一轮应重点审查视觉 pose 到关节速度的控制符号、雅可比坐标系、目标锁定策略，而不是继续单纯放宽可见性门控。
+
+## 阶段 4 三次修正：2x2 AprilTag Board 与链路分析
+
+本次修正针对两个剩余阻塞点：
+
+- 单 tag 目标在末端摆动时容易离开 D435i 视野，导致 `target_not_detected`；
+- 需要把 `phase4_3_visual_pose_transform_chain.csv`、visual chain CSV 和 replay CSV 统一分析，区分 target loss、TF 未更新、视觉位姿计算模式差异和闭环控制问题。
+
+已新增资源：
+
+- `models/apriltag_36h11_board_2x2`：2x2 AprilTag 36h11 board，id 为 0、1、2、3，单个 tag 有效边长仍为 `0.20 m`，中心间距 `0.30 m`；
+- `config/apriltag_36h11_board_2x2.yaml`：`apriltag_ros` 同时检测四个 tag；
+- `worlds/d435i_apriltag_board_2x2.world`：默认替换原单 tag world；
+- `scripts/analyze_phase4_3_transform_chain.py`：离线汇总 transform-chain、visual-chain、replay 三类 CSV。
+
+`moving_base_stabilization.launch.py` 的 `visual_xyz` 默认配置已切换到 2x2 board：
+
+```text
+world:=.../d435i_apriltag_board_2x2.world
+apriltag_config:=.../apriltag_36h11_board_2x2.yaml
+visual_tag_ids:=0 1 2 3
+visual_detected_tag_frames:=apriltag_36h11_00000 ... apriltag_36h11_00003
+visual_position_estimation_mode:=kinematic_orientation
+visual_detection_timeout_sec:=0.80
+visual_stabilization_measurement_timeout:=0.80
+visual_max_tag_tf_age_sec:=1.5
+visual_stabilization_max_joint_velocity:=0.2
+visual_stabilization_max_task_velocity_xyz:=0.05 0.05 0.05
+```
+
+视觉估计器现在会在 timeout 窗口内遍历所有已检测 tag，过滤 stale/duplicate `camera->tag` TF，然后选择 TF 时间戳最新的有效 tag 发布 `/visual_ee_pose`。调试 payload 新增 `selected_tag_id`、`selected_tag_frame` 和 `per_tag_state`，后续可直接统计 board 是否缓解 target loss。
+
+自主 smoke 结果：
+
+- `visual_max_tag_tf_age_sec=0.20` 时，2x2 board 可被检测，但 tag TF age 常达到约 `0.37 s`，视觉仍被判 stale；
+- 改为 `visual_max_tag_tf_age_sec=1.5` 后，debug reason 基本转为 `ok`，并能在 tag 0、1、2 间切换；
+- 继续把 detection/measurement timeout 放宽到 `0.80 s` 后，控制器可以锁定视觉目标并输出非零关节速度；
+- 当前默认限幅 `0.2 rad/s`、`0.05 m/s`、`0.3 rad/s^2` 的短测 replay 内 visual loss 约 `0.23`，仍超过阶段 4 目标；
+- 尝试降到 `0.1 rad/s`、`0.03 m/s`、`0.15 rad/s^2` 后 replay visual loss 反而升到约 `0.44`，说明单纯降速不是解决 target loss 的有效方向。
+
+短测分析命令：
+
+```bash
+ros2 run manipulator analyze_phase4_3_transform_chain.py \
+  --transform-csv /tmp/phase4_3_visual_pose_transform_chain.csv \
+  --visual-chain-csv /tmp/phase4_visual_chain_diagnostics.csv \
+  --replay-csv /tmp/base_disturbance_replay.csv \
+  --output-md /tmp/phase4_3_transform_chain_analysis.md \
+  --output-json /tmp/phase4_3_transform_chain_analysis.json
+```
+
+正式验收仍按三步：
+
+1. 先用 `run_phase4_transform_chain_diagnostics:=true` 跑 20 s 短测，确认 `selected_tag_counts` 不为空且 `visual_loss_rate < 0.10`；
+2. 分别用 `visual_position_estimation_mode:=kinematic_orientation` 和 `visual_position_estimation_mode:=full_pose` 跑同一条扰动，对比分析脚本中的 `full_vs_kinematic_delta_max_m` 与 replay 指标；
+3. 最后跑阶段 4 的 baseline / visual_xyz / ground_truth_xyz 对比，使用 `phase4_dynamic_xyz_metrics.py` 输出正式闭环指标。

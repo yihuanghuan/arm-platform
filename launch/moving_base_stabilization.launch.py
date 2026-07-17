@@ -23,8 +23,10 @@ def _validate_arguments(context, *args, **kwargs):
 def generate_launch_description():
     manipulator_share = FindPackageShare('manipulator').find('manipulator')
     gazebo_launch = os.path.join(manipulator_share, 'gazebo_arm.launch.py')
-    default_world = os.path.join(manipulator_share, 'worlds', 'd435i_apriltag_test.world')
-    apriltag_config = os.path.join(manipulator_share, 'apriltag_36h11_00000.yaml')
+    default_world = os.path.join(
+        manipulator_share, 'worlds', 'd435i_apriltag_board_2x2.world')
+    default_apriltag_config = os.path.join(
+        manipulator_share, 'apriltag_36h11_board_2x2.yaml')
     arm_urdf_path = os.path.join(manipulator_share, 'arm.urdf')
     baseline_condition = IfCondition(PythonExpression([
         "'", LaunchConfiguration('experiment_mode'), "' == 'baseline'"]))
@@ -53,6 +55,10 @@ def generate_launch_description():
         'world',
         default_value=default_world,
         description='Gazebo world file')
+    apriltag_config_arg = DeclareLaunchArgument(
+        'apriltag_config',
+        default_value=default_apriltag_config,
+        description='apriltag_ros YAML config file')
     camera_mount_mode_arg = DeclareLaunchArgument(
         'camera_mount_mode',
         default_value='ee',
@@ -117,7 +123,7 @@ def generate_launch_description():
         description='Visual XYZ position deadband in meters')
     visual_stabilization_measurement_timeout_arg = DeclareLaunchArgument(
         'visual_stabilization_measurement_timeout',
-        default_value='0.30',
+        default_value='0.80',
         description='Maximum visual measurement age before zero velocity')
     visual_stabilization_joint_state_timeout_arg = DeclareLaunchArgument(
         'visual_stabilization_joint_state_timeout',
@@ -149,7 +155,7 @@ def generate_launch_description():
         description='Joint command acceleration clamp in rad/s^2')
     visual_detection_timeout_sec_arg = DeclareLaunchArgument(
         'visual_detection_timeout_sec',
-        default_value='0.30',
+        default_value='0.80',
         description='Maximum AprilTag detection age before visual pose invalid')
     visual_tf_timeout_sec_arg = DeclareLaunchArgument(
         'visual_tf_timeout_sec',
@@ -161,8 +167,42 @@ def generate_launch_description():
         description='Tag TF lookup mode for visual estimation: stamped or latest')
     visual_max_tag_tf_age_sec_arg = DeclareLaunchArgument(
         'visual_max_tag_tf_age_sec',
-        default_value='0.20',
+        default_value='1.5',
         description='Maximum latest camera->tag TF age before visual pose invalid')
+    visual_position_estimation_mode_arg = DeclareLaunchArgument(
+        'visual_position_estimation_mode',
+        default_value='kinematic_orientation',
+        description='Visual pose mode: kinematic_orientation or full_pose')
+    visual_primary_detected_tag_frame_arg = DeclareLaunchArgument(
+        'visual_primary_detected_tag_frame',
+        default_value='apriltag_36h11_00000',
+        description='Primary tag frame used by diagnostics and single-tag fallback')
+    visual_tag_ids_arg = DeclareLaunchArgument(
+        'visual_tag_ids',
+        default_value='0 1 2 3',
+        description='Configured AprilTag ids for multi-tag visual estimation')
+    visual_detected_tag_frames_arg = DeclareLaunchArgument(
+        'visual_detected_tag_frames',
+        default_value=(
+            'apriltag_36h11_00000 apriltag_36h11_00001 '
+            'apriltag_36h11_00002 apriltag_36h11_00003'),
+        description='Detected AprilTag TF frames matching visual_tag_ids')
+    visual_world_to_tag_xyzs_arg = DeclareLaunchArgument(
+        'visual_world_to_tag_xyzs',
+        default_value=(
+            '1.600424560 0.150976374 0.200659860;'
+            '1.600424560 0.150976374 0.500659860;'
+            '1.600424560 -0.149023626 0.200659860;'
+            '1.600424560 -0.149023626 0.500659860'),
+        description='Semicolon-separated world->tag XYZ triples matching visual_tag_ids')
+    visual_world_to_tag_rpys_arg = DeclareLaunchArgument(
+        'visual_world_to_tag_rpys',
+        default_value=(
+            '-3.12204785 -1.56214388 3.12103003;'
+            '-3.12204785 -1.56214388 3.12103003;'
+            '-3.12204785 -1.56214388 3.12103003;'
+            '-3.12204785 -1.56214388 3.12103003'),
+        description='Semicolon-separated world->tag RPY triples matching visual_tag_ids')
     rgbd_update_rate_arg = DeclareLaunchArgument(
         'rgbd_update_rate',
         default_value='15',
@@ -268,7 +308,10 @@ def generate_launch_description():
         name='apriltag',
         namespace='apriltag',
         output='screen',
-        parameters=[apriltag_config, {'use_sim_time': LaunchConfiguration('use_sim_time')}],
+        parameters=[
+            LaunchConfiguration('apriltag_config'),
+            {'use_sim_time': LaunchConfiguration('use_sim_time')},
+        ],
         remappings=[
             ('image_rect', '/d435i/color/image_raw'),
             ('camera_info', '/d435i/color/camera_info'),
@@ -287,10 +330,16 @@ def generate_launch_description():
             'base_frame': 'base_link',
             'ee_frame': 'link6',
             'camera_frame': 'camera_color_optical_frame',
-            'detected_tag_frame': 'apriltag_36h11_00000',
-            'world_to_tag_xyz': '1.60042456 0.000976374 0.35065986',
+            'detected_tag_frame': LaunchConfiguration(
+                'visual_primary_detected_tag_frame'),
+            'tag_ids': LaunchConfiguration('visual_tag_ids'),
+            'detected_tag_frames': LaunchConfiguration('visual_detected_tag_frames'),
+            'world_to_tag_xyz': '1.600424560 0.150976374 0.200659860',
             'world_to_tag_rpy': '-3.12204785 -1.56214388 3.12103003',
-            'position_estimation_mode': 'kinematic_orientation',
+            'world_to_tag_xyzs': LaunchConfiguration('visual_world_to_tag_xyzs'),
+            'world_to_tag_rpys': LaunchConfiguration('visual_world_to_tag_rpys'),
+            'position_estimation_mode': LaunchConfiguration(
+                'visual_position_estimation_mode'),
             'detection_timeout_sec': ParameterValue(
                 LaunchConfiguration('visual_detection_timeout_sec'),
                 value_type=float),
@@ -428,7 +477,8 @@ def generate_launch_description():
             '--duration-sec', LaunchConfiguration('phase4_diagnostics_duration_sec'),
             '--sample-hz', LaunchConfiguration('phase4_diagnostics_sample_hz'),
             '--camera-frame', 'camera_color_optical_frame',
-            '--detected-tag-frame', 'apriltag_36h11_00000',
+            '--detected-tag-frame', LaunchConfiguration(
+                'visual_primary_detected_tag_frame'),
             '--use-sim-time',
         ],
     )
@@ -444,12 +494,14 @@ def generate_launch_description():
             '--duration-sec', LaunchConfiguration('phase4_transform_chain_duration_sec'),
             '--sample-hz', LaunchConfiguration('phase4_transform_chain_sample_hz'),
             '--camera-frame', 'camera_color_optical_frame',
-            '--detected-tag-frame', 'apriltag_36h11_00000',
+            '--detected-tag-frame', LaunchConfiguration(
+                'visual_primary_detected_tag_frame'),
             '--ee-frame', 'link6',
             '--base-link-name', 'windylab_arm::base_link',
             '--ee-link-name', 'windylab_arm::link6',
-            '--tag-model-name', 'apriltag_36h11_00000_target',
-            '--world-to-tag-xyz', '1.60042456 0.000976374 0.35065986',
+            '--tag-model-name', 'apriltag_36h11_board_2x2_target',
+            '--tag-link-name', 'apriltag_36h11_board_2x2_target::tag_0_link',
+            '--world-to-tag-xyz', '1.600424560 0.150976374 0.200659860',
             '--world-to-tag-rpy', '-3.12204785 -1.56214388 3.12103003',
             '--use-sim-time',
         ],
@@ -459,6 +511,7 @@ def generate_launch_description():
         gui_arg,
         use_rviz_arg,
         world_arg,
+        apriltag_config_arg,
         camera_mount_mode_arg,
         experiment_mode_arg,
         disturbance_csv_arg,
@@ -486,6 +539,12 @@ def generate_launch_description():
         visual_tf_timeout_sec_arg,
         visual_tag_tf_mode_arg,
         visual_max_tag_tf_age_sec_arg,
+        visual_position_estimation_mode_arg,
+        visual_primary_detected_tag_frame_arg,
+        visual_tag_ids_arg,
+        visual_detected_tag_frames_arg,
+        visual_world_to_tag_xyzs_arg,
+        visual_world_to_tag_rpys_arg,
         rgbd_update_rate_arg,
         rgbd_width_arg,
         rgbd_height_arg,

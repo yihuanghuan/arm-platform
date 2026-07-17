@@ -231,7 +231,11 @@ class VisualPoseTransformChainCheck(Node):
         now_ns = self.get_clock().now().nanoseconds
         world_to_base = self.link_poses.get(self.args.base_link_name)
         world_to_link6 = self.link_poses.get(self.args.ee_link_name)
-        world_to_tag_gt = self.model_poses.get(self.args.tag_model_name)
+        world_to_tag_gt = None
+        if self.args.tag_link_name:
+            world_to_tag_gt = self.link_poses.get(self.args.tag_link_name)
+        if world_to_tag_gt is None:
+            world_to_tag_gt = self.model_poses.get(self.args.tag_model_name)
         world_to_camera = self.world_to_camera_gt(world_to_link6)
         camera_to_tag_gt = None
         if world_to_camera is not None and world_to_tag_gt is not None:
@@ -327,6 +331,7 @@ def parse_args(argv):
     parser.add_argument('--base-link-name', default='windylab_arm::base_link')
     parser.add_argument('--ee-link-name', default='windylab_arm::link6')
     parser.add_argument('--tag-model-name', default='apriltag_36h11_00000_target')
+    parser.add_argument('--tag-link-name', default='')
     parser.add_argument('--ee-frame', default='link6')
     parser.add_argument('--camera-frame', default='camera_color_optical_frame')
     parser.add_argument('--detected-tag-frame', default='apriltag_36h11_00000')

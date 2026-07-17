@@ -1,0 +1,63 @@
+material AprilTag36h11/Id00000
+{
+  technique
+  {
+    pass
+    {
+      lighting off
+      texture_unit
+      {
+        texture tag36_11_00000.png
+        filtering none
+      }
+    }
+  }
+}
+
+material AprilTag36h11/Id00001
+{
+  technique
+  {
+    pass
+    {
+      lighting off
+      texture_unit
+      {
+        texture tag36_11_00001.png
+        filtering none
+      }
+    }
+  }
+}
+
+material AprilTag36h11/Id00002
+{
+  technique
+  {
+    pass
+    {
+      lighting off
+      texture_unit
+      {
+        texture tag36_11_00002.png
+        filtering none
+      }
+    }
+  }
+}
+
+material AprilTag36h11/Id00003
+{
+  technique
+  {
+    pass
+    {
+      lighting off
+      texture_unit
+      {
+        texture tag36_11_00003.png
+        filtering none
+      }
+    }
+  }
+}
