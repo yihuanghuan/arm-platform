@@ -20,6 +20,9 @@
   <build_depend>mavros_msgs</build_depend>
   <build_depend>visualization_msgs</build_depend>
   <build_depend>pinocchio</build_depend>
+  <build_depend>gazebo_dev</build_depend>
+  <build_depend>gazebo_msgs</build_depend>
+  <build_depend>gazebo_ros</build_depend>
 
   <build_export_depend>mavros_msgs</build_export_depend>
   <build_export_depend>visualization_msgs</build_export_depend>

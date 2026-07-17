@@ -86,6 +86,8 @@ def _render_robot_description(pkg_share, context):
                 'imu_linear_acceleration_noise_stddev').perform(context),
             'use_ros2_control': LaunchConfiguration('use_ros2_control').perform(context),
             'fix_base_to_world': LaunchConfiguration('fix_base_to_world').perform(context),
+            'base_command_hold_enabled': LaunchConfiguration(
+                'base_command_hold_enabled').perform(context),
         })
     robot_description = doc.toprettyxml(indent='  ')
 
@@ -534,6 +536,13 @@ def generate_launch_description():
         description='Add a fixed world_to_base_link joint for Gazebo simulation'
     )
 
+    base_command_hold_enabled_arg = DeclareLaunchArgument(
+        'base_command_hold_enabled',
+        default_value='false',
+        description=(
+            'Hold the latest commanded free-base state inside the Gazebo physics loop')
+    )
+
     static_model_arg = DeclareLaunchArgument(
         'static_model',
         default_value='true',
@@ -613,12 +622,19 @@ def generate_launch_description():
         velocity_publish_rate_arg,
         velocity_command_timeout_sec_arg,
         fix_base_to_world_arg,
+        base_command_hold_enabled_arg,
         static_model_arg,
         use_rviz_arg,
         use_sim_time_arg,
         disable_collisions_arg,
         SetEnvironmentVariable('GAZEBO_MODEL_DATABASE_URI', ''),
         SetEnvironmentVariable('GAZEBO_MODEL_PATH', os.pathsep.join(model_paths)),
+        SetEnvironmentVariable(
+            'GAZEBO_PLUGIN_PATH',
+            os.pathsep.join(filter(None, [
+                os.path.join(os.path.dirname(os.path.dirname(manipulator_share)), 'lib'),
+                os.environ.get('GAZEBO_PLUGIN_PATH', ''),
+            ]))),
         gazebo,
         OpaqueFunction(function=_launch_setup),
     ])

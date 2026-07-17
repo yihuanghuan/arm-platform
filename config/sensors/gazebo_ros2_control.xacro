@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
   <xacro:macro name="windylab_gazebo_ros2_control"
-      params="use_ros2_control:=true fix_base_to_world:=true">
+      params="use_ros2_control:=true fix_base_to_world:=true base_command_hold_enabled:=false">
 
     <xacro:if value="${fix_base_to_world}">
       <link name="world"/>
@@ -75,6 +75,19 @@
       <gazebo>
         <plugin filename="libgazebo_ros2_control.so" name="gazebo_ros2_control">
           <parameters>$(find manipulator)/gazebo_controllers.yaml</parameters>
+        </plugin>
+      </gazebo>
+    </xacro:if>
+
+    <xacro:if value="${base_command_hold_enabled}">
+      <gazebo>
+        <plugin filename="libwindylab_base_command_hold.so"
+                name="windylab_base_command_hold">
+          <ros>
+            <namespace>/</namespace>
+          </ros>
+          <command_topic>/windylab/base_command</command_topic>
+          <hold_every_n_updates>6</hold_every_n_updates>
         </plugin>
       </gazebo>
     </xacro:if>

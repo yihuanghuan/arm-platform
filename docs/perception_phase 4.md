@@ -21,7 +21,7 @@
 | 1 | 修正 Gazebo Base plant | 已知小关节脉冲下 Base 不发生非指令位移；3 次结果通过阈值 | 已通过 |
 | 2 | 统一仿真时间和回放时序 | 回放、感知、控制都使用同一仿真时间；暂停/恢复不破坏轨迹 | 已通过 |
 | 3 | 验证 Pinocchio 与 Gazebo 运动学一致 | 多构型、多轴小脉冲的方向、尺度和 frame 一致 | 已通过 |
-| 4 | 仅用 Gazebo GT 完成动态 XYZ 闭环 | GT 相比 baseline 的 RMS 明显下降，且不发散、可重复 | 未开始，锁定 |
+| 4 | 仅用 Gazebo GT 完成动态 XYZ 闭环 | GT 相比 baseline 的 RMS 明显下降，且不发散、可重复 | 已通过 |
 | 5 | 修正安全状态机 | safety 可区分等待、可恢复丢帧和故障锁存；命令行为逐项通过 | 未开始，锁定 |
 | 6 | 验收视觉开环链路 | 图像、Tag TF、世界系 EE 估计的频率、延迟、方向达到门槛 | 未开始，锁定 |
 | 7 | 保证相机视场和姿态可观测性 | 全扰动范围内 Tag 可见率和相机姿态满足门槛 | 未开始，锁定 |
@@ -854,3 +854,276 @@ git rev-parse origin/develop
 ```
 
 只有工作区干净且两个提交 ID 一致，才允许开始子阶段 4。
+
+---
+
+## 子阶段 4：仅用 Gazebo GT 完成动态 XYZ 闭环
+
+### 状态
+
+通过。完成日期：2026-07-17。
+
+这里的通过只证明 Gazebo plant、GT 位姿反馈、Pinocchio CLIK 和速度控制器可以在连续 `sine_x` Base 平移下形成有效 XYZ 抗扰闭环。视觉估计和 safety 状态机尚未参与，子阶段 5 在本阶段提交推送完成前继续锁定。
+
+### 目的与冻结门禁
+
+本阶段先排除视觉链路，只回答两个问题：
+
+1. Base 是规定边界输入、而不是受关节反作用自由漂移时，机械臂是否能产生方向正确的末端抗扰动作。
+2. 在同一 30 s 正弦轨迹下，GT 闭环是否稳定、可重复并显著优于零命令 baseline。
+
+正式验收在调参前冻结为：
+
+| 项目 | 硬门禁 |
+|---|---:|
+| 轨迹 | `sine_x`，30 s，100 Hz，seed 42；所有运行使用相同 CSV |
+| 独立重复 | 3 组 baseline/GT 配对；每个运行均全新启动 Gazebo |
+| 运行有效性 | 初始 Base/关节正常、3001 个 GT 样本有效、`set_failures=0`、不发散 |
+| Base 位置跟踪 | RMS `<=0.0005 m`，最大值 `<=0.0021 m` |
+| Base 姿态保持 | 最大误差 `<=0.01 rad` |
+| 单对改善 | 每个 GT 的 XYZ RMS 相对同组 baseline 至少下降 30% |
+| 重复性 | 三次 GT XYZ RMS 的样本变异系数 CV `<=5%` |
+
+### 内容修改
+
+- `src/gazebo_base_command_hold_plugin.cpp`
+  - 新增可选 Gazebo Classic ModelPlugin，订阅 `/windylab/base_command`。
+  - 只接受目标模型、`world` 参考系、有限数值和非零范数四元数。
+  - 在 Gazebo 物理线程内每 6 个 1 ms 物理步规定一次模型 pose/twist，抑制关节执行器反作用造成的自由 Base 漂移。
+  - 使用目标线速度在两条 100 Hz replay 指令之间外推位置，避免把离散轨迹点反复写回造成约 5 ms 等效滞后。
+  - 插件只在收到第一条有效命令后生效；普通 `gazebo_arm.launch.py` 默认不启用。
+- `scripts/base_disturbance_replay.py`
+  - 在保留 `/set_entity_state` 服务调用、成功率和时序指标的同时，把同一 `EntityState` 发布到 `/windylab/base_command`。
+- `config/arm_with_d435i.urdf.xacro`、`config/sensors/gazebo_ros2_control.xacro`
+  - 新增默认关闭的 `base_command_hold_enabled`；配置插件话题和 6 个物理步保持间隔。
+- `launch/gazebo_arm.launch.py`
+  - 传递插件开关，并把本包 `lib` 加入该 launch 进程的 `GAZEBO_PLUGIN_PATH`。
+- `launch/moving_base_stabilization.launch.py`
+  - 仅移动 Base 实验启用插件。
+  - GT 与视觉控制参数彻底分离，避免为 GT 提高速度上限时同时改变尚未验收的视觉控制器。
+  - 冻结 GT 参数：100 Hz、任务增益 `[5,5,5]`、任务速度上限 `[0.35,0.35,0.35] m/s`、关节速度上限 `1.5 rad/s`、关节加速度上限 `3 rad/s^2`、阻尼 `0.02`。
+- `scripts/ground_truth_xyz_controller.py`
+  - JointState 和 LinkStates 队列深度从 20 改为 1，避免使用积压反馈。
+  - 增加阻尼、任务增益和任务速度向量的有限值/范围校验。
+  - 修正字符串 launch 参数与向量参数默认类型的一致性，并使正常 ROS shutdown 不产生误报异常。
+- `CMakeLists.txt`、`package.xml`
+  - 增加 Gazebo 插件构建、依赖和安装规则。
+
+视觉估计、视觉 CLIK 参数、deadband、丢帧策略和 safety 阈值均未修改。
+
+### 验收终端命令
+
+构建和静态检查：
+
+```bash
+cd /home/yihuang/westlake/windylab-arm-for6/windylab_ws/src/arm-platform
+git diff --check
+PYTHONDONTWRITEBYTECODE=1 python3 -m py_compile \
+  launch/gazebo_arm.launch.py \
+  launch/moving_base_stabilization.launch.py \
+  scripts/base_disturbance_replay.py \
+  scripts/ground_truth_xyz_controller.py
+
+cd /home/yihuang/westlake/windylab-arm-for6/windylab_ws
+source setup_env.bash
+colcon build --packages-select manipulator --symlink-install
+source install/setup.bash
+```
+
+生成冻结正式轨迹：
+
+```bash
+ros2 run manipulator generate_base_disturbance.py \
+  --config src/arm-platform/config/base_disturbance_profiles.yaml \
+  --profile sine_x --duration-sec 30 --sample-rate-hz 100 --random-seed 42 \
+  --output-csv /tmp/windylab_phase4_stage4/formal_sine_x_30s.csv
+wc -l /tmp/windylab_phase4_stage4/formal_sine_x_30s.csv
+sha256sum /tmp/windylab_phase4_stage4/formal_sine_x_30s.csv
+```
+
+强关节脉冲 plant 门禁。每次独立启动以下 launch；正式复现时建议使用子阶段 3 的 600 s static CSV，保证脉冲期间 replay 仍在发布目标：
+
+```bash
+ros2 launch manipulator moving_base_stabilization.launch.py \
+  experiment_mode:=plant_test gui:=false use_rviz:=false \
+  disturbance_csv:=/tmp/windylab_phase4_stage3_static_600s.csv \
+  replay_output_csv:=/tmp/windylab_phase4_stage4/plugin_n6_pulse_r1_replay.csv \
+  start_delay_sec:=20.0 hold_initial_state_during_start_delay:=true \
+  rgbd_width:=320 rgbd_height:=240 rgbd_update_rate:=1.0 imu_enabled:=false
+```
+
+确认控制器 active 后运行；返回 0 后停止 launch，独立重启并替换 `r1/r2/r3`：
+
+```bash
+ros2 control list_controllers
+ros2 run manipulator phase4_joint_pulse_check.py \
+  --output-csv /tmp/windylab_phase4_stage4/plugin_n6_pulse_r1.csv \
+  --joint-name joint2 --velocity 1.0 --pulse-duration-sec 0.5 \
+  --pre-sec 0.5 --duration-sec 3.0 --sample-hz 100 \
+  --max-base-displacement-m 0.001 \
+  --max-base-orientation-error-rad 0.01 \
+  --min-joint-motion-rad 0.1 --require-base-stable --use-sim-time
+```
+
+正式 baseline。每次完成 replay 后停止 launch；替换 `r1/r2/r3` 并独立重启：
+
+```bash
+ros2 launch manipulator moving_base_stabilization.launch.py \
+  experiment_mode:=baseline gui:=false use_rviz:=false \
+  disturbance_csv:=/tmp/windylab_phase4_stage4/formal_sine_x_30s.csv \
+  replay_output_csv:=/tmp/windylab_phase4_stage4/formal_r1_baseline_replay.csv \
+  start_delay_sec:=5.0 hold_initial_state_during_start_delay:=true \
+  rgbd_width:=320 rgbd_height:=240 rgbd_update_rate:=1.0 imu_enabled:=false
+```
+
+正式 GT，运行方式和编号与 baseline 一一配对：
+
+```bash
+ros2 launch manipulator moving_base_stabilization.launch.py \
+  experiment_mode:=ground_truth_xyz gui:=false use_rviz:=false \
+  disturbance_csv:=/tmp/windylab_phase4_stage4/formal_sine_x_30s.csv \
+  replay_output_csv:=/tmp/windylab_phase4_stage4/formal_r1_gt_replay.csv \
+  start_delay_sec:=5.0 hold_initial_state_during_start_delay:=true \
+  rgbd_width:=320 rgbd_height:=240 rgbd_update_rate:=1.0 imu_enabled:=false
+```
+
+统一汇总 6 次运行：
+
+```bash
+cd /home/yihuang/westlake/windylab-arm-for6/windylab_ws/src/arm-platform
+python3 scripts/phase4_dynamic_xyz_metrics.py \
+  --run r1_baseline=/tmp/windylab_phase4_stage4/formal_r1_baseline_replay.csv \
+  --run r1_gt=/tmp/windylab_phase4_stage4/formal_r1_gt_replay.csv \
+  --run r2_baseline=/tmp/windylab_phase4_stage4/formal_r2_baseline_replay.csv \
+  --run r2_gt=/tmp/windylab_phase4_stage4/formal_r2_gt_replay.csv \
+  --run r3_baseline=/tmp/windylab_phase4_stage4/formal_r3_baseline_replay.csv \
+  --run r3_gt=/tmp/windylab_phase4_stage4/formal_r3_gt_replay.csv \
+  --output-csv /tmp/windylab_phase4_stage4/formal_all_summary.csv \
+  --max-joint-velocity 1.5
+```
+
+最终门禁脚本从汇总 CSV 检查逐对改善、Base 继承门槛和 CV：
+
+```bash
+python3 - <<'PY'
+import csv
+import statistics
+
+with open('/tmp/windylab_phase4_stage4/formal_all_summary.csv') as handle:
+    runs = {row['label']: row for row in csv.DictReader(handle)}
+
+gt_rms = []
+passed = True
+for index in range(1, 4):
+    baseline = runs[f'r{index}_baseline']
+    gt = runs[f'r{index}_gt']
+    baseline_rms = float(baseline['xyz_rms_m'])
+    gt_value = float(gt['xyz_rms_m'])
+    pair_pass = (
+        baseline['run_valid'] == 'True'
+        and gt['run_valid'] == 'True'
+        and gt_value <= 0.70 * baseline_rms)
+    plant_pass = (
+        float(gt['base_pose_tracking_error_rms_m']) <= 0.0005
+        and float(gt['base_pose_tracking_error_max_m']) <= 0.0021
+        and float(gt['base_orientation_tracking_error_max_rad']) <= 0.01)
+    passed = passed and pair_pass and plant_pass
+    gt_rms.append(gt_value)
+    print(index, pair_pass, plant_pass, (baseline_rms - gt_value) / baseline_rms)
+
+cv = statistics.stdev(gt_rms) / statistics.mean(gt_rms)
+print('gt_cv', cv)
+print('formal_gate', passed and cv <= 0.05)
+raise SystemExit(0 if passed and cv <= 0.05 else 1)
+PY
+```
+
+### 强脉冲门禁结果
+
+冻结 6 步保持间隔后重新从 r1 计数，三次均通过：
+
+| 运行 | joint2 实际运动 | Base 最大平移 | Base 最大姿态误差 | 判定 |
+|---|---:|---:|---:|---|
+| r1 | `0.296559591 rad` | `0.000220272 m` | `0.002544013 rad` | 通过 |
+| r2 | `0.296560479 rad` | `0.000220264 m` | `0.002540866 rad` | 通过 |
+| r3 | `0.296673757 rad` | `0.000220388 m` | `0.002539291 rad` | 通过 |
+
+这比原阶段 1 的 `0.02 rad/s` 小脉冲更强：本次命令为 `1.0 rad/s`、持续 `0.5 s`，实际关节运动大于 `0.296 rad`，因此不是通过冻结关节换取 Base 稳定。
+
+### 正式动态 XYZ 结果
+
+冻结轨迹为 3001 样本，SHA-256：
+
+```text
+10add165bf9dbf6b44081b5ec862e41587b0c8e4e79adc55986f60ac8fd22b94
+```
+
+逐对结果：
+
+| 配对 | baseline RMS | GT RMS | RMS 改善 | GT 最大误差 | 判定 |
+|---|---:|---:|---:|---:|---|
+| r1 | `0.067636302 m` | `0.047232754 m` | `30.166563%` | `0.0743585 m` | 通过 |
+| r2 | `0.067636040 m` | `0.047141540 m` | `30.301154%` | `0.0738316 m` | 通过 |
+| r3 | `0.067636361 m` | `0.046674067 m` | `30.992639%` | `0.0728796 m` | 通过 |
+
+Base 与命令完整性：
+
+| 运行 | Base 位置 RMS | Base 位置最大值 | Base 姿态最大值 | 关节速度峰值 | 饱和比例 | set failure |
+|---|---:|---:|---:|---:|---:|---:|
+| GT r1 | `0.000246945 m` | `0.001703371 m` | `0.005636195 rad` | `1.495474 rad/s` | `0` | `0` |
+| GT r2 | `0.000244298 m` | `0.000528550 m` | `0.005612700 rad` | `1.477721 rad/s` | `0` | `0` |
+| GT r3 | `0.000243834 m` | `0.000523759 m` | `0.005565222 rad` | `1.439999 rad/s` | `0` | `0` |
+
+三次 GT RMS 均值为 `0.047016120 m`，样本变异系数 CV 为 `0.637477%`，远低于 5% 门槛。最终脚本输出 `formal_gate true`。
+
+正式文件 SHA-256：
+
+```text
+5d46f7b4f705cc8b43cf2d4e0345f2918610d28fec77a1dbfc5a31fda0a056f4  formal_r1_baseline_replay.csv
+2b8c52eee316556660a0fedaecdb2320c5327f3eeafac120266cafe5d952cfa6  formal_r1_gt_replay.csv
+eb772af0b1dc8507debdf1f841dbe198be6fbf73e7c8ab71c77b6dbd4f75da87  formal_r2_baseline_replay.csv
+1bdf31cf3a05ec0ddaf23c0faea1e6d3ea509bda0e15cf961652c814bc94f34f  formal_r2_gt_replay.csv
+966dc389a3a2b7011cc0234bdc70ccda7058728fa86a28eafe593a4f005f5161  formal_r3_baseline_replay.csv
+16f13ace260a5acf4b140859dd7661b3149b609142d689f6a05aeab5dd52d87e  formal_r3_gt_replay.csv
+237f284aab925178d79b6b97876d56ab4a20b1d1c900448aa862a6d9718116cb  formal_all_summary.csv
+```
+
+### 验收过程中发现并修正的问题
+
+1. 原 GT 复用视觉控制的 `0.05 m/s` 任务速度、`0.2 rad/s` 关节速度和 `0.3 rad/s^2` 加速度上限，而 `sine_x` 的 Base 峰值速度为 `0.2199 m/s`；旧 GT 在当前冻结轨迹上比 baseline 差约 14.1%。因此先分离 GT/视觉参数，没有改尚未验收的视觉参数。
+2. 只提高 GT 速度后，12 s 预检可改善 30% 以上，但强命令使自由 Base 姿态误差达到 `0.0124–0.0160 rad`，违反子阶段 1 的 Base plant 门槛。没有用 GT 成绩掩盖 plant 失败。
+3. 尝试把 `/set_entity_state` 服务提高到 200 Hz 时，强脉冲 Base 姿态仍为 `0.01147 rad`；300 Hz 时数值发散到约 `45.3 m / 3.13 rad`。该服务频率方案已完整撤销。
+4. 插件每个 1 ms 物理步调用模型级 `SetWorldPose` 时 Base 完全稳定，但关节实际运动为 0；只重定位 `base_link` 又造成 `0.420 m / 2.841 rad` Base 发散和 `7.05 rad` 关节异常。两种方案均被强脉冲门禁否决。
+5. 模型级保持每 4 步执行时，强脉冲通过，但离散 pose 被反复写回使正弦 Base 跟踪 RMS 增至 `1.052 mm`。加入线速度外推后恢复到 `0.150 mm`。
+6. 4 步保持间隔把 `1 rad/s * 0.5 s` 的关节运动削弱到约 `0.266 rad`；放宽到 6 步后实际运动约 `0.297 rad`，同时三次 Base 强门禁仍通过。
+7. GT 预检严格逐项修改：gain 4 改善 `22.98%`；gain 5 且任务上限 `0.30 m/s` 改善 `28.46%`；保持 gain 5、仅把任务上限提高到 `0.35 m/s` 后改善 `30.08%`，才冻结正式参数。gain 6 产生限幅并恶化，加速度上限从 3 提高到 6 没有改善，均未保留。
+
+没有降低 30% 改善、Base 位姿或重复性门槛，也没有把失败探索计入正式三次。
+
+### 达到的效果
+
+- 原始故障中的“关节反作用推动自由 Base、整机大幅摆动”已在移动 Base launch 中被消除；强关节脉冲下 Base 仍保持在毫米/百分之一弧度门槛内。
+- Base 仍能按 100 Hz 正弦轨迹规定移动，不是改成固定根；正式 baseline 的末端 RMS 与子阶段 0 的 `0.06763 m` 一致。
+- GT 闭环会产生最高约 `1.50 rad/s` 的明确抗扰关节动作，三次都把世界系末端 XYZ RMS 降低至少 30%，且没有速度饱和或发散。
+- 这证明阶段 0 中“末端看不到抗扰意图”不能归因于运动学或 Gazebo GT 闭环能力；剩余工作应按门禁转向 safety 状态机和视觉测量链路。
+- 本结果只覆盖计划中的 `sine_x` GT 子阶段，不能替代后续视觉闭环或最终 `sine_x/y/z/xyz` 完整验收。
+
+### 版本控制验收
+
+本子阶段提交说明固定为：
+
+```text
+phase4: stabilize gazebo ground-truth xyz control
+```
+
+提交、推送并执行：
+
+```bash
+cd /home/yihuang/westlake/windylab-arm-for6/windylab_ws/src/arm-platform
+git status --short --branch
+git log -1 --oneline
+git rev-parse HEAD
+git rev-parse origin/develop
+```
+
+只有工作区干净且两个提交 ID 一致，才允许开始子阶段 5。

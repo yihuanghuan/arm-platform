@@ -29,6 +29,7 @@
   <xacro:arg name="imu_linear_acceleration_noise_stddev" default="0.0"/>
   <xacro:arg name="use_ros2_control" default="true"/>
   <xacro:arg name="fix_base_to_world" default="true"/>
+  <xacro:arg name="base_command_hold_enabled" default="false"/>
 
   <xacro:include filename="$(find manipulator)/arm.urdf"/>
   <xacro:include filename="$(find manipulator)/sensors/d435i_mount.xacro"/>
@@ -82,5 +83,6 @@
 
   <xacro:windylab_gazebo_ros2_control
       use_ros2_control="$(arg use_ros2_control)"
-      fix_base_to_world="$(arg fix_base_to_world)"/>
+      fix_base_to_world="$(arg fix_base_to_world)"
+      base_command_hold_enabled="$(arg base_command_hold_enabled)"/>
 </robot>

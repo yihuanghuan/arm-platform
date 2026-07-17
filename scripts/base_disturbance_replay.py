@@ -182,6 +182,8 @@ class BaseDisturbanceReplay(Node):
         self.args = args
         self.set_client = self.create_client(SetEntityState, args.set_entity_state_service)
         self.get_client = self.create_client(GetEntityState, args.get_entity_state_service)
+        self.base_command_publisher = self.create_publisher(
+            EntityState, args.base_command_topic, 1)
         self.latest_joint_positions = None
         self.initial_joint_positions = None
         self.previous_joint_positions = None
@@ -372,6 +374,7 @@ class BaseDisturbanceReplay(Node):
         request.state.reference_frame = self.args.world_frame
         request.state.pose = make_pose(row)
         request.state.twist = make_twist(row)
+        self.base_command_publisher.publish(request.state)
         future = self.set_client.call_async(request)
         return self.wait_for_future(future, self.args.service_call_timeout)
 
@@ -669,6 +672,7 @@ def parse_args(argv):
     parser.add_argument('--world-frame', default='world')
     parser.add_argument('--set-entity-state-service', default='/set_entity_state')
     parser.add_argument('--get-entity-state-service', default='/get_entity_state')
+    parser.add_argument('--base-command-topic', default='/windylab/base_command')
     parser.add_argument('--model-states-topic', default='/model_states')
     parser.add_argument('--link-states-topic', default='/link_states')
     parser.add_argument('--joint-state-topic', default='/joint_states')

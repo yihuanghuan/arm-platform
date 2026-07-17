@@ -77,7 +77,7 @@ class GroundTruthXyzController(Node):
             'position_deadband_m', 0.003).value)
         self.dry_run = bool(self.declare_parameter('dry_run', True).value)
         self.task_gain = self.vector_parameter(
-            'task_gain', [4.0, 4.0, 4.0], 3)
+            'task_gain', '4.0 4.0 4.0', 3)
         self.max_task_velocity_xyz = self.vector_parameter(
             'max_task_velocity_xyz', '0.05 0.05 0.05', 3)
 
@@ -89,6 +89,15 @@ class GroundTruthXyzController(Node):
             raise ValueError('max_joint_velocity must be non-negative')
         if self.max_joint_acceleration < 0.0:
             raise ValueError('max_joint_acceleration_rad_s2 must be non-negative')
+        if self.damping <= 0.0:
+            raise ValueError('damping must be positive')
+        if not finite_vector(self.task_gain) or np.any(self.task_gain < 0.0):
+            raise ValueError('task_gain must contain finite non-negative values')
+        if (
+                not finite_vector(self.max_task_velocity_xyz)
+                or np.any(self.max_task_velocity_xyz < 0.0)):
+            raise ValueError(
+                'max_task_velocity_xyz must contain finite non-negative values')
 
         self.model = pin.buildModelFromUrdf(self.urdf_path)
         self.data = self.model.createData()
@@ -130,9 +139,9 @@ class GroundTruthXyzController(Node):
         self.safety_stop_reason = ''
 
         self.create_subscription(JointState, self.joint_states_topic,
-                                 self.joint_state_callback, 20)
+                                 self.joint_state_callback, 1)
         self.create_subscription(LinkStates, self.link_states_topic,
-                                 self.link_states_callback, 20)
+                                 self.link_states_callback, 1)
         self.error_pub = self.create_publisher(
             Float64MultiArray, '/visual_stabilization/error', 10)
         self.dq_raw_pub = self.create_publisher(
@@ -350,7 +359,7 @@ def main(argv=None):
     except ExternalShutdownException:
         pass
     except Exception as exc:
-        if 'context is not valid' not in str(exc):
+        if rclpy.ok() and 'context is not valid' not in str(exc):
             raise
     finally:
         try:

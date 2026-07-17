@@ -161,6 +161,30 @@ def generate_launch_description():
         'visual_max_joint_acceleration_rad_s2',
         default_value='0.3',
         description='Joint command acceleration clamp in rad/s^2')
+    ground_truth_control_rate_arg = DeclareLaunchArgument(
+        'ground_truth_control_rate',
+        default_value='100.0',
+        description='Gazebo GT XYZ stabilization control rate')
+    ground_truth_max_joint_velocity_arg = DeclareLaunchArgument(
+        'ground_truth_max_joint_velocity',
+        default_value='1.5',
+        description='Gazebo GT XYZ joint velocity clamp in rad/s')
+    ground_truth_max_task_velocity_xyz_arg = DeclareLaunchArgument(
+        'ground_truth_max_task_velocity_xyz',
+        default_value='0.35 0.35 0.35',
+        description='Gazebo GT XYZ task velocity clamp in m/s')
+    ground_truth_max_joint_acceleration_arg = DeclareLaunchArgument(
+        'ground_truth_max_joint_acceleration_rad_s2',
+        default_value='3.0',
+        description='Gazebo GT joint command acceleration clamp in rad/s^2')
+    ground_truth_task_gain_arg = DeclareLaunchArgument(
+        'ground_truth_task_gain',
+        default_value='5.0 5.0 5.0',
+        description='Gazebo GT XYZ proportional task gain')
+    ground_truth_damping_arg = DeclareLaunchArgument(
+        'ground_truth_damping',
+        default_value='0.02',
+        description='Gazebo GT damped pseudoinverse coefficient')
     visual_detection_timeout_sec_arg = DeclareLaunchArgument(
         'visual_detection_timeout_sec',
         default_value='0.80',
@@ -297,6 +321,7 @@ def generate_launch_description():
             'imu_update_rate': LaunchConfiguration('imu_update_rate'),
             'use_ros2_control': 'true',
             'fix_base_to_world': 'false',
+            'base_command_hold_enabled': 'true',
             'use_sim_time': LaunchConfiguration('use_sim_time'),
         }.items()
     )
@@ -433,13 +458,17 @@ def generate_launch_description():
             'dry_run': False,
             'command_topic': '/arm_velocity_controller/commands',
             'control_rate': ParameterValue(
-                LaunchConfiguration('visual_stabilization_control_rate'),
+                LaunchConfiguration('ground_truth_control_rate'),
                 value_type=float),
             'max_joint_velocity': ParameterValue(
-                LaunchConfiguration('visual_stabilization_max_joint_velocity'),
+                LaunchConfiguration('ground_truth_max_joint_velocity'),
                 value_type=float),
             'max_task_velocity_xyz': LaunchConfiguration(
-                'visual_stabilization_max_task_velocity_xyz'),
+                'ground_truth_max_task_velocity_xyz'),
+            'task_gain': LaunchConfiguration('ground_truth_task_gain'),
+            'damping': ParameterValue(
+                LaunchConfiguration('ground_truth_damping'),
+                value_type=float),
             'position_deadband_m': ParameterValue(
                 LaunchConfiguration('visual_stabilization_position_deadband_m'),
                 value_type=float),
@@ -456,7 +485,7 @@ def generate_launch_description():
                 LaunchConfiguration('visual_stop_on_large_error'),
                 value_type=bool),
             'max_joint_acceleration_rad_s2': ParameterValue(
-                LaunchConfiguration('visual_max_joint_acceleration_rad_s2'),
+                LaunchConfiguration('ground_truth_max_joint_acceleration_rad_s2'),
                 value_type=float),
         }],
     )
@@ -553,6 +582,12 @@ def generate_launch_description():
         visual_target_relock_enabled_arg,
         visual_stop_on_large_error_arg,
         visual_max_joint_acceleration_arg,
+        ground_truth_control_rate_arg,
+        ground_truth_max_joint_velocity_arg,
+        ground_truth_max_task_velocity_xyz_arg,
+        ground_truth_max_joint_acceleration_arg,
+        ground_truth_task_gain_arg,
+        ground_truth_damping_arg,
         visual_detection_timeout_sec_arg,
         visual_tf_timeout_sec_arg,
         visual_tag_tf_mode_arg,

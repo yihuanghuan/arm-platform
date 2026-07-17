@@ -19,6 +19,36 @@ find_package(geometry_msgs REQUIRED)
 find_package(visualization_msgs REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(pinocchio REQUIRED)
+find_package(gazebo REQUIRED)
+find_package(gazebo_msgs REQUIRED)
+find_package(gazebo_ros REQUIRED)
+
+# ==============================
+# Gazebo plugins
+# ==============================
+add_library(windylab_base_command_hold SHARED
+  src/gazebo_base_command_hold_plugin.cpp
+)
+
+target_compile_features(windylab_base_command_hold PRIVATE cxx_std_17)
+
+target_include_directories(windylab_base_command_hold PRIVATE
+  ${GAZEBO_INCLUDE_DIRS}
+)
+
+target_link_directories(windylab_base_command_hold PRIVATE
+  ${GAZEBO_LIBRARY_DIRS}
+)
+
+target_link_libraries(windylab_base_command_hold
+  ${GAZEBO_LIBRARIES}
+)
+
+ament_target_dependencies(windylab_base_command_hold
+  gazebo_msgs
+  gazebo_ros
+  rclcpp
+)
 
 # ==============================
 # Arm Platform Core Library
@@ -223,6 +253,10 @@ install(TARGETS
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION lib/${PROJECT_NAME}
+)
+
+install(TARGETS windylab_base_command_hold
+  LIBRARY DESTINATION lib
 )
 
 install(DIRECTORY include/
