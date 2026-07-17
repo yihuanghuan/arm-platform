@@ -117,6 +117,7 @@ def summarize(label, path, args):
     pre_roll_hold_attempts = None
     pre_roll_hold_failures = None
     pre_roll_hold_rate_hz = None
+    schedule_clock = None
     if not rows:
         invalid_reasons.append('empty_replay_csv')
     else:
@@ -134,6 +135,7 @@ def summarize(label, path, args):
             first_row.get('pre_roll_hold_failures'))
         pre_roll_hold_rate_hz = parse_float(
             first_row.get('pre_roll_hold_rate_hz'))
+        schedule_clock = first_row.get('schedule_clock') or None
 
         if initial_pose_tracking_error is None:
             invalid_reasons.append('missing_initial_pose_tracking_error')
@@ -164,6 +166,8 @@ def summarize(label, path, args):
         if origin is not None:
             break
     errors = []
+    base_pose_tracking_errors = []
+    base_orientation_tracking_errors = []
     wall_times = []
     velocity_peaks = []
     visual_valid_values = []
@@ -178,6 +182,14 @@ def summarize(label, path, args):
     for row in rows:
         if str(row.get('set_success', '')).lower() != 'true':
             set_failures += 1
+
+        base_pose_tracking_error = parse_float(row.get('pose_tracking_error_m'))
+        if base_pose_tracking_error is not None:
+            base_pose_tracking_errors.append(base_pose_tracking_error)
+        base_orientation_tracking_error = parse_float(
+            row.get('orientation_tracking_error_rad'))
+        if base_orientation_tracking_error is not None:
+            base_orientation_tracking_errors.append(base_orientation_tracking_error)
 
         joint_step = parse_float(row.get('joint_max_step_rad'))
         if joint_step is not None:
@@ -229,6 +241,22 @@ def summarize(label, path, args):
     steady_xyz_mean = statistics.mean(steady_errors) if steady_errors else None
     steady_xyz_max = max(steady_errors) if steady_errors else None
     visual_valid_count = sum(1 for value in visual_valid_values if value)
+    schedule_errors = [
+        value for value in (
+            parse_float(row.get('schedule_error_sec')) for row in rows)
+        if value is not None]
+    sim_times = [
+        value for value in (parse_float(row.get('sim_time_sec')) for row in rows)
+        if value is not None]
+    replay_wall_times = [
+        value for value in (parse_float(row.get('wall_time_sec')) for row in rows)
+        if value is not None]
+
+    def max_step(values):
+        if len(values) < 2:
+            return None
+        return max(current - previous for previous, current in zip(values, values[1:]))
+
     result = {
         'label': label,
         'csv': path,
@@ -241,6 +269,24 @@ def summarize(label, path, args):
         'pre_roll_hold_attempts': pre_roll_hold_attempts,
         'pre_roll_hold_failures': pre_roll_hold_failures,
         'pre_roll_hold_rate_hz': pre_roll_hold_rate_hz,
+        'schedule_clock': schedule_clock,
+        'schedule_error_rms_sec': rms(schedule_errors),
+        'schedule_error_max_sec': max(schedule_errors) if schedule_errors else None,
+        'sim_duration_sec': (
+            sim_times[-1] - sim_times[0] if len(sim_times) >= 2 else None),
+        'wall_duration_sec': (
+            replay_wall_times[-1] - replay_wall_times[0]
+            if len(replay_wall_times) >= 2 else None),
+        'sim_sample_gap_max_sec': max_step(sim_times),
+        'wall_sample_gap_max_sec': max_step(replay_wall_times),
+        'base_pose_tracking_error_rms_m': rms(base_pose_tracking_errors),
+        'base_pose_tracking_error_max_m': (
+            max(base_pose_tracking_errors) if base_pose_tracking_errors else None),
+        'base_orientation_tracking_error_rms_rad': rms(
+            base_orientation_tracking_errors),
+        'base_orientation_tracking_error_max_rad': (
+            max(base_orientation_tracking_errors)
+            if base_orientation_tracking_errors else None),
         'samples': len(rows),
         'valid_gt_samples': len(errors),
         'invalid_gt_samples': invalid_gt_samples,
@@ -299,6 +345,17 @@ def write_summary(path, summaries):
         'pre_roll_hold_attempts',
         'pre_roll_hold_failures',
         'pre_roll_hold_rate_hz',
+        'schedule_clock',
+        'schedule_error_rms_sec',
+        'schedule_error_max_sec',
+        'sim_duration_sec',
+        'wall_duration_sec',
+        'sim_sample_gap_max_sec',
+        'wall_sample_gap_max_sec',
+        'base_pose_tracking_error_rms_m',
+        'base_pose_tracking_error_max_m',
+        'base_orientation_tracking_error_rms_rad',
+        'base_orientation_tracking_error_max_rad',
         'samples',
         'valid_gt_samples',
         'invalid_gt_samples',
@@ -344,6 +401,17 @@ def print_summary(summaries, output_csv):
                 'pre_roll_hold_attempts',
                 'pre_roll_hold_failures',
                 'pre_roll_hold_rate_hz',
+                'schedule_clock',
+                'schedule_error_rms_sec',
+                'schedule_error_max_sec',
+                'sim_duration_sec',
+                'wall_duration_sec',
+                'sim_sample_gap_max_sec',
+                'wall_sample_gap_max_sec',
+                'base_pose_tracking_error_rms_m',
+                'base_pose_tracking_error_max_m',
+                'base_orientation_tracking_error_rms_rad',
+                'base_orientation_tracking_error_max_rad',
                 'samples',
                 'valid_gt_samples',
                 'invalid_gt_samples',

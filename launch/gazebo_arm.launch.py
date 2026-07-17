@@ -276,6 +276,8 @@ def _launch_setup(context, *args, **kwargs):
 def generate_launch_description():
     gazebo_share = FindPackageShare('gazebo_ros').find('gazebo_ros')
     manipulator_share = FindPackageShare('manipulator').find('manipulator')
+    default_gazebo_params_file = os.path.join(
+        manipulator_share, 'gazebo_ros_params.yaml')
     gazebo_model_path = os.environ.get('GAZEBO_MODEL_PATH', '')
     model_paths = [
         '/usr/share/gazebo-11/models',
@@ -300,6 +302,12 @@ def generate_launch_description():
         'world',
         default_value=[FindPackageShare('gazebo_ros'), '/worlds/empty.world'],
         description='Gazebo world file'
+    )
+
+    gazebo_params_file_arg = DeclareLaunchArgument(
+        'gazebo_params_file',
+        default_value=default_gazebo_params_file,
+        description='ROS parameter file passed to the Gazebo server plugins'
     )
 
     camera_enabled_arg = DeclareLaunchArgument(
@@ -559,6 +567,7 @@ def generate_launch_description():
             'verbose': LaunchConfiguration('verbose'),
             'world': LaunchConfiguration('world'),
             'factory': 'true',
+            'params_file': LaunchConfiguration('gazebo_params_file'),
         }.items()
     )
 
@@ -566,6 +575,7 @@ def generate_launch_description():
         gui_arg,
         verbose_arg,
         world_arg,
+        gazebo_params_file_arg,
         camera_enabled_arg,
         camera_mount_mode_arg,
         camera_name_arg,

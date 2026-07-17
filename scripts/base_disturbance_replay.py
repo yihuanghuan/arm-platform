@@ -200,9 +200,13 @@ class BaseDisturbanceReplay(Node):
         self.entity_stable_count = 0
         self.rows = []
         self.wall_stamps = []
+        self.schedule_stamps = []
         self.output_rows = []
         self.pre_roll_hold_stamps = []
+        self.pre_roll_hold_schedule_stamps = []
         self.pre_roll_hold_failures = 0
+        self.replay_start_wall = None
+        self.replay_start_schedule = None
 
         self.create_subscription(
             JointState,
@@ -389,10 +393,36 @@ class BaseDisturbanceReplay(Node):
             return None
         return future.result()
 
-    def hold_initial_state_until(self, first_row, start_time):
+    def schedule_now_sec(self):
+        if self.args.schedule_clock == 'sim':
+            return self.get_clock().now().nanoseconds * 1e-9
+        return time.monotonic()
+
+    def wait_for_schedule_clock(self):
+        if self.args.schedule_clock != 'sim':
+            return
+        deadline = time.monotonic() + self.args.clock_ready_timeout_sec
+        while rclpy.ok() and time.monotonic() < deadline:
+            if self.get_clock().now().nanoseconds > 0:
+                return
+            rclpy.spin_once(self, timeout_sec=0.05)
+        raise RuntimeError('Timed out waiting for a non-zero simulation clock')
+
+    def wait_until_schedule_time(self, target_time):
+        previous = self.schedule_now_sec()
+        while rclpy.ok():
+            now = self.schedule_now_sec()
+            if now + self.args.clock_regression_tolerance_sec < previous:
+                raise RuntimeError('Replay scheduling clock moved backwards')
+            if now >= target_time:
+                return now
+            previous = now
+            rclpy.spin_once(self, timeout_sec=0.002)
+        return self.schedule_now_sec()
+
+    def hold_initial_state_until(self, first_row, hold_start, replay_start):
         if not self.args.hold_initial_state_during_start_delay:
-            while rclpy.ok() and time.monotonic() < start_time:
-                rclpy.spin_once(self, timeout_sec=0.01)
+            self.wait_until_schedule_time(replay_start)
             return
 
         self.get_logger().info(
@@ -400,22 +430,32 @@ class BaseDisturbanceReplay(Node):
         period = 1.0 / self.args.rate_hz
         index = 0
         while rclpy.ok():
-            target_time = start_time - self.args.start_delay_sec + index * period
-            now = time.monotonic()
-            if now >= start_time:
+            target_time = hold_start + index * period
+            now = self.schedule_now_sec()
+            if now >= replay_start:
                 break
-            if now < target_time:
-                rclpy.spin_once(
-                    self, timeout_sec=min(0.002, target_time - now))
-                continue
+            self.wait_until_schedule_time(target_time)
+            if self.schedule_now_sec() >= replay_start:
+                break
 
             response = self.call_set_state(first_row)
             self.pre_roll_hold_stamps.append(time.monotonic())
+            self.pre_roll_hold_schedule_stamps.append(self.schedule_now_sec())
             if response is None or not response.success:
                 self.pre_roll_hold_failures += 1
             index += 1
 
     def pre_roll_hold_frequency_hz(self):
+        if len(self.pre_roll_hold_schedule_stamps) < 2:
+            return 0.0
+        elapsed = (
+            self.pre_roll_hold_schedule_stamps[-1]
+            - self.pre_roll_hold_schedule_stamps[0])
+        if elapsed <= 0.0:
+            return 0.0
+        return (len(self.pre_roll_hold_schedule_stamps) - 1) / elapsed
+
+    def pre_roll_hold_wall_frequency_hz(self):
         if len(self.pre_roll_hold_stamps) < 2:
             return 0.0
         elapsed = self.pre_roll_hold_stamps[-1] - self.pre_roll_hold_stamps[0]
@@ -427,6 +467,7 @@ class BaseDisturbanceReplay(Node):
         self.rows = rows
         self.wait_for_services()
         self.wait_for_entities()
+        self.wait_for_schedule_clock()
         self.get_logger().info(
             f'Replaying {len(rows)} samples to {self.args.entity_name} at '
             f'{self.args.rate_hz:.1f} Hz target')
@@ -434,24 +475,24 @@ class BaseDisturbanceReplay(Node):
             'Sampling Gazebo state from /model_states and /link_states caches; '
             'get_entity_state is only used during startup readiness checks')
 
-        start = time.monotonic() + self.args.start_delay_sec
-        self.hold_initial_state_until(rows[0], start)
+        hold_start = self.schedule_now_sec()
+        replay_start = hold_start + self.args.start_delay_sec
+        self.hold_initial_state_until(rows[0], hold_start, replay_start)
+        self.replay_start_schedule = replay_start
+        self.replay_start_wall = time.monotonic()
 
-        period = 1.0 / self.args.rate_hz
         for index, row in enumerate(rows):
             if not rclpy.ok():
                 break
-            target_time = start + index * period
-            while rclpy.ok():
-                now = time.monotonic()
-                if now >= target_time:
-                    break
-                rclpy.spin_once(self, timeout_sec=min(0.002, target_time - now))
+            target_time = replay_start + float(row['time_sec'])
+            self.wait_until_schedule_time(target_time)
 
             before_call = time.monotonic()
             set_response = self.call_set_state(row)
             after_call = time.monotonic()
+            after_schedule = self.schedule_now_sec()
             self.wall_stamps.append(after_call)
+            self.schedule_stamps.append(after_schedule)
 
             command_pose = make_pose(row)
             self.refresh_latest_entity_poses()
@@ -468,7 +509,12 @@ class BaseDisturbanceReplay(Node):
                     f'{(now_ns - self.latest_visual_pose_stamp_ns) * 1e-9:.9f}')
             row_out = {
                 'trajectory_time_sec': f'{float(row["time_sec"]):.9f}',
-                'wall_time_sec': f'{after_call - start:.9f}',
+                'wall_time_sec': f'{after_call - self.replay_start_wall:.9f}',
+                'sim_time_sec': f'{self.get_clock().now().nanoseconds * 1e-9:.9f}',
+                'schedule_clock': self.args.schedule_clock,
+                'schedule_elapsed_sec': (
+                    f'{after_schedule - self.replay_start_schedule:.9f}'),
+                'schedule_error_sec': f'{after_schedule - target_time:.9f}',
                 'pre_roll_hold_enabled': str(
                     bool(self.args.hold_initial_state_during_start_delay)).lower(),
                 'pre_roll_hold_attempts': len(self.pre_roll_hold_stamps),
@@ -503,6 +549,12 @@ class BaseDisturbanceReplay(Node):
         self.print_summary()
 
     def actual_frequency_hz(self):
+        if len(self.schedule_stamps) < 2:
+            return 0.0
+        elapsed = self.schedule_stamps[-1] - self.schedule_stamps[0]
+        return (len(self.schedule_stamps) - 1) / elapsed if elapsed > 0.0 else 0.0
+
+    def actual_wall_frequency_hz(self):
         if len(self.wall_stamps) < 2:
             return 0.0
         elapsed = self.wall_stamps[-1] - self.wall_stamps[0]
@@ -525,13 +577,18 @@ class BaseDisturbanceReplay(Node):
         print('Base disturbance replay summary')
         print(f'  samples: {len(self.output_rows)}')
         print(f'  target_rate_hz: {self.args.rate_hz:.3f}')
+        print(f'  schedule_clock: {self.args.schedule_clock}')
         print(f'  actual_rate_hz: {self.actual_frequency_hz():.3f}')
+        print(f'  actual_wall_rate_hz: {self.actual_wall_frequency_hz():.3f}')
         print(
             '  pre_roll_hold_enabled: '
             f'{str(bool(self.args.hold_initial_state_during_start_delay)).lower()}')
         print(f'  pre_roll_hold_attempts: {len(self.pre_roll_hold_stamps)}')
         print(f'  pre_roll_hold_failures: {self.pre_roll_hold_failures}')
         print(f'  pre_roll_hold_rate_hz: {self.pre_roll_hold_frequency_hz():.3f}')
+        print(
+            '  pre_roll_hold_wall_rate_hz: '
+            f'{self.pre_roll_hold_wall_frequency_hz():.3f}')
         print(f'  set_failures: {set_failures}')
         print(f'  joint_max_step_rad: {self.max_joint_step:.9f}')
         print(f'  joint_final_discontinuity_rad: {self.joint_discontinuity_from_initial():.9f}')
@@ -549,6 +606,10 @@ class BaseDisturbanceReplay(Node):
         fieldnames = [
             'trajectory_time_sec',
             'wall_time_sec',
+            'sim_time_sec',
+            'schedule_clock',
+            'schedule_elapsed_sec',
+            'schedule_error_sec',
             'pre_roll_hold_enabled',
             'pre_roll_hold_attempts',
             'pre_roll_hold_failures',
@@ -619,6 +680,7 @@ def parse_args(argv):
     parser.add_argument('--joint-names', type=parse_joint_names, default=parse_joint_names(
         'joint1 joint2 joint3 joint4 joint5 joint6'))
     parser.add_argument('--rate-hz', type=float, default=100.0)
+    parser.add_argument('--schedule-clock', choices=('sim', 'wall'), default='wall')
     parser.add_argument('--state-sample-stride', type=int, default=1)
     parser.add_argument('--service-timeout', type=float, default=10.0)
     parser.add_argument('--service-call-timeout', type=float, default=0.05)
@@ -626,6 +688,9 @@ def parse_args(argv):
     parser.add_argument('--entity-stable-samples', type=int, default=3)
     parser.add_argument('--gt-max-abs-position-m', type=float, default=5.0)
     parser.add_argument('--start-delay-sec', type=float, default=2.0)
+    parser.add_argument('--clock-ready-timeout-sec', type=float, default=20.0)
+    parser.add_argument(
+        '--clock-regression-tolerance-sec', type=float, default=1e-6)
     parser.add_argument(
         '--hold-initial-state-during-start-delay',
         type=parse_bool,
@@ -643,6 +708,12 @@ def parse_args(argv):
         raise SystemExit('--gt-max-abs-position-m must be positive')
     if args.start_delay_sec < 0.0:
         raise SystemExit('--start-delay-sec must be non-negative')
+    if args.clock_ready_timeout_sec <= 0.0:
+        raise SystemExit('--clock-ready-timeout-sec must be positive')
+    if args.clock_regression_tolerance_sec < 0.0:
+        raise SystemExit('--clock-regression-tolerance-sec must be non-negative')
+    if args.schedule_clock == 'sim' and not args.use_sim_time:
+        raise SystemExit('--schedule-clock sim requires --use-sim-time')
     if not args.joint_names:
         raise SystemExit('--joint-names must not be empty')
     return args

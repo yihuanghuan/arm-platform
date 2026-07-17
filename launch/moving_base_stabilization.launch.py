@@ -89,6 +89,10 @@ def generate_launch_description():
         'replay_rate_hz',
         default_value='100.0',
         description='Base replay target rate')
+    replay_clock_source_arg = DeclareLaunchArgument(
+        'replay_clock_source',
+        default_value='sim',
+        description='Replay scheduling clock: sim or wall')
     replay_service_call_timeout_arg = DeclareLaunchArgument(
         'replay_service_call_timeout',
         default_value='0.2',
@@ -466,6 +470,7 @@ def generate_launch_description():
             '--trajectory-csv', LaunchConfiguration('disturbance_csv'),
             '--output-csv', LaunchConfiguration('replay_output_csv'),
             '--rate-hz', LaunchConfiguration('replay_rate_hz'),
+            '--schedule-clock', LaunchConfiguration('replay_clock_source'),
             '--state-sample-stride', LaunchConfiguration('replay_state_sample_stride'),
             '--entity-stable-samples', LaunchConfiguration('replay_entity_stable_samples'),
             '--gt-max-abs-position-m', LaunchConfiguration('replay_gt_max_abs_position_m'),
@@ -530,6 +535,7 @@ def generate_launch_description():
         replay_output_csv_arg,
         camera_entity_name_arg,
         replay_rate_hz_arg,
+        replay_clock_source_arg,
         replay_service_call_timeout_arg,
         replay_state_sample_stride_arg,
         replay_gt_max_abs_position_m_arg,

@@ -19,7 +19,7 @@
 |---|---|---|---|
 | 0 | 冻结当前失败基线和判废规则 | 15 次固定矩阵数据完整；失败链路重复 3 次；异常初态不输出正式成绩 | 已通过 |
 | 1 | 修正 Gazebo Base plant | 已知小关节脉冲下 Base 不发生非指令位移；3 次结果通过阈值 | 已通过 |
-| 2 | 统一仿真时间和回放时序 | 回放、感知、控制都使用同一仿真时间；暂停/恢复不破坏轨迹 | 未开始，锁定 |
+| 2 | 统一仿真时间和回放时序 | 回放、感知、控制都使用同一仿真时间；暂停/恢复不破坏轨迹 | 已通过 |
 | 3 | 验证 Pinocchio 与 Gazebo 运动学一致 | 多构型、多轴小脉冲的方向、尺度和 frame 一致 | 未开始，锁定 |
 | 4 | 仅用 Gazebo GT 完成动态 XYZ 闭环 | GT 相比 baseline 的 RMS 明显下降，且不发散、可重复 | 未开始，锁定 |
 | 5 | 修正安全状态机 | safety 可区分等待、可恢复丢帧和故障锁存；命令行为逐项通过 | 未开始，锁定 |
@@ -502,3 +502,186 @@ git rev-parse origin/develop
 ```
 
 只有工作区干净且两个提交 ID 一致，才允许开始子阶段 2。
+
+---
+
+## 子阶段 2：统一仿真时间与回放时序
+
+### 状态
+
+通过。完成日期：2026-07-17。
+
+### 目的
+
+消除两套并行时间基准：修改前 Base replay 使用 `time.monotonic()` 以墙钟 100 Hz 调度，而视觉、GT、baseline 和 ROS 2 control 节点声明 `use_sim_time=true`。Gazebo 实测只以 10 Hz 发布 `/clock` 和 `/model_states`，因此 100 Hz replay、100 Hz 控制 timer 和 10 Hz 状态缓存并未处在同一离散时间轴上。
+
+本子阶段只修改仿真 clock/state 发布和 replay 调度语义，不调整 Base plant、运动学、视觉或控制参数。
+
+### 修改前基线
+
+```text
+/gazebo.publish_rate: 10.0 Hz
+/clock:               9.994-9.999 Hz
+/model_states:        9.995-9.998 Hz
+Base replay:           wall monotonic clock, 100 Hz
+visual/GT/baseline:    ROS simulation clock timers
+```
+
+这也解释了子阶段 1 中原 `pose_tracking_error_m` 的 2–3 cm 表观误差：当前 100 Hz 命令与最多滞后 0.1 s 的状态缓存直接相减。
+
+### 修改内容
+
+- `config/gazebo_ros_params.yaml`
+  - 新增 `/gazebo.publish_rate: 100.0`，使 Gazebo `/clock` 以 100 Hz 发布。
+- `worlds/d435i_apriltag_board_2x2.world`
+  - `gazebo_ros_state.update_rate` 从 10 Hz 提升为 100 Hz，使 `/model_states` 和 `/link_states` 与控制频率一致。
+- `launch/gazebo_arm.launch.py`
+  - 新增 `gazebo_params_file` 参数，默认把项目的 Gazebo ROS 参数文件传给 `gzserver.launch.py`。
+- `launch/moving_base_stabilization.launch.py`
+  - 新增 `replay_clock_source`，默认 `sim`。
+  - 阶段 4 replay 明确使用 ROS 仿真时钟调度。
+- `scripts/base_disturbance_replay.py`
+  - 新增 `--schedule-clock {sim,wall}`；独立脚本为兼容旧用法默认 `wall`，阶段 4 launch 显式传 `sim`。
+  - sim 模式等待非零 `/clock` 后才开始 pre-roll。
+  - pre-roll 和正式 replay 都按 ROS clock 调度；正式样本直接使用 CSV 的 `time_sec`，不再用墙钟 `index/rate` 推算。
+  - 仿真暂停时 schedule clock 不前进，因此不发新轨迹样本；恢复后从同一仿真时间继续。
+  - 增加时钟回退检测和 clock-ready 超时；服务健康超时继续使用墙钟，避免仿真暂停时故障检测也永久停止。
+  - replay CSV 新增：
+    - `sim_time_sec`
+    - `schedule_clock`
+    - `schedule_elapsed_sec`
+    - `schedule_error_sec`
+  - 终端摘要区分仿真实际频率和墙钟实际频率。
+- `scripts/phase4_dynamic_xyz_metrics.py`
+  - 新增 schedule error、sim/wall duration、sim/wall 最大样本间隔。
+  - 新增 Base pose/orientation 跟踪 RMS 和最大误差。
+
+### 验收终端命令
+
+构建：
+
+```bash
+cd /home/yihuang/westlake/windylab-arm-for6/windylab_ws
+source setup_env.bash
+colcon build --packages-select manipulator --symlink-install
+source install/setup.bash
+```
+
+时钟和状态发布率检查。先启动：
+
+```bash
+ros2 launch manipulator moving_base_stabilization.launch.py \
+  experiment_mode:=plant_test gui:=false use_rviz:=false \
+  disturbance_csv:=/tmp/windylab_phase4_stage0/static.csv \
+  replay_output_csv:=/tmp/windylab_phase4_stage2_rate_probe.csv \
+  start_delay_sec:=30.0 \
+  replay_clock_source:=sim \
+  rgbd_width:=320 rgbd_height:=240 imu_enabled:=false
+```
+
+另一个终端执行：
+
+```bash
+ros2 param get /gazebo publish_rate
+timeout 5 ros2 topic hz /clock --window 100
+timeout 5 ros2 topic hz /model_states --window 100
+```
+
+控制 timer 发布率检查，把启动模式改为 `experiment_mode:=baseline` 后执行：
+
+```bash
+timeout 5 ros2 topic hz /arm_velocity_controller/commands --window 100
+timeout 5 ros2 topic hz /joint_states --window 100
+```
+
+暂停/恢复试验。每次独立启动 5 s `sine_x`：
+
+```bash
+ros2 launch manipulator moving_base_stabilization.launch.py \
+  experiment_mode:=plant_test gui:=false use_rviz:=false \
+  disturbance_csv:=/tmp/windylab_phase4_stage1_sine_x_5s.csv \
+  replay_output_csv:=/tmp/windylab_phase4_stage2_pause_r1_replay.csv \
+  start_delay_sec:=2.0 \
+  replay_clock_source:=sim \
+  hold_initial_state_during_start_delay:=true \
+  rgbd_width:=320 rgbd_height:=240 imu_enabled:=false
+```
+
+replay 开始约 1.5 s 后暂停 2 s 墙钟再恢复：
+
+```bash
+gz world -p 1
+sleep 2
+gz world -p 0
+```
+
+分别生成 `r1/r2/r3` 后汇总：
+
+```bash
+ros2 run manipulator phase4_dynamic_xyz_metrics.py \
+  --run pause_r1=/tmp/windylab_phase4_stage2_pause_r1_replay.csv \
+  --run pause_r2=/tmp/windylab_phase4_stage2_pause_r2_replay.csv \
+  --run pause_r3=/tmp/windylab_phase4_stage2_pause_r3_replay.csv \
+  --output-csv /tmp/windylab_phase4_stage2_pause_summary.csv
+```
+
+### 硬门禁与结果
+
+| 门禁 | 通过条件 | 实际结果 | 判定 |
+|---|---|---|---|
+| Gazebo clock 参数 | `/gazebo.publish_rate=100` | `100.0` | 通过 |
+| clock 实测频率 | 95–105 Hz | `99.967–99.992 Hz` | 通过 |
+| model state 实测频率 | 95–105 Hz | `100.004 Hz` | 通过 |
+| ROS timer 控制命令 | 95–105 Hz | `100.011 Hz` | 通过 |
+| joint state | 95–105 Hz | `99.904 Hz` | 通过 |
+| pause 数据完整性 | 3 次均 501 样本、0 set failure | 3/3 满足 | 通过 |
+| 时间源 | 全部 replay 为 `schedule_clock=sim` | 3/3 满足 | 通过 |
+| 仿真轨迹时长 | `5.00 ± 0.01 s` | 三次均 `5.000 s` | 通过 |
+| 暂停不推进轨迹 | 墙钟时长 ≥6.5 s，wall gap ≥1.8 s | `7.276–7.288 s`，gap `2.285–2.295 s` | 通过 |
+| 调度迟到 | 最大不超过一个 10 ms 周期 | `0、10、0 ms` | 通过 |
+| 仿真样本间隔 | 最大不超过两个 10 ms 周期 | `10、20、10 ms` | 通过 |
+| Base 跟踪 RMS | ≤0.5 mm | `0.164、0.331、0.164 mm` | 通过 |
+| Base 跟踪最大值 | ≤2.1 mm | `0.320、1.978、0.320 mm` | 通过 |
+| Base 姿态误差 | ≤0.001 rad | 三次均为 0 | 通过 |
+
+### 关于一次过严门禁失败
+
+三次 pause 数据首次汇总时使用了 `sim_sample_gap_max <= 0.011 s`。r2 出现一个 `0.020 s` 间隔，该断言失败；同次 `schedule_error_max=0.010 s`，后续样本补齐，最终仍为 501 样本和精确 5.000 s 仿真时长。
+
+原因是一次 `/set_entity_state` 服务调用跨过了一个 10 ms clock tick。它没有在暂停期间推进轨迹，也没有丢 CSV 样本。时间门禁因此明确为：单个样本最多迟到一个周期，相邻样本最多间隔两个周期。该失败和门禁修订均保留，不通过修改控制参数处理。
+
+### 暂停试验核心数据
+
+| 运行 | schedule RMS/最大迟到 | sim 时长 | wall 时长 | sim 最大间隔 | wall 最大间隔 |
+|---|---:|---:|---:|---:|---:|
+| r1 | `0 / 0 ms` | 5.000 s | 7.276 s | 10 ms | 2.285 s |
+| r2 | `1.842 / 10 ms` | 5.000 s | 7.284 s | 20 ms | 2.293 s |
+| r3 | `0 / 0 ms` | 5.000 s | 7.288 s | 10 ms | 2.295 s |
+
+### 达到的效果
+
+- Gazebo clock、Gazebo state、ROS timer 控制发布和 Base replay 统一在 100 Hz 仿真时间轴上。
+- Gazebo 暂停 2 s 时，轨迹仿真时间不前进；恢复后总样本数和 5 s 轨迹时长不变。
+- 子阶段 1 中 2–3 cm 的状态缓存表观误差降为亚毫米 RMS，证明状态观测与命令频率已经对齐。
+- replay CSV 同时保留 sim/wall 时间，可以明确区分仿真暂停、实时因子变化和调度迟到。
+- 没有修改 CLIK、视觉、限幅或 safety 参数。
+
+### 版本控制验收
+
+本子阶段提交说明固定为：
+
+```text
+phase4: schedule replay on the gazebo clock
+```
+
+提交、推送并执行：
+
+```bash
+cd /home/yihuang/westlake/windylab-arm-for6/windylab_ws/src/arm-platform
+git status --short --branch
+git log -1 --oneline
+git rev-parse HEAD
+git rev-parse origin/develop
+```
+
+只有工作区干净且两个提交 ID 一致，才允许开始子阶段 3。

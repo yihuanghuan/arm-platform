@@ -2,7 +2,7 @@
 <sdf version="1.6">
   <world name="d435i_apriltag_board_2x2">
     <plugin name="gazebo_ros_state" filename="libgazebo_ros_state.so">
-      <update_rate>10.0</update_rate>
+      <update_rate>100.0</update_rate>
     </plugin>
 
     <include>
