@@ -201,6 +201,8 @@ class BaseDisturbanceReplay(Node):
         self.rows = []
         self.wall_stamps = []
         self.output_rows = []
+        self.pre_roll_hold_stamps = []
+        self.pre_roll_hold_failures = 0
 
         self.create_subscription(
             JointState,
@@ -387,6 +389,40 @@ class BaseDisturbanceReplay(Node):
             return None
         return future.result()
 
+    def hold_initial_state_until(self, first_row, start_time):
+        if not self.args.hold_initial_state_during_start_delay:
+            while rclpy.ok() and time.monotonic() < start_time:
+                rclpy.spin_once(self, timeout_sec=0.01)
+            return
+
+        self.get_logger().info(
+            'Holding the initial commanded base state during the replay start delay')
+        period = 1.0 / self.args.rate_hz
+        index = 0
+        while rclpy.ok():
+            target_time = start_time - self.args.start_delay_sec + index * period
+            now = time.monotonic()
+            if now >= start_time:
+                break
+            if now < target_time:
+                rclpy.spin_once(
+                    self, timeout_sec=min(0.002, target_time - now))
+                continue
+
+            response = self.call_set_state(first_row)
+            self.pre_roll_hold_stamps.append(time.monotonic())
+            if response is None or not response.success:
+                self.pre_roll_hold_failures += 1
+            index += 1
+
+    def pre_roll_hold_frequency_hz(self):
+        if len(self.pre_roll_hold_stamps) < 2:
+            return 0.0
+        elapsed = self.pre_roll_hold_stamps[-1] - self.pre_roll_hold_stamps[0]
+        if elapsed <= 0.0:
+            return 0.0
+        return (len(self.pre_roll_hold_stamps) - 1) / elapsed
+
     def run(self, rows):
         self.rows = rows
         self.wait_for_services()
@@ -399,8 +435,7 @@ class BaseDisturbanceReplay(Node):
             'get_entity_state is only used during startup readiness checks')
 
         start = time.monotonic() + self.args.start_delay_sec
-        while rclpy.ok() and time.monotonic() < start:
-            rclpy.spin_once(self, timeout_sec=0.01)
+        self.hold_initial_state_until(rows[0], start)
 
         period = 1.0 / self.args.rate_hz
         for index, row in enumerate(rows):
@@ -434,6 +469,11 @@ class BaseDisturbanceReplay(Node):
             row_out = {
                 'trajectory_time_sec': f'{float(row["time_sec"]):.9f}',
                 'wall_time_sec': f'{after_call - start:.9f}',
+                'pre_roll_hold_enabled': str(
+                    bool(self.args.hold_initial_state_during_start_delay)).lower(),
+                'pre_roll_hold_attempts': len(self.pre_roll_hold_stamps),
+                'pre_roll_hold_failures': self.pre_roll_hold_failures,
+                'pre_roll_hold_rate_hz': f'{self.pre_roll_hold_frequency_hz():.9f}',
                 'set_success': bool(set_response.success) if set_response else False,
                 'set_call_sec': f'{after_call - before_call:.9f}',
                 'pose_tracking_error_m': (
@@ -486,6 +526,12 @@ class BaseDisturbanceReplay(Node):
         print(f'  samples: {len(self.output_rows)}')
         print(f'  target_rate_hz: {self.args.rate_hz:.3f}')
         print(f'  actual_rate_hz: {self.actual_frequency_hz():.3f}')
+        print(
+            '  pre_roll_hold_enabled: '
+            f'{str(bool(self.args.hold_initial_state_during_start_delay)).lower()}')
+        print(f'  pre_roll_hold_attempts: {len(self.pre_roll_hold_stamps)}')
+        print(f'  pre_roll_hold_failures: {self.pre_roll_hold_failures}')
+        print(f'  pre_roll_hold_rate_hz: {self.pre_roll_hold_frequency_hz():.3f}')
         print(f'  set_failures: {set_failures}')
         print(f'  joint_max_step_rad: {self.max_joint_step:.9f}')
         print(f'  joint_final_discontinuity_rad: {self.joint_discontinuity_from_initial():.9f}')
@@ -503,6 +549,10 @@ class BaseDisturbanceReplay(Node):
         fieldnames = [
             'trajectory_time_sec',
             'wall_time_sec',
+            'pre_roll_hold_enabled',
+            'pre_roll_hold_attempts',
+            'pre_roll_hold_failures',
+            'pre_roll_hold_rate_hz',
             'set_success',
             'set_call_sec',
             'pose_tracking_error_m',
@@ -533,6 +583,15 @@ class BaseDisturbanceReplay(Node):
 
 def parse_joint_names(value):
     return [part for part in value.replace(',', ' ').split() if part]
+
+
+def parse_bool(value):
+    normalized = str(value).strip().lower()
+    if normalized in ('1', 'true', 'yes', 'on'):
+        return True
+    if normalized in ('0', 'false', 'no', 'off'):
+        return False
+    raise argparse.ArgumentTypeError(f'invalid boolean value: {value}')
 
 
 def parse_args(argv):
@@ -567,6 +626,11 @@ def parse_args(argv):
     parser.add_argument('--entity-stable-samples', type=int, default=3)
     parser.add_argument('--gt-max-abs-position-m', type=float, default=5.0)
     parser.add_argument('--start-delay-sec', type=float, default=2.0)
+    parser.add_argument(
+        '--hold-initial-state-during-start-delay',
+        type=parse_bool,
+        default=True,
+        help='Continuously prescribe trajectory row 0 while waiting to start replay.')
     parser.add_argument('--use-sim-time', action='store_true')
     args, _ = parser.parse_known_args(argv)
     if args.rate_hz <= 0.0:
@@ -577,6 +641,8 @@ def parse_args(argv):
         raise SystemExit('--entity-stable-samples must be positive')
     if args.gt_max_abs_position_m <= 0.0:
         raise SystemExit('--gt-max-abs-position-m must be positive')
+    if args.start_delay_sec < 0.0:
+        raise SystemExit('--start-delay-sec must be non-negative')
     if not args.joint_names:
         raise SystemExit('--joint-names must not be empty')
     return args

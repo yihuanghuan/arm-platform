@@ -14,9 +14,11 @@ import os
 
 def _validate_arguments(context, *args, **kwargs):
     experiment_mode = LaunchConfiguration('experiment_mode').perform(context)
-    if experiment_mode not in ('baseline', 'visual_xyz', 'ground_truth_xyz'):
+    if experiment_mode not in (
+            'plant_test', 'baseline', 'visual_xyz', 'ground_truth_xyz'):
         raise RuntimeError(
-            'experiment_mode must be baseline, visual_xyz, or ground_truth_xyz')
+            'experiment_mode must be plant_test, baseline, visual_xyz, '
+            'or ground_truth_xyz')
     return []
 
 
@@ -66,7 +68,9 @@ def generate_launch_description():
     experiment_mode_arg = DeclareLaunchArgument(
         'experiment_mode',
         default_value='baseline',
-        description='Experiment mode: baseline, visual_xyz, or ground_truth_xyz')
+        description=(
+            'Experiment mode: plant_test, baseline, visual_xyz, '
+            'or ground_truth_xyz'))
     disturbance_csv_arg = DeclareLaunchArgument(
         'disturbance_csv',
         default_value='/tmp/base_disturbance.csv',
@@ -263,6 +267,12 @@ def generate_launch_description():
         'start_delay_sec',
         default_value='35.0',
         description='Delay before replay starts, after Gazebo spawn/controller startup')
+    hold_initial_state_during_start_delay_arg = DeclareLaunchArgument(
+        'hold_initial_state_during_start_delay',
+        default_value='true',
+        description=(
+            'Prescribe trajectory row 0 throughout start delay so joint reactions '
+            'cannot move the free Gazebo base before replay.'))
 
     gazebo = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(gazebo_launch),
@@ -461,6 +471,8 @@ def generate_launch_description():
             '--gt-max-abs-position-m', LaunchConfiguration('replay_gt_max_abs_position_m'),
             '--service-call-timeout', LaunchConfiguration('replay_service_call_timeout'),
             '--start-delay-sec', LaunchConfiguration('start_delay_sec'),
+            '--hold-initial-state-during-start-delay',
+            LaunchConfiguration('hold_initial_state_during_start_delay'),
             '--camera-entity-name', LaunchConfiguration('camera_entity_name'),
             '--use-sim-time',
         ]
@@ -560,6 +572,7 @@ def generate_launch_description():
         phase4_transform_chain_sample_hz_arg,
         use_sim_time_arg,
         start_delay_sec_arg,
+        hold_initial_state_during_start_delay_arg,
         OpaqueFunction(function=_validate_arguments),
         gazebo,
         baseline,

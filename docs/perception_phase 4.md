@@ -18,7 +18,7 @@
 | 子阶段 | 单一目标 | 进入下一阶段的硬门禁 | 状态 |
 |---|---|---|---|
 | 0 | 冻结当前失败基线和判废规则 | 15 次固定矩阵数据完整；失败链路重复 3 次；异常初态不输出正式成绩 | 已通过 |
-| 1 | 修正 Gazebo Base plant | 已知小关节脉冲下 Base 不发生非指令位移；3 次结果通过阈值 | 未开始，锁定 |
+| 1 | 修正 Gazebo Base plant | 已知小关节脉冲下 Base 不发生非指令位移；3 次结果通过阈值 | 已通过 |
 | 2 | 统一仿真时间和回放时序 | 回放、感知、控制都使用同一仿真时间；暂停/恢复不破坏轨迹 | 未开始，锁定 |
 | 3 | 验证 Pinocchio 与 Gazebo 运动学一致 | 多构型、多轴小脉冲的方向、尺度和 frame 一致 | 未开始，锁定 |
 | 4 | 仅用 Gazebo GT 完成动态 XYZ 闭环 | GT 相比 baseline 的 RMS 明显下降，且不发散、可重复 | 未开始，锁定 |
@@ -304,3 +304,201 @@ git rev-parse origin/develop
 ```
 
 只有工作区干净且最后两个提交 ID 一致，才允许开始子阶段 1。
+
+---
+
+## 子阶段 1：修正 Gazebo Base plant
+
+### 状态
+
+通过。完成日期：2026-07-17。
+
+这里的通过只表示 Base 已成为由轨迹明确规定的运动边界，不再被关节执行器反作用自由推动。视觉闭环和原阶段 4 仍未通过。
+
+### 目的
+
+消除子阶段 0 已确认的首要问题：`fix_base_to_world:=false` 时，replay 开始前没有节点约束自由 Base，视觉控制器产生小关节命令后，关节反作用可在约 0.2 s 内推动 Base，随后形成整机发散。
+
+本子阶段只改变 Base plant 的规定方式，不修改 CLIK、视觉估计、速度限制、增益、deadband 或 safety 参数。
+
+### 候选方案探针
+
+先用相同的 `d435i_apriltag_board_2x2.world` 比较两个候选，避免 world 插件差异干扰结论。
+
+| 候选 | 探针结果 | 决策 |
+|---|---|---|
+| `fix_base_to_world:=true` 机械固定根 | `/set_entity_state(x=0.1)` 返回成功，但 2 s 后模型仍在约 0 m；固定关节立即恢复原点 | 否决：不能执行规定 Base 平移 |
+| 自由 Base + 100 Hz 持续规定模型 pose/twist | `joint2` 运动 0.006920 rad 时，模型与 `base_link` 最大位移均为 `1.98e-5 m`，EE 正常移动 0.002824 m | 采用 |
+
+采用方案仍保留 `fix_base_to_world:=false`，但 replay 节点在服务和实体就绪后，不再空等 `start_delay_sec`；它在整个等待期以 replay 频率持续写入轨迹第 0 行的 pose/twist。这样 Base 是可移动的规定输入，而不是会被机械臂执行器反作用推动的自由状态。
+
+### 修改内容
+
+- `scripts/base_disturbance_replay.py`
+  - 新增 `--hold-initial-state-during-start-delay`，默认 `true`。
+  - 在 replay 等待期按 `rate_hz` 持续调用 `/set_entity_state` 写入第 0 个轨迹状态。
+  - replay CSV 和终端摘要新增：
+    - `pre_roll_hold_enabled`
+    - `pre_roll_hold_attempts`
+    - `pre_roll_hold_failures`
+    - `pre_roll_hold_rate_hz`
+  - 显式拒绝负数 `start_delay_sec`。
+- `launch/moving_base_stabilization.launch.py`
+  - 新增 `hold_initial_state_during_start_delay` launch 参数，默认开启。
+  - 新增 `experiment_mode:=plant_test`；该模式不启动 baseline、visual 或 GT 命令发布者，用于单独注入已知关节脉冲。
+- `scripts/phase4_joint_pulse_check.py`
+  - CSV 新增 Base 位置和四元数。
+  - 自动汇总 Base 最大位移、最大姿态误差和被测关节实际运动量。
+  - 新增 `--require-base-stable` 终端硬门禁。
+- `scripts/phase4_dynamic_xyz_metrics.py`
+  - 汇总 pre-roll hold 状态、次数、失败数和实际频率。
+  - hold 存在调用失败时，将该运行标记为无效。
+
+### 验收终端命令
+
+构建和语法检查：
+
+```bash
+cd /home/yihuang/westlake/windylab-arm-for6/windylab_ws/src/arm-platform
+PYTHONDONTWRITEBYTECODE=1 python3 -m py_compile \
+  scripts/base_disturbance_replay.py \
+  scripts/phase4_dynamic_xyz_metrics.py \
+  scripts/phase4_joint_pulse_check.py \
+  launch/moving_base_stabilization.launch.py
+git diff --check
+
+cd /home/yihuang/westlake/windylab-arm-for6/windylab_ws
+source setup_env.bash
+colcon build --packages-select manipulator --symlink-install
+source install/setup.bash
+```
+
+Base plant 脉冲验收。先启动无命令发布者的 plant test：
+
+```bash
+ros2 launch manipulator moving_base_stabilization.launch.py \
+  experiment_mode:=plant_test gui:=false use_rviz:=false \
+  disturbance_csv:=/tmp/windylab_phase4_stage0/static.csv \
+  replay_output_csv:=/tmp/windylab_phase4_stage1_pulse_r1_replay.csv \
+  start_delay_sec:=20.0 \
+  hold_initial_state_during_start_delay:=true \
+  rgbd_width:=320 rgbd_height:=240 imu_enabled:=false
+```
+
+看到日志 `Holding the initial commanded base state` 后，在另一个终端执行：
+
+```bash
+ros2 run manipulator phase4_joint_pulse_check.py \
+  --output-csv /tmp/windylab_phase4_stage1_pulse_r1_pulse.csv \
+  --joint-name joint2 \
+  --velocity 0.02 \
+  --pulse-duration-sec 0.5 \
+  --pre-sec 0.5 \
+  --duration-sec 3.0 \
+  --sample-hz 50 \
+  --max-base-displacement-m 0.001 \
+  --max-base-orientation-error-rad 0.01 \
+  --min-joint-motion-rad 0.005 \
+  --require-base-stable \
+  --use-sim-time
+```
+
+独立重启 Gazebo 并重复 `r1/r2/r3`。每次必须输出 `base_stable_gate: true`。
+
+规定 Base 仍可移动的验收轨迹：
+
+```bash
+ros2 run manipulator generate_base_disturbance.py \
+  --config src/arm-platform/config/base_disturbance_profiles.yaml \
+  --profile sine_x \
+  --duration-sec 5 \
+  --sample-rate-hz 100 \
+  --random-seed 42 \
+  --output-csv /tmp/windylab_phase4_stage1_sine_x_5s.csv
+```
+
+每次独立运行：
+
+```bash
+ros2 launch manipulator moving_base_stabilization.launch.py \
+  experiment_mode:=baseline gui:=false use_rviz:=false \
+  disturbance_csv:=/tmp/windylab_phase4_stage1_sine_x_5s.csv \
+  replay_output_csv:=/tmp/windylab_phase4_stage1_sine_r1_replay.csv \
+  start_delay_sec:=5.0 \
+  hold_initial_state_during_start_delay:=true \
+  rgbd_width:=320 rgbd_height:=240 imu_enabled:=false
+```
+
+汇总三次结果：
+
+```bash
+ros2 run manipulator phase4_dynamic_xyz_metrics.py \
+  --run sine_r1=/tmp/windylab_phase4_stage1_sine_r1_replay.csv \
+  --run sine_r2=/tmp/windylab_phase4_stage1_sine_r2_replay.csv \
+  --run sine_r3=/tmp/windylab_phase4_stage1_sine_r3_replay.csv \
+  --output-csv /tmp/windylab_phase4_stage1_sine_summary.csv
+```
+
+### 硬门禁与结果
+
+| 门禁 | 通过条件 | 三次实际结果 | 判定 |
+|---|---|---|---|
+| 已知脉冲确实执行 | `joint2` 实际运动 ≥0.005 rad | 三次均为 `0.006938 rad` | 通过 |
+| Base 非指令平移 | 最大位移 ≤0.001 m | `1.59e-5`、`4.42e-7`、`1.32e-6 m` | 通过 |
+| Base 非指令旋转 | 最大误差 ≤0.01 rad | 最大 `1.79e-4 rad`，其余两次为 0 | 通过 |
+| pre-roll 保持完整 | 5 s 内约 500 次、0 failure、频率 95–105 Hz | 均为 500 次、0 failure、`100.005 Hz` | 通过 |
+| Base 仍可规定移动 | 5 s sine 实际 X 跨度 ≥0.19 m | `0.199682`、`0.199627`、`0.199893 m` | 通过 |
+| 非扰动轴稳定 | Y/Z 跨度和姿态误差 ≤0.001 | 三次均为 0 | 通过 |
+| replay 完整 | 每次 501 样本、0 set failure | 3/3 满足 | 通过 |
+
+### 关于一次未通过的无效验收指标
+
+第一次动态验收曾使用 `pose_tracking_error_max <= 0.001 m`，实际得到 `0.0274–0.0295 m`，所以该断言没有通过，未被静默忽略。
+
+检查采样语义后确认：replay 以 100 Hz 发命令，但 `pose_tracking_error_m` 使用最新的 10 Hz `/link_states` 缓存与当前 100 Hz 命令直接相减。0.35 Hz、0.10 m 正弦的峰值速度为 0.2199 m/s，单个 0.1 s 状态采样间隔就可形成约 0.022 m 的表观滞后。因此该列当前不能作为毫米级 plant 跟踪门禁。
+
+本阶段改用直接可观测的 Base 实际 X/Y/Z/姿态、set failure 和重复性完成验收。命令/状态时间戳对齐属于子阶段 2；在子阶段 2 通过前，不使用这列调 Base 或控制参数。
+
+### static-visual 压力复测
+
+正式门禁通过后，保持全部 visual/CLIK/safety 默认参数，额外运行一次 12 s pre-roll + 30 s static replay：
+
+| 指标 | 子阶段 0 | 子阶段 1 压力复测 |
+|---|---:|---:|
+| pre-roll hold | 无 | 1200 次，0 failure，100.003 Hz |
+| replay 初始 Base 跟踪误差 | 4.34–5.22 m | 0 m |
+| static 期间 EE 诊断 RMS | 4.33–5.61 m | 0.002713 m |
+| 最大 EE 诊断偏差 | 米级 | 0.003098 m |
+| 初始关节偏差 | 0.92–1.07 rad | 0.241 rad |
+
+原来的 57–103 m 整机飞散已经消失，说明 Base plant 修复确实作用于原故障链路。但视觉控制器在 12 s 内仍累积了 0.241 rad 关节漂移，所以该压力运行仍被 `initial_joint_error_exceeded` 正确判废。
+
+关节漂移没有通过调整增益、deadband 或阻尼处理；它作为运动学一致性和静态视觉闭环的待解决输入，保留到子阶段 3、8、9。
+
+### 达到的效果
+
+- Base 从“自由动力学状态”改为“可移动、由轨迹规定的边界输入”。
+- 已知关节脉冲不再产生可见 Base 平移或旋转。
+- `sine_x` 仍可达到约 0.20 m 的峰峰值，未被机械固定。
+- 原始 static-visual 整机大幅飞散消失，世界系 EE 保持在毫米量级；剩余关节漂移被独立暴露。
+- 没有修改任何视觉或 CLIK 参数，避免 Base plant 与控制调参耦合。
+
+### 版本控制验收
+
+本子阶段提交说明固定为：
+
+```text
+phase4: prescribe the base throughout replay pre-roll
+```
+
+提交、推送并执行：
+
+```bash
+cd /home/yihuang/westlake/windylab-arm-for6/windylab_ws/src/arm-platform
+git status --short --branch
+git log -1 --oneline
+git rev-parse HEAD
+git rev-parse origin/develop
+```
+
+只有工作区干净且两个提交 ID 一致，才允许开始子阶段 2。

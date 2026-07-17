@@ -113,6 +113,10 @@ def summarize(label, path, args):
     initial_pose_tracking_error = None
     initial_orientation_tracking_error = None
     initial_joint_deviation = None
+    pre_roll_hold_enabled = None
+    pre_roll_hold_attempts = None
+    pre_roll_hold_failures = None
+    pre_roll_hold_rate_hz = None
     if not rows:
         invalid_reasons.append('empty_replay_csv')
     else:
@@ -122,6 +126,14 @@ def summarize(label, path, args):
         initial_orientation_tracking_error = parse_float(
             first_row.get('orientation_tracking_error_rad'))
         initial_joint_positions = parse_vector(first_row.get('joint_positions'))
+        pre_roll_hold_enabled = parse_bool(
+            first_row.get('pre_roll_hold_enabled', ''))
+        pre_roll_hold_attempts = parse_float(
+            first_row.get('pre_roll_hold_attempts'))
+        pre_roll_hold_failures = parse_float(
+            first_row.get('pre_roll_hold_failures'))
+        pre_roll_hold_rate_hz = parse_float(
+            first_row.get('pre_roll_hold_rate_hz'))
 
         if initial_pose_tracking_error is None:
             invalid_reasons.append('missing_initial_pose_tracking_error')
@@ -142,6 +154,9 @@ def summarize(label, path, args):
                     initial_joint_positions, args.expected_initial_joints))
             if initial_joint_deviation > args.initial_joint_error_max_rad:
                 invalid_reasons.append('initial_joint_error_exceeded')
+        if pre_roll_hold_enabled and pre_roll_hold_failures is not None:
+            if pre_roll_hold_failures > 0:
+                invalid_reasons.append('pre_roll_hold_failures')
 
     origin = None
     for row in rows:
@@ -222,6 +237,10 @@ def summarize(label, path, args):
         'initial_pose_tracking_error_m': initial_pose_tracking_error,
         'initial_orientation_tracking_error_rad': initial_orientation_tracking_error,
         'initial_joint_deviation_rad': initial_joint_deviation,
+        'pre_roll_hold_enabled': pre_roll_hold_enabled,
+        'pre_roll_hold_attempts': pre_roll_hold_attempts,
+        'pre_roll_hold_failures': pre_roll_hold_failures,
+        'pre_roll_hold_rate_hz': pre_roll_hold_rate_hz,
         'samples': len(rows),
         'valid_gt_samples': len(errors),
         'invalid_gt_samples': invalid_gt_samples,
@@ -276,6 +295,10 @@ def write_summary(path, summaries):
         'initial_pose_tracking_error_m',
         'initial_orientation_tracking_error_rad',
         'initial_joint_deviation_rad',
+        'pre_roll_hold_enabled',
+        'pre_roll_hold_attempts',
+        'pre_roll_hold_failures',
+        'pre_roll_hold_rate_hz',
         'samples',
         'valid_gt_samples',
         'invalid_gt_samples',
@@ -317,6 +340,10 @@ def print_summary(summaries, output_csv):
                 'initial_pose_tracking_error_m',
                 'initial_orientation_tracking_error_rad',
                 'initial_joint_deviation_rad',
+                'pre_roll_hold_enabled',
+                'pre_roll_hold_attempts',
+                'pre_roll_hold_failures',
+                'pre_roll_hold_rate_hz',
                 'samples',
                 'valid_gt_samples',
                 'invalid_gt_samples',
