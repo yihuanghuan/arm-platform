@@ -300,6 +300,7 @@ install(PROGRAMS
   scripts/phase4_joint_pulse_check.py
   scripts/phase4_kinematic_consistency.py
   scripts/phase4_safety_state_machine_check.py
+  scripts/phase4_visual_open_loop_metrics.py
   scripts/check_visual_pose_transform_chain.py
   scripts/check_visual_pose_transform_math.py
   scripts/analyze_phase4_3_transform_chain.py

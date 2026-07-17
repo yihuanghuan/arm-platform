@@ -1,17 +1,19 @@
 #!/usr/bin/env python3
 
 import json
-import math
 import sys
 import time
 from collections import deque
+from threading import Thread
 
 import numpy as np
 import rclpy
 from apriltag_msgs.msg import AprilTagDetectionArray
 from geometry_msgs.msg import PoseStamped
 from rclpy.duration import Duration
+from rclpy.executors import MultiThreadedExecutor, SingleThreadedExecutor
 from rclpy.node import Node
+from rclpy.signals import SignalHandlerOptions
 from rclpy.time import Time
 from scipy.spatial.transform import Rotation
 from std_msgs.msg import Bool
@@ -231,12 +233,16 @@ class VisualEePoseEstimator(Node):
                 'world_to_tag_rpys must have the same length')
         self.tag_configs = []
         self.tag_configs_by_id = {}
-        for tag_id, frame, xyz, rpy in zip(
-                tag_ids, detected_tag_frames, world_to_tag_xyzs, world_to_tag_rpys):
+        for priority, (tag_id, frame, xyz, rpy) in enumerate(zip(
+                tag_ids,
+                detected_tag_frames,
+                world_to_tag_xyzs,
+                world_to_tag_rpys)):
             if tag_id in self.tag_configs_by_id:
                 raise ValueError(f'duplicate tag id in tag_ids: {tag_id}')
             config = {
                 'id': int(tag_id),
+                'priority': priority,
                 'frame': str(frame),
                 'world_to_tag': make_transform_matrix(xyz, rpy),
                 'world_to_tag_xyz': [float(item) for item in xyz],
@@ -254,7 +260,16 @@ class VisualEePoseEstimator(Node):
         self.primary_tag_config = self.tag_configs[0]
 
         self.tf_buffer = tf2_ros.Buffer(cache_time=Duration(seconds=10.0))
-        self.tf_listener = tf2_ros.TransformListener(self.tf_buffer, self)
+        # Receive TF on a dedicated node/executor.  Sharing the estimator's
+        # executor can starve TF callbacks behind the 50 Hz measurement timer,
+        # leaving the local buffer hundreds of milliseconds behind /tf.
+        self.tf_listener_node = Node(
+            'visual_ee_pose_tf_listener',
+            use_global_arguments=False,
+            enable_rosout=False)
+        self.tf_listener = tf2_ros.TransformListener(
+            self.tf_buffer,
+            self.tf_listener_node)
         self.detection_sub = self.create_subscription(
             AprilTagDetectionArray,
             self.detections_topic,
@@ -282,6 +297,7 @@ class VisualEePoseEstimator(Node):
         self.visual_valid_false_count = 0
         self.visual_valid_toggle_count = 0
         self.duplicate_tag_tf_drop_count = 0
+        self.old_or_coincident_tag_tf_drop_count = 0
         self.duplicate_same_stamp_same_value_count = 0
         self.same_stamp_changed_transform_count = 0
         self.new_stamp_new_transform_count = 0
@@ -427,6 +443,10 @@ class VisualEePoseEstimator(Node):
                 continue
 
             camera_to_tag = transform_to_matrix(camera_to_tag_tf.transform)
+            if tf_stamp_ns <= self.last_published_tag_tf_stamp_ns:
+                duplicate_seen = True
+                self.old_or_coincident_tag_tf_drop_count += 1
+                continue
             duplicate_status = self.classify_camera_tag_measurement(
                 config, tf_stamp_ns, camera_to_tag)
             if duplicate_status['is_duplicate']:
@@ -458,9 +478,13 @@ class VisualEePoseEstimator(Node):
                     now.to_msg())
             return
 
-        selected = max(
-            candidates,
-            key=lambda item: (item['tf_stamp_ns'], -item['tf_age_sec']))
+        newest_stamp_ns = max(item['tf_stamp_ns'] for item in candidates)
+        selected = min(
+            (
+                item for item in candidates
+                if item['tf_stamp_ns'] == newest_stamp_ns
+            ),
+            key=lambda item: item['config']['priority'])
         config = selected['config']
         camera_to_tag_tf = selected['camera_to_tag_tf']
         tf_stamp = camera_to_tag_tf.header.stamp
@@ -668,8 +692,8 @@ class VisualEePoseEstimator(Node):
     def lookup_ee_orientation_matrix(self, stamp):
         stamp_time = Time.from_msg(stamp)
         for target_frame, source_frame in (
-            (self.world_frame, self.ee_frame),
             (self.base_frame, self.ee_frame),
+            (self.world_frame, self.ee_frame),
         ):
             try:
                 tf_msg = self.tf_buffer.lookup_transform(
@@ -773,6 +797,8 @@ class VisualEePoseEstimator(Node):
             'invalid_count': self.invalid_count,
             'new_measurement_count': self.new_measurement_count,
             'duplicate_tag_tf_drop_count': self.duplicate_tag_tf_drop_count,
+            'old_or_coincident_tag_tf_drop_count': (
+                self.old_or_coincident_tag_tf_drop_count),
             'duplicate_same_stamp_same_value_count': (
                 self.duplicate_same_stamp_same_value_count),
             'same_stamp_changed_transform_count': (
@@ -828,14 +854,20 @@ class VisualEePoseEstimator(Node):
 
 def main(argv=None):
     _ = argv
-    rclpy.init()
+    rclpy.init(signal_handler_options=SignalHandlerOptions.NO)
     try:
         node = VisualEePoseEstimator()
     except Exception as exc:
         rclpy.shutdown()
         raise SystemExit(str(exc))
+    tf_executor = SingleThreadedExecutor()
+    tf_executor.add_node(node.tf_listener_node)
+    tf_thread = Thread(target=tf_executor.spin, daemon=True)
+    tf_thread.start()
+    executor = MultiThreadedExecutor(num_threads=2)
+    executor.add_node(node)
     try:
-        rclpy.spin(node)
+        executor.spin()
     except KeyboardInterrupt:
         pass
     except Exception as exc:
@@ -843,8 +875,12 @@ def main(argv=None):
             raise
         node.get_logger().debug(f'Ignoring shutdown exception: {exc}')
     finally:
+        executor.shutdown(timeout_sec=2.0)
+        tf_executor.shutdown(timeout_sec=2.0)
+        tf_thread.join(timeout=2.0)
         try:
             node.destroy_node()
+            node.tf_listener_node.destroy_node()
         except KeyboardInterrupt:
             pass
         if rclpy.ok():

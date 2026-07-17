@@ -241,11 +241,11 @@ def generate_launch_description():
         description='RGB-D sensor update rate passed to gazebo_arm.launch.py')
     rgbd_width_arg = DeclareLaunchArgument(
         'rgbd_width',
-        default_value='640',
+        default_value='320',
         description='RGB-D image width passed to gazebo_arm.launch.py')
     rgbd_height_arg = DeclareLaunchArgument(
         'rgbd_height',
-        default_value='480',
+        default_value='240',
         description='RGB-D image height passed to gazebo_arm.launch.py')
     imu_enabled_arg = DeclareLaunchArgument(
         'imu_enabled',
@@ -269,7 +269,7 @@ def generate_launch_description():
         description='Diagnostics duration; 0 means run until launch exits')
     phase4_diagnostics_sample_hz_arg = DeclareLaunchArgument(
         'phase4_diagnostics_sample_hz',
-        default_value='2.0',
+        default_value='30.0',
         description='Diagnostics CSV sample rate in Hz')
     run_phase4_transform_chain_diagnostics_arg = DeclareLaunchArgument(
         'run_phase4_transform_chain_diagnostics',
@@ -285,7 +285,7 @@ def generate_launch_description():
         description='Transform-chain diagnostics duration; 0 means run until launch exits')
     phase4_transform_chain_sample_hz_arg = DeclareLaunchArgument(
         'phase4_transform_chain_sample_hz',
-        default_value='5.0',
+        default_value='15.0',
         description='Transform-chain diagnostics CSV sample rate in Hz')
     use_sim_time_arg = DeclareLaunchArgument(
         'use_sim_time',

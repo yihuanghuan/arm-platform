@@ -23,7 +23,7 @@
 | 3 | 验证 Pinocchio 与 Gazebo 运动学一致 | 多构型、多轴小脉冲的方向、尺度和 frame 一致 | 已通过 |
 | 4 | 仅用 Gazebo GT 完成动态 XYZ 闭环 | GT 相比 baseline 的 RMS 明显下降，且不发散、可重复 | 已通过 |
 | 5 | 修正安全状态机 | safety 可区分等待、可恢复丢帧和故障锁存；命令行为逐项通过 | 已通过 |
-| 6 | 验收视觉开环链路 | 图像、Tag TF、世界系 EE 估计的频率、延迟、方向达到门槛 | 未开始，锁定 |
+| 6 | 验收视觉开环链路 | 图像、Tag TF、世界系 EE 估计的频率、延迟、方向达到门槛 | 已通过 |
 | 7 | 保证相机视场和姿态可观测性 | 全扰动范围内 Tag 可见率和相机姿态满足门槛 | 未开始，锁定 |
 | 8 | visual dry-run 对照 GT | 同时刻视觉/GT 误差及 CLIK 命令方向、尺度一致 | 未开始，锁定 |
 | 9 | 静态 Base 视觉闭环 | 多个小偏差均收敛，无 Base 漂移、无 safety 误触发 | 未开始，锁定 |
@@ -1321,3 +1321,190 @@ git rev-parse origin/develop
 ```
 
 只有工作区干净且两个提交 ID 一致，才允许开始子阶段 6。
+
+---
+
+## 子阶段 6：验收视觉开环链路
+
+### 状态
+
+通过。完成日期：2026-07-17。
+
+本阶段只证明视觉测量开环链路在 `sine_x` 下的频率、时效、方向和位置精度满足门槛；控制器输出在全部正式运行中被钳制为零，因此不能把本结果解释为视觉闭环已经具有抗扰能力。子阶段 7 在本节提交、推送并确认版本同步之前继续锁定。
+
+### 目的
+
+本阶段把视觉控制输出钳制为零，只验收 `RGB -> AprilTag detection/TF -> world 系 visual EE pose` 是否在连续 Base `sine_x` 运动中具有足够的频率、时效、精度和正确方向。相机安装位姿、视场、Tag 布局、CLIK 和控制增益均不在本阶段修改范围内。
+
+### 修改前冻结门禁
+
+| 项目 | 硬门禁 |
+|---|---:|
+| 轨迹 | 子阶段 4 的 `0.10 m / 0.35 Hz / 30 s sine_x` 冻结 CSV |
+| 开环约束 | 视觉 joint/task 速度上限均为 0；replay 关节命令峰值 `<=1e-9 rad/s` |
+| 稳态 RGB / CameraInfo | 各 `>=12 Hz` |
+| 目标 detection / Tag TF / visual pose | 各 `>=10 Hz` |
+| visual valid | 稳态有效率 `>=95%` |
+| 时效 | visual pose age 最大 `<=0.20 s` |
+| 动态方向 | visual EE 与 Gazebo link6 的 X 增量相关系数 `>=0.8`，回归斜率 `[0.8, 1.2]` |
+| 动态位置精度 | visual EE 对 link6 的位置 RMS `<=0.010 m`，最大值 `<=0.020 m` |
+| 独立重复 | 修正后 3 个全新 Gazebo 实例全部通过 |
+
+必须先用上述固定门禁运行修改前基线；若失败，只允许定位图像、检测 TF、estimator 发布和时间戳链路，不能提前调整相机/Tag 可见性或闭环控制参数。
+
+### 修改前基线与根因定位
+
+修改前使用 `640x480 @ 15 Hz`、30 s 冻结 `sine_x`、视觉 joint/task 速度上限均为零运行。RGB 和 detection 约为 15 Hz，但 visual pose 只有约 `4.5 Hz`，稳态有效率约 `50.5%`，visual pose age 最大约 `2.087 s`，明确不通过。
+
+逐项隔离后确认有三个互不替代的问题：
+
+1. `kinematic_orientation` 每次先请求仿真中不存在的 `world -> link6` TF，并可连续阻塞两次 `0.1 s`，直接压低 visual pose 发布率；实际纯平移任务已有可用的 `base_link -> link6` 姿态。
+2. 多个 Tag 在同一幅图像上具有相同时间戳，旧逻辑会按 Tag 依次发布多个 visual pose，导致表观频率虚高并产生 Tag 间跳变；visual pose 必须做到一个图像时间戳最多发布一次，并确定性优先选 Tag 0。
+3. 即使消除阻塞，估计器的 50 Hz 处理 timer 与 TF listener 共用执行器时，短时调度延迟会让内部 TF buffer 追赶旧消息。独立诊断器此时看到 Tag TF age 仅 `0.018–0.030 s`，估计器却仍可能发布 `0.67–0.75 s` 前的 Tag TF。这是“图像和 AprilTag 正常，但 visual pose 老化”的直接根因。
+
+中间试验均未计入正式三次：
+
+- 只把 `base_link -> link6` 放到姿态查找首位并做全局去重后，`640x480` 的 visual pose 恢复约 15 Hz、有效率 100%，同时间 RMS/最大误差为 `4.920/12.216 mm`，但 age 最大仍为 `0.293 s`，不通过。
+- `320x240` 单次预检曾达到 age 最大 `0.184 s`，但下一次全新实例最大为 `0.355 s`，证明降低分辨率本身不能解决 TF 调度抖动，没有据此进入正式重复。
+- 只启用多线程执行器后 age 最大仍为 `0.752 s`；把 TF QoS 历史深度从 100 改为 1 后 age 最大为 `0.776 s` 且 visual pose P05 降至 `7.170 Hz`，该 QoS 方案被撤销。
+- TF listener 改为独立节点和独立执行器后，预检 age 最大/P95 均为 `0.078 s`，visual pose P05 为 `14.793 Hz`。当时 Tag TF 诊断器也以 15 Hz 轮询 15 Hz 数据源，因同频混叠得到 P05 `9.834 Hz`；把只读诊断采样提高到 30 Hz 后，Tag TF P05 为 `14.933 Hz`，全部门禁首次同时通过。
+
+上述过程没有降低任何冻结门槛，也没有修改相机安装位姿、Tag 模型位置、CLIK、视觉控制增益或阶段 7 参数。
+
+### 内容修改
+
+- `scripts/visual_ee_pose_estimator.py`
+  - `kinematic_orientation` 优先查找存在的 `base_link -> link6`，仅在失败时尝试 `world -> link6`，消除正常路径上的阻塞查找。
+  - 对所有 Tag 使用全局最新时间戳门禁；同一或更旧时间戳不再重复发布，同时间戳候选按配置顺序确定性选择，默认优先 Tag 0。
+  - 增加 `old_or_coincident_tag_tf_drop_count` 调试计数，便于确认全局去重行为。
+  - TF listener 使用独立 helper node 和独立单线程执行器；估计器计算使用两线程执行器，并显式管理关闭顺序，避免 TF 接收被 50 Hz estimator timer 饿死。
+- `launch/moving_base_stabilization.launch.py`
+  - 阶段 6 RGB-D 默认分辨率从 `640x480` 降为 `320x240`，更新率仍保持 15 Hz；相机外参、FOV 和 Tag 布局不变。
+  - visual-chain 诊断采样从 2 Hz 提高到 30 Hz，避免对 15 Hz Tag TF 同频轮询；transform-chain 诊断从 5 Hz 提高到 15 Hz，以保留足够的同时间几何样本。
+- `scripts/phase4_visual_open_loop_metrics.py`
+  - 新增阶段 6 一键硬门禁工具，对稳态频率使用 P05，对时龄使用最大值，并检查有效率、零关节命令和 Base 跟踪。
+  - 按 visual pose 原始时间戳在线性插值的 replay link6 GT 上进行同时间比较，避免把视觉链路延迟误算成几何误差；输出 RMS、最大值、X 相关系数和斜率。
+  - 支持 JSON/CSV 证据输出及 `--require-pass` 非零退出码。
+- `CMakeLists.txt`
+  - 安装新增门禁脚本，使正式命令可通过 `ros2 run manipulator` 复现。
+
+### 验收终端命令
+
+静态检查与构建：
+
+```bash
+cd /home/yihuang/westlake/windylab-arm-for6/windylab_ws
+python3 -m py_compile \
+  src/arm-platform/scripts/visual_ee_pose_estimator.py \
+  src/arm-platform/scripts/phase4_visual_open_loop_metrics.py \
+  src/arm-platform/launch/moving_base_stabilization.launch.py
+source /opt/ros/humble/setup.bash
+ament_flake8 \
+  src/arm-platform/scripts/visual_ee_pose_estimator.py \
+  src/arm-platform/scripts/phase4_visual_open_loop_metrics.py \
+  src/arm-platform/launch/moving_base_stabilization.launch.py
+colcon build --packages-select manipulator --symlink-install
+git -C src/arm-platform diff --check
+```
+
+每轮使用全新 Gazebo 实例和独立 ROS domain。以下为 r1；r2/r3 分别改用 domain 71/72 和对应文件名：
+
+```bash
+cd /home/yihuang/westlake/windylab-arm-for6/windylab_ws
+source /opt/ros/humble/setup.bash
+source install/setup.bash
+export ROS_DOMAIN_ID=70
+ros2 launch manipulator moving_base_stabilization.launch.py \
+  experiment_mode:=visual_xyz gui:=false use_rviz:=false \
+  disturbance_csv:=/tmp/windylab_phase4_stage4/formal_sine_x_30s.csv \
+  replay_output_csv:=/tmp/windylab_phase4_stage6/formal_final_r1_replay.csv \
+  start_delay_sec:=15.0 hold_initial_state_during_start_delay:=true \
+  visual_stabilization_max_joint_velocity:=0.0 \
+  visual_stabilization_max_task_velocity_xyz:='0.0 0.0 0.0' \
+  run_phase4_diagnostics:=true \
+  phase4_diagnostics_output_csv:=/tmp/windylab_phase4_stage6/formal_final_r1_visual_chain.csv \
+  phase4_diagnostics_duration_sec:=48.0 \
+  run_phase4_transform_chain_diagnostics:=true \
+  phase4_transform_chain_output_csv:=/tmp/windylab_phase4_stage6/formal_final_r1_transform.csv \
+  phase4_transform_chain_duration_sec:=48.0 \
+  imu_enabled:=false
+```
+
+每轮结束后先完整停止该 launch，再运行硬门禁；返回码必须为 0，当前轮通过后才允许启动下一轮：
+
+```bash
+ros2 run manipulator phase4_visual_open_loop_metrics.py \
+  --visual-chain-csv /tmp/windylab_phase4_stage6/formal_final_r1_visual_chain.csv \
+  --transform-csv /tmp/windylab_phase4_stage6/formal_final_r1_transform.csv \
+  --replay-csv /tmp/windylab_phase4_stage6/formal_final_r1_replay.csv \
+  --output-json /tmp/windylab_phase4_stage6/formal_final_r1_gate.json \
+  --output-csv /tmp/windylab_phase4_stage6/formal_final_r1_gate.csv \
+  --require-pass
+```
+
+### 正式结果
+
+三次全新 Gazebo 实例均输出 14 个检查项全部为 `true` 且 `overall_passed: true`。频率均为 12 s 后稳态窗口的 P05；误差按 visual pose 原始时间戳与 GT 对齐：
+
+| 指标 | r1 | r2 | r3 | 门禁 |
+|---|---:|---:|---:|---:|
+| RGB P05 | `14.947 Hz` | `14.931 Hz` | `14.937 Hz` | `>=12 Hz` |
+| CameraInfo P05 | `14.947 Hz` | `14.931 Hz` | `14.938 Hz` | `>=12 Hz` |
+| detection P05 | `14.947 Hz` | `14.931 Hz` | `14.936 Hz` | `>=10 Hz` |
+| Tag TF P05 | `14.796 Hz` | `14.729 Hz` | `14.929 Hz` | `>=10 Hz` |
+| visual pose P05 | `14.796 Hz` | `14.787 Hz` | `14.736 Hz` | `>=10 Hz` |
+| visual valid | `100%` | `100%` | `100%` | `>=95%` |
+| visual age 最大值 | `0.134 s` | `0.116 s` | `0.123 s` | `<=0.20 s` |
+| 对齐位置 RMS | `8.698 mm` | `8.781 mm` | `8.743 mm` | `<=10 mm` |
+| 对齐位置最大值 | `18.776 mm` | `19.018 mm` | `19.216 mm` | `<=20 mm` |
+| X 相关系数 | `0.995202` | `0.995058` | `0.995146` | `>=0.8` |
+| X 回归斜率 | `1.053886` | `1.053655` | `1.054731` | `[0.8,1.2]` |
+| 关节速度命令峰值 | `0.0 rad/s` | `0.0 rad/s` | `0.0 rad/s` | `<=1e-9` |
+| Base 跟踪最大值 | `1.965 mm` | `1.965 mm` | `1.951 mm` | `<=2.1 mm` |
+
+正式证据 SHA-256：
+
+```text
+c4a05659b7a60123516e38a5e6ad58f98de05d0ac683e808f1f5f99fab2d1796  formal_final_r1_replay.csv
+792baa9fa0c08b5ac81675e7e50ecfe259c7001a6080ad236a946a5f0621414e  formal_final_r1_visual_chain.csv
+20487ea2701eb34523bb170f72ba83e15d7003c9ef148356a499d57652779ce9  formal_final_r1_transform.csv
+d3436930dc81917aa1e4a5cef1147537aacac2055f4355cae66b86047bfb0052  formal_final_r1_gate.json
+7f614c18c4f63de4a31af133ab872de004777f171a19562421ad532648e3ef82  formal_final_r1_gate.csv
+8bef2e6600f9c590b2955b57bea4b6f064ca1a928c83afe37d94b321ccfc6440  formal_final_r2_replay.csv
+390c3cdbbc29a05a4d0e0a7b69ce97372d00aa8d2d269b86b7258a3af6bc1b95  formal_final_r2_visual_chain.csv
+ae3fd188013176cae8567e3b11920e555c53c175524cd70ea9cbd7c59b34aac3  formal_final_r2_transform.csv
+9ea37116749320c4df1cc0f1ba7c94085beb96a1f149302228dd9fc31381ad06  formal_final_r2_gate.json
+f99012700b4e222f31a6e50c23bace92ba6d7a453683e02c1dfe0a5687c9a354  formal_final_r2_gate.csv
+eb4da8c053c8c74ecad35e18d0e6da5a93217c4dc430c2c8340f9db2783bd774  formal_final_r3_replay.csv
+0f76ac41cd8c7da7940b83735a33d12658da775ca03ea593e4a483b7e94220f8  formal_final_r3_visual_chain.csv
+647ec89c3671508358d467a50bee2052dbc1720f0d6d2eebf81f09f2d11b0eee  formal_final_r3_transform.csv
+efc4fcf0693d4568c00a4fdc1271237cc6280323b35d3a93801333c8cec20c2c  formal_final_r3_gate.json
+e3683cd5e33fa9996f519fee45e4b66420c711b863b3fd70bfb30aba0a5c5892  formal_final_r3_gate.csv
+```
+
+### 达到的效果
+
+- 在控制命令严格为零时，世界系 visual EE X 与 Gazebo link6 X 随 Base `sine_x` 同向、同尺度运动，三次相关系数约 `0.995`、斜率约 `1.054`；这排除了视觉坐标轴反向或尺度数量级错误。
+- RGB、CameraInfo、Tag 0 detection/TF 和 visual pose 都稳定接近传感器的 15 Hz 上限，且三次 visual pose age 最大值均小于 0.14 s，不再出现 0.3–2.1 s 的内部旧 TF 回放。
+- 三次同时间位置 RMS 均小于 9 mm、最大值均小于 20 mm；视觉测量精度足以进入下一阶段的视场与姿态可观测性验收。
+- 本阶段没有产生任何抗扰关节动作，这是刻意的开环隔离结果；它不能证明原问题中的“末端没有抗扰意图”已经解决。后续必须先完成阶段 7、8，再允许视觉闭环。
+
+### 版本控制验收
+
+本子阶段提交说明固定为：
+
+```text
+phase4: validate visual open-loop chain
+```
+
+提交、推送并执行：
+
+```bash
+cd /home/yihuang/westlake/windylab-arm-for6/windylab_ws/src/arm-platform
+git status --short --branch
+git log -1 --oneline
+git rev-parse HEAD
+git rev-parse origin/develop
+```
+
+只有工作区干净且两个提交 ID 一致，才允许开始子阶段 7。
