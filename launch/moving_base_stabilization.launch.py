@@ -139,11 +139,11 @@ def generate_launch_description():
         description='Maximum joint-state age before zero velocity')
     visual_required_consecutive_valid_poses_arg = DeclareLaunchArgument(
         'visual_required_consecutive_valid_poses',
-        default_value='1',
+        default_value='3',
         description='Valid visual pose samples required before locking a target')
     visual_relock_after_visual_loss_sec_arg = DeclareLaunchArgument(
         'visual_relock_after_visual_loss_sec',
-        default_value='0.0',
+        default_value='0.5',
         description='Reset locked target after this much continuous visual loss')
     visual_max_visual_error_norm_m_arg = DeclareLaunchArgument(
         'visual_max_visual_error_norm_m',
@@ -151,8 +151,8 @@ def generate_launch_description():
         description='Safety stop threshold if visual XYZ error exceeds this')
     visual_target_relock_enabled_arg = DeclareLaunchArgument(
         'visual_target_relock_enabled',
-        default_value='false',
-        description='Allow target relock/reset after visual loss; false for phase4.2')
+        default_value='true',
+        description='Allow target relock/reset after sustained visual loss')
     visual_stop_on_large_error_arg = DeclareLaunchArgument(
         'visual_stop_on_large_error',
         default_value='true',

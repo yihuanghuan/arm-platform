@@ -73,6 +73,12 @@ def finite_vector(values):
 
 
 class VisualEeStabilizationController(Node):
+    STATE_WAITING_FOR_INPUTS = 'WAITING_FOR_INPUTS'
+    STATE_WARMING_UP = 'WARMING_UP'
+    STATE_TRACKING = 'TRACKING'
+    STATE_HOLDING_INPUT_LOSS = 'HOLDING_INPUT_LOSS'
+    STATE_FAULT_LATCHED = 'FAULT_LATCHED'
+
     def __init__(self):
         super().__init__('visual_ee_stabilization_controller')
 
@@ -202,6 +208,8 @@ class VisualEeStabilizationController(Node):
         self.last_control_ns = 0
         self.safety_stop = False
         self.safety_stop_reason = ''
+        self.safety_state = self.STATE_WAITING_FOR_INPUTS
+        self.safety_state_transition_count = 0
         self.last_status = 'waiting_for_inputs'
 
         self.create_subscription(
@@ -256,6 +264,22 @@ class VisualEeStabilizationController(Node):
             raise ValueError(f'{name} must contain {expected_length} values')
         return np.array(value, dtype=float)
 
+    def set_safety_state(self, state):
+        if state == self.safety_state:
+            return
+        self.safety_state = state
+        self.safety_state_transition_count += 1
+
+    def latch_fault(self, reason):
+        reason = str(reason)
+        if not self.safety_stop:
+            self.get_logger().error(f'Latched visual-controller fault: {reason}')
+        self.safety_stop = True
+        self.safety_stop_reason = reason
+        self.dq_target = np.zeros(6, dtype=float)
+        self.dq_command = np.zeros(6, dtype=float)
+        self.set_safety_state(self.STATE_FAULT_LATCHED)
+
     def joint_state_callback(self, msg):
         missing = []
         for name, q_index in zip(self.joint_names, self.q_indices):
@@ -269,7 +293,7 @@ class VisualEeStabilizationController(Node):
                 continue
             value = float(msg.position[msg_index])
             if not math.isfinite(value):
-                self.last_status = 'non_finite_joint_state'
+                self.latch_fault('non_finite_joint_state')
                 return
             self.q[q_index] = value
 
@@ -286,11 +310,11 @@ class VisualEeStabilizationController(Node):
         try:
             pose = pose_to_se3(msg.pose)
         except Exception as exc:
-            self.last_status = f'visual_pose_parse_failed: {exc}'
+            self.latch_fault(f'visual_pose_parse_failed: {exc}')
             return
         pose_vector = np.array(se3_to_xyz_quat(pose), dtype=float)
         if not finite_vector(pose_vector):
-            self.last_status = 'non_finite_visual_pose'
+            self.latch_fault('non_finite_visual_pose')
             return
 
         stamp_ns = stamp_to_nanoseconds(msg.header.stamp)
@@ -335,22 +359,44 @@ class VisualEeStabilizationController(Node):
         now_ns = self.get_clock().now().nanoseconds
         dt = self.compute_control_dt(now_ns)
         reason = 'ok'
+        hard_stop = False
 
         if self.safety_stop:
-            self.dq_target = np.zeros(6, dtype=float)
             reason = self.safety_stop_reason or 'safety_stop'
+            self.set_safety_state(self.STATE_FAULT_LATCHED)
+            hard_stop = True
         else:
             ready, reason = self.inputs_ready()
             if ready:
                 reason = self.handle_ready_visual_measurement()
+                if self.safety_stop:
+                    reason = self.safety_stop_reason or reason
+                    self.set_safety_state(self.STATE_FAULT_LATCHED)
+                    hard_stop = True
+                elif self.target_pose is None:
+                    self.set_safety_state(self.STATE_WARMING_UP)
+                    hard_stop = True
+                else:
+                    self.set_safety_state(self.STATE_TRACKING)
             else:
                 self.handle_not_ready(reason)
+                if self.target_lock_count > 0:
+                    self.set_safety_state(self.STATE_HOLDING_INPUT_LOSS)
+                else:
+                    self.set_safety_state(self.STATE_WAITING_FOR_INPUTS)
+                hard_stop = True
 
-        self.dq_command = self.ramp_joint_velocity(self.dq_command, self.dq_target, dt)
-        if self.command_would_push_joint_limit(self.dq_command):
-            self.dq_command = np.zeros(6, dtype=float)
+        if hard_stop:
             self.dq_target = np.zeros(6, dtype=float)
+            self.dq_command = np.zeros(6, dtype=float)
+        else:
+            self.dq_command = self.ramp_joint_velocity(
+                self.dq_command, self.dq_target, dt)
+
+        if not self.safety_stop and self.command_would_push_joint_limit(
+                self.dq_command):
             reason = 'joint_limit_guard'
+            self.latch_fault(reason)
 
         self.last_status = reason
         self.publish_outputs(self.last_error, self.last_dq_raw, self.dq_command)
@@ -398,10 +444,11 @@ class VisualEeStabilizationController(Node):
             self.dq_target = dq_limited
             return 'ok'
         except Exception as exc:
-            self.dq_target = np.zeros(6, dtype=float)
             self.last_error = np.zeros(6, dtype=float)
             self.last_dq_raw = np.zeros(6, dtype=float)
-            return f'compute_failed: {exc}'
+            reason = f'compute_failed: {exc}'
+            self.latch_fault(reason)
+            return reason
 
     def inputs_ready(self):
         now_ns = self.get_clock().now().nanoseconds
@@ -411,10 +458,7 @@ class VisualEeStabilizationController(Node):
             return False, 'joint_state_timeout'
         if self.latest_visual_pose is None:
             return False, 'waiting_for_visual_pose'
-        has_unprocessed_pose = (
-            self.pending_visual_measurement
-            or self.latest_visual_stamp_ns > self.latest_processed_visual_stamp_ns)
-        if self.use_visual_valid_topic and not self.visual_valid and not has_unprocessed_pose:
+        if self.use_visual_valid_topic and not self.visual_valid:
             return False, 'visual_pose_invalid'
         if now_ns - self.latest_visual_stamp_ns > int(self.measurement_timeout_sec * 1e9):
             return False, 'visual_pose_timeout'
@@ -450,8 +494,7 @@ class VisualEeStabilizationController(Node):
         if self.max_visual_error_norm_m > 0.0 and error_norm > self.max_visual_error_norm_m:
             reason = f'visual_error_norm_{error_norm:.4f}'
             if self.stop_on_large_visual_error:
-                self.safety_stop = True
-                self.safety_stop_reason = reason
+                self.latch_fault(reason)
             elif self.target_relock_enabled:
                 self.reset_target(reason)
             return error, np.zeros(6, dtype=float), np.zeros(6, dtype=float)
@@ -530,9 +573,6 @@ class VisualEeStabilizationController(Node):
             dq_raw,
             -self.max_joint_velocity,
             self.max_joint_velocity)
-        if self.command_would_push_joint_limit(dq_limited):
-            self.last_status = 'joint_limit_guard'
-            return np.zeros(6, dtype=float)
         return dq_limited
 
     def command_would_push_joint_limit(self, dq):
@@ -574,7 +614,7 @@ class VisualEeStabilizationController(Node):
             elapsed_sec = (
                 self.get_clock().now().nanoseconds - self.target_lock_ns) * 1e-9
             if elapsed_sec < self.command_start_delay_sec:
-                return
+                dq_limited = np.zeros(6, dtype=float)
         self.command_pub.publish(self.make_array(dq_limited))
 
     def publish_status(self, reason):
@@ -604,6 +644,8 @@ class VisualEeStabilizationController(Node):
                 now_ns - self.latest_visual_stamp_ns) * 1e-9
         payload = {
             'status': reason,
+            'safety_state': self.safety_state,
+            'safety_state_transition_count': self.safety_state_transition_count,
             'target_locked': self.target_pose is not None,
             'target_lock_count': self.target_lock_count,
             'target_reset_count': self.target_reset_count,

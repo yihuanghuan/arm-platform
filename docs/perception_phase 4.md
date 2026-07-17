@@ -22,7 +22,7 @@
 | 2 | 统一仿真时间和回放时序 | 回放、感知、控制都使用同一仿真时间；暂停/恢复不破坏轨迹 | 已通过 |
 | 3 | 验证 Pinocchio 与 Gazebo 运动学一致 | 多构型、多轴小脉冲的方向、尺度和 frame 一致 | 已通过 |
 | 4 | 仅用 Gazebo GT 完成动态 XYZ 闭环 | GT 相比 baseline 的 RMS 明显下降，且不发散、可重复 | 已通过 |
-| 5 | 修正安全状态机 | safety 可区分等待、可恢复丢帧和故障锁存；命令行为逐项通过 | 未开始，锁定 |
+| 5 | 修正安全状态机 | safety 可区分等待、可恢复丢帧和故障锁存；命令行为逐项通过 | 已通过 |
 | 6 | 验收视觉开环链路 | 图像、Tag TF、世界系 EE 估计的频率、延迟、方向达到门槛 | 未开始，锁定 |
 | 7 | 保证相机视场和姿态可观测性 | 全扰动范围内 Tag 可见率和相机姿态满足门槛 | 未开始，锁定 |
 | 8 | visual dry-run 对照 GT | 同时刻视觉/GT 误差及 CLIK 命令方向、尺度一致 | 未开始，锁定 |
@@ -1127,3 +1127,197 @@ git rev-parse origin/develop
 ```
 
 只有工作区干净且两个提交 ID 一致，才允许开始子阶段 5。
+
+---
+
+## 子阶段 5：修正视觉控制器安全状态机
+
+### 状态
+
+通过。完成日期：2026-07-17。
+
+本阶段只验收视觉控制器面对输入建立、输入中断和不可恢复故障时的命令语义，没有修改视觉位姿计算、坐标变换、CLIK 几何、增益、deadband 或相机视场。子阶段 6 在本节提交、推送并确认版本同步之前继续锁定。
+
+### 目的
+
+把原先分散的 `safety_stop`、输入 timeout 和目标锁定条件收敛为可观测、可复现的状态机，单独回答以下问题：
+
+1. 输入尚未满足条件时是否保持严格零指令，并在 3 个不同时间戳的有效视觉位姿后才锁定目标。
+2. `valid=false`、视觉超时或 JointState 超时后，是否在进入安全状态 50 ms 内硬归零，而不是沿加速度斜坡继续运动。
+3. 短时丢失是否保留原目标并可恢复；持续丢失是否清除目标并重新要求 3 帧预热。
+4. 无效标志伴随的大误差位姿是否一定不会被消费。
+5. 有效视觉大误差是否进入只能通过进程重启解除的永久故障锁存。
+
+冻结状态语义：
+
+| 状态 | 含义 | 命令要求 |
+|---|---|---|
+| `WAITING_FOR_INPUTS` | JointState 或首个视觉输入尚未建立 | 严格零 |
+| `WARMING_UP` | 正在累计新的连续有效视觉位姿 | 严格零 |
+| `TRACKING` | 目标已锁定且输入有效 | 允许受限的 CLIK 指令 |
+| `HOLDING_INPUT_LOSS` | 已经锁过目标，但视觉或 JointState 暂时失效 | 50 ms 内硬归零 |
+| `FAULT_LATCHED` | 大视觉误差、非有限输入或计算异常 | 50 ms 内硬归零，只能重启解除 |
+
+正式验收门禁在修改控制器前冻结为：
+
+| 项目 | 硬门禁 |
+|---|---:|
+| 独立重复 | 3 次；每次使用全新控制器进程和独立 ROS domain |
+| 预热 | 第 1、2 帧不锁定；第 3 个不同时间戳有效位姿锁定 |
+| 正常跟踪 | `0.03 m` 有效误差产生 `>=0.001 rad/s` 的非零指令 |
+| 硬停数值 | 安全阶段尾部关节速度峰值 `<=1e-9 rad/s` |
+| 硬停延迟 | 进入 `HOLDING_INPUT_LOSS`/`FAULT_LATCHED` 后 `<=0.05 s` 持续归零 |
+| 短时失效 | 目标不重置、锁定计数不增加，输入恢复后继续原目标 |
+| 视觉超时 | 单独覆盖，硬停但不立即重置目标，恢复后继续原目标 |
+| 长时失效 | `0.30 s` 后重置目标；恢复时重新等待 3 帧，锁定计数加 1 |
+| 无效位姿 | `valid=false` 的 `0.25 m` 大误差位姿不触发计算或故障 |
+| 大误差故障 | 有效 `0.25 m` 误差触发 `FAULT_LATCHED`；后续正常输入不能解除 |
+| 状态输出 | 所有 JSON status 可解析并含显式 `safety_state` |
+
+### 修改前失败证据
+
+使用同一确定性注入脚本检查原控制器，`overall_passed=false`。原 status 没有 `safety_state`，且不就绪路径只把 `dq_target` 设为零，随后仍用 `0.3 rad/s²` 的加速度限制缓慢衰减 `dq_command`：
+
+| 场景 | 阶段尾部非零指令峰值 | 结果 |
+|---|---:|---|
+| `valid=false` 但仍到达 Pose | `0.1109536722 rad/s` | 失败 |
+| JointState timeout | `0.1799677764 rad/s` | 失败 |
+| 长时间视觉丢失 | `0.1623479552 rad/s` | 失败 |
+| 大误差 safety 锁存 | `0.0540048660 rad/s` | 失败 |
+
+这直接解释了此前 safety 生效后仍可能看到机械臂继续摆动的现象：目标速度已归零，但实际发布速度没有硬停；另外 `inputs_ready()` 会因为存在未处理 Pose 而绕过 `valid=false`，无效视觉数据仍可能进入控制计算。
+
+### 内容修改
+
+- `scripts/visual_ee_stabilization_controller.py`
+  - 增加上述五个显式安全状态和状态转换计数，并写入 JSON status。
+  - 输入未就绪和永久故障走硬停路径，同时把 `dq_target`、`dq_command` 精确置零；正常跟踪才使用加速度斜坡。
+  - 删除“存在未处理 Pose 即可绕过 `valid=false`”的条件，无效标志始终优先阻止视觉测量进入控制计算。
+  - JointState/视觉输入非有限、计算异常、关节限位保护和有效视觉大误差均进入永久 `FAULT_LATCHED`。
+  - 启动延迟期间持续发布零指令，不再完全停止发布命令。
+- `launch/moving_base_stabilization.launch.py`
+  - 视觉目标锁定默认要求从 1 帧改为 3 帧。
+  - 默认启用持续视觉丢失后的目标重锁，重置等待时间设为 `0.5 s`。
+  - 保持大误差阈值 `0.20 m` 和 `stop_on_large_visual_error=true` 不变。
+- `scripts/phase4_safety_state_machine_check.py`
+  - 新增确定性 ROS 输入注入验收器，覆盖等待、预热、跟踪、无效 Pose、JointState timeout、视觉 timeout、长丢失重锁和永久故障。
+  - CSV 同时记录最终状态、尾部指令、目标锁定/重置计数，以及从安全状态入口到持续零指令的实测延迟。
+- `CMakeLists.txt`
+  - 安装新增验收脚本，使其可通过 `ros2 run manipulator` 复现。
+
+### 验收终端命令
+
+静态检查和构建：
+
+```bash
+cd /home/yihuang/westlake/windylab-arm-for6/windylab_ws/src/arm-platform
+git diff --check
+PYTHONDONTWRITEBYTECODE=1 python3 -m py_compile \
+  scripts/visual_ee_stabilization_controller.py \
+  scripts/phase4_safety_state_machine_check.py \
+  launch/moving_base_stabilization.launch.py
+
+cd /home/yihuang/westlake/windylab-arm-for6/windylab_ws
+source /opt/ros/humble/setup.bash
+colcon build --packages-select manipulator --symlink-install
+source install/setup.bash
+```
+
+每个正式回合先启动一个全新控制器。以下为 r1；r2/r3 分别改用 `ROS_DOMAIN_ID=54/55`：
+
+```bash
+export ROS_DOMAIN_ID=53
+ros2 run manipulator visual_ee_stabilization_controller.py --ros-args \
+  -p dry_run:=false \
+  -p joint_states_topic:=/phase4_safety/joint_states \
+  -p visual_pose_topic:=/phase4_safety/visual_pose \
+  -p visual_valid_topic:=/phase4_safety/visual_valid \
+  -p command_topic:=/phase4_safety/commands \
+  -p required_consecutive_valid_poses:=3 \
+  -p measurement_timeout_sec:=0.25 \
+  -p joint_state_timeout_sec:=0.15 \
+  -p target_relock_enabled:=true \
+  -p relock_after_visual_loss_sec:=0.30 \
+  -p max_visual_error_norm_m:=0.20 \
+  -p stop_on_large_visual_error:=true \
+  -p max_joint_velocity:=0.5 \
+  -p max_joint_acceleration_rad_s2:=0.3 \
+  -p position_deadband_m:=0.001
+```
+
+另一个终端使用相同 ROS domain 运行验收；返回码必须为 0。每回合结束后停止并重新启动控制器：
+
+```bash
+ros2 run manipulator phase4_safety_state_machine_check.py \
+  --output-csv /tmp/windylab_phase4_stage5/formal_r1.csv \
+  --require-pass
+```
+
+提取关键状态和硬停延迟：
+
+```bash
+awk -F, 'NR==1 {for(i=1;i<=NF;i++) {gsub(/\r/, "", $i); h[$i]=i}; next} \
+  $1 ~ /short_visual_invalid|joint_state_timeout$|visual_pose_timeout$|long_visual_loss|large_error_fault|fault_recovery_rejected/ { \
+  printf "%s state=%s tail=%s latency=%s locks=%s resets=%s fault=%s reason=%s\n", \
+  $h["phase"], $h["safety_state"], $h["tail_command_peak_rad_s"], \
+  $h["state_entry_to_zero_latency_sec"], $h["target_lock_count"], \
+  $h["target_reset_count"], $h["safety_stop"], $h["safety_stop_reason"]}' \
+  /tmp/windylab_phase4_stage5/formal_r1.csv
+```
+
+### 正式结果
+
+三次独立进程均输出 17 个检查项全部为 `true` 且 `overall_passed: true`。关键硬停延迟如下，所有对应阶段的尾部峰值均为精确 `0.0 rad/s`：
+
+| 安全事件 | r1 | r2 | r3 | 门禁 |
+|---|---:|---:|---:|---:|
+| 无效视觉 Pose | `9.697 ms` | `9.836 ms` | `10.085 ms` | `<=50 ms` |
+| JointState timeout | `9.879 ms` | `9.920 ms` | `9.851 ms` | `<=50 ms` |
+| visual pose timeout | `9.681 ms` | `9.538 ms` | `9.837 ms` | `<=50 ms` |
+| 长时视觉丢失 | `9.989 ms` | `10.191 ms` | `9.334 ms` | `<=50 ms` |
+| 大误差故障 | `9.527 ms` | `9.431 ms` | `9.978 ms` | `<=50 ms` |
+| 故障后恢复尝试 | `9.887 ms` | `9.568 ms` | `9.489 ms` | `<=50 ms` |
+
+状态和目标生命周期在三次运行中一致：
+
+- 初始为 `WAITING_FOR_INPUTS`；第 1、2 帧为 `WARMING_UP` 且 `target_lock_count=0`；第 3 帧进入 `TRACKING` 且计数变为 1。
+- `valid=false` 阶段注入的是超过 safety 阈值的 `0.25 m` 位姿，但控制器保持 `HOLDING_INPUT_LOSS`、`safety_stop=false`、`target_lock_count=1`，证明无效 Pose 未被消费。
+- JointState timeout 和视觉 timeout 均硬停但保留目标；恢复后重新产生跟踪指令，锁定/重置计数仍为 `1/0`。
+- 持续视觉丢失后为 `target_locked=false`、`target_lock_count=1`、`target_reset_count=1`；恢复第 3 帧才重新进入 `TRACKING`，锁定计数变为 2。
+- 有效 `0.25 m` 大误差触发 `FAULT_LATCHED`，原因固定为 `visual_error_norm_0.2500`；继续发送正常输入仍保持锁存、零指令和 `target_lock_count=2`。
+
+正式 CSV SHA-256：
+
+```text
+dffd2ad28669f60f39490d62517a255a8ee5734921a485fa5b75c6f660bf0f3f  formal_r1.csv
+5fe5bd1d67c2086bbd8a516f232f00346858ec2ec342beee9e77a53fe03eb789  formal_r2.csv
+2830f5189fdfbc1e99f5881949b65b4fd2a9937b31e681522166e294865d16d3  formal_r3.csv
+```
+
+### 达到的效果
+
+- safety 行为现在可以从 status 明确区分“尚未准备好”“可恢复输入丢失”和“不可恢复故障”，不再用同一个模糊布尔量覆盖不同语义。
+- 输入失效不再沿加速度限制缓慢停止；三次全部在约一个 100 Hz 控制周期内持续归零，消除了原先输入异常后仍发布 `0.05–0.18 rad/s` 指令的风险。
+- 短丢失保留参考目标，长丢失清除过期目标并重新预热；恢复逻辑不会悄悄接受失效期间的位姿。
+- 大误差属于永久故障，不会被后续正常帧自动解除，避免故障状态下反复启停。
+- 本阶段仅证明状态机行为正确；尚未证明 Gazebo 中真实视觉链路的频率、延迟、方向和连续性，因此不能把本结果当作阶段 4 视觉闭环通过。子阶段 6 仍需单独验收。
+
+### 版本控制验收
+
+本子阶段提交说明固定为：
+
+```text
+phase4: harden visual safety state machine
+```
+
+提交、推送并执行：
+
+```bash
+cd /home/yihuang/westlake/windylab-arm-for6/windylab_ws/src/arm-platform
+git status --short --branch
+git log -1 --oneline
+git rev-parse HEAD
+git rev-parse origin/develop
+```
+
+只有工作区干净且两个提交 ID 一致，才允许开始子阶段 6。
