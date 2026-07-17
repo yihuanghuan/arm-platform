@@ -45,6 +45,20 @@ def parse_vector(value):
     return result
 
 
+def parse_expected_joints(value):
+    values = []
+    for part in value.replace(',', ' ').replace(';', ' ').split():
+        item = parse_float(part)
+        if item is None:
+            values = []
+            break
+        values.append(item)
+    if not values:
+        raise argparse.ArgumentTypeError(
+            'expected initial joints must be a comma-, semicolon-, or space-separated vector')
+    return values
+
+
 def norm(values):
     return math.sqrt(sum(value * value for value in values))
 
@@ -95,6 +109,40 @@ def physical_actual_link6_position(row, max_abs_position_m):
 
 def summarize(label, path, args):
     rows = load_rows(path)
+    invalid_reasons = []
+    initial_pose_tracking_error = None
+    initial_orientation_tracking_error = None
+    initial_joint_deviation = None
+    if not rows:
+        invalid_reasons.append('empty_replay_csv')
+    else:
+        first_row = rows[0]
+        initial_pose_tracking_error = parse_float(
+            first_row.get('pose_tracking_error_m'))
+        initial_orientation_tracking_error = parse_float(
+            first_row.get('orientation_tracking_error_rad'))
+        initial_joint_positions = parse_vector(first_row.get('joint_positions'))
+
+        if initial_pose_tracking_error is None:
+            invalid_reasons.append('missing_initial_pose_tracking_error')
+        elif initial_pose_tracking_error > args.initial_pose_error_max_m:
+            invalid_reasons.append('initial_pose_tracking_error_exceeded')
+
+        if initial_orientation_tracking_error is None:
+            invalid_reasons.append('missing_initial_orientation_tracking_error')
+        elif initial_orientation_tracking_error > args.initial_orientation_error_max_rad:
+            invalid_reasons.append('initial_orientation_tracking_error_exceeded')
+
+        if len(initial_joint_positions) != len(args.expected_initial_joints):
+            invalid_reasons.append('missing_or_mismatched_initial_joint_positions')
+        else:
+            initial_joint_deviation = max(
+                abs(actual - expected)
+                for actual, expected in zip(
+                    initial_joint_positions, args.expected_initial_joints))
+            if initial_joint_deviation > args.initial_joint_error_max_rad:
+                invalid_reasons.append('initial_joint_error_exceeded')
+
     origin = None
     for row in rows:
         origin = physical_actual_link6_position(row, args.gt_max_abs_position_m)
@@ -157,18 +205,35 @@ def summarize(label, path, args):
             if wall_time >= final_time - args.steady_window_sec
         ]
 
+    if origin is None:
+        invalid_reasons.append('no_physical_ground_truth_samples')
+
+    initial_state_valid = not invalid_reasons
+    xyz_rms = rms(errors)
+    xyz_max = max(errors) if errors else None
+    steady_xyz_mean = statistics.mean(steady_errors) if steady_errors else None
+    steady_xyz_max = max(steady_errors) if steady_errors else None
     visual_valid_count = sum(1 for value in visual_valid_values if value)
     result = {
         'label': label,
         'csv': path,
+        'run_valid': initial_state_valid,
+        'invalid_reason': ';'.join(invalid_reasons),
+        'initial_pose_tracking_error_m': initial_pose_tracking_error,
+        'initial_orientation_tracking_error_rad': initial_orientation_tracking_error,
+        'initial_joint_deviation_rad': initial_joint_deviation,
         'samples': len(rows),
         'valid_gt_samples': len(errors),
         'invalid_gt_samples': invalid_gt_samples,
         'set_failures': set_failures,
-        'xyz_rms_m': rms(errors),
-        'xyz_max_m': max(errors) if errors else None,
-        'steady_xyz_mean_m': statistics.mean(steady_errors) if steady_errors else None,
-        'steady_xyz_max_m': max(steady_errors) if steady_errors else None,
+        'xyz_rms_m': xyz_rms if initial_state_valid else None,
+        'xyz_max_m': xyz_max if initial_state_valid else None,
+        'steady_xyz_mean_m': steady_xyz_mean if initial_state_valid else None,
+        'steady_xyz_max_m': steady_xyz_max if initial_state_valid else None,
+        'diagnostic_xyz_rms_m': xyz_rms,
+        'diagnostic_xyz_max_m': xyz_max,
+        'diagnostic_steady_xyz_mean_m': steady_xyz_mean,
+        'diagnostic_steady_xyz_max_m': steady_xyz_max,
         'joint_velocity_peak_rad_s': max(velocity_peaks) if velocity_peaks else None,
         'joint_max_step_rad': max_joint_step,
         'command_saturation_ratio': (
@@ -188,6 +253,8 @@ def summarize(label, path, args):
 def format_value(value):
     if value is None:
         return 'n/a'
+    if isinstance(value, bool):
+        return str(value).lower()
     if isinstance(value, int):
         return str(value)
     if isinstance(value, float):
@@ -204,6 +271,11 @@ def write_summary(path, summaries):
     fieldnames = [
         'label',
         'csv',
+        'run_valid',
+        'invalid_reason',
+        'initial_pose_tracking_error_m',
+        'initial_orientation_tracking_error_rad',
+        'initial_joint_deviation_rad',
         'samples',
         'valid_gt_samples',
         'invalid_gt_samples',
@@ -212,6 +284,10 @@ def write_summary(path, summaries):
         'xyz_max_m',
         'steady_xyz_mean_m',
         'steady_xyz_max_m',
+        'diagnostic_xyz_rms_m',
+        'diagnostic_xyz_max_m',
+        'diagnostic_steady_xyz_mean_m',
+        'diagnostic_steady_xyz_max_m',
         'joint_velocity_peak_rad_s',
         'joint_max_step_rad',
         'command_saturation_ratio',
@@ -236,6 +312,11 @@ def print_summary(summaries, output_csv):
     for summary in summaries:
         print(f'  {summary["label"]}:')
         for key in (
+                'run_valid',
+                'invalid_reason',
+                'initial_pose_tracking_error_m',
+                'initial_orientation_tracking_error_rad',
+                'initial_joint_deviation_rad',
                 'samples',
                 'valid_gt_samples',
                 'invalid_gt_samples',
@@ -244,6 +325,10 @@ def print_summary(summaries, output_csv):
                 'xyz_max_m',
                 'steady_xyz_mean_m',
                 'steady_xyz_max_m',
+                'diagnostic_xyz_rms_m',
+                'diagnostic_xyz_max_m',
+                'diagnostic_steady_xyz_mean_m',
+                'diagnostic_steady_xyz_max_m',
                 'joint_velocity_peak_rad_s',
                 'joint_max_step_rad',
                 'command_saturation_ratio',
@@ -271,6 +356,15 @@ def parse_args(argv):
     parser.add_argument('--max-joint-velocity', type=float, default=0.35)
     parser.add_argument('--saturation-epsilon', type=float, default=1e-4)
     parser.add_argument('--gt-max-abs-position-m', type=float, default=5.0)
+    parser.add_argument('--initial-pose-error-max-m', type=float, default=0.02)
+    parser.add_argument(
+        '--initial-orientation-error-max-rad', type=float, default=0.10)
+    parser.add_argument('--initial-joint-error-max-rad', type=float, default=0.05)
+    parser.add_argument(
+        '--expected-initial-joints',
+        type=parse_expected_joints,
+        default=[0.0] * 6,
+        help='Expected initial joint vector; default is six zeros.')
     return parser.parse_args(argv)
 
 
@@ -282,6 +376,12 @@ def main(argv=None):
         raise SystemExit('--max-joint-velocity must be positive')
     if args.gt_max_abs_position_m <= 0.0:
         raise SystemExit('--gt-max-abs-position-m must be positive')
+    if args.initial_pose_error_max_m < 0.0:
+        raise SystemExit('--initial-pose-error-max-m must be non-negative')
+    if args.initial_orientation_error_max_rad < 0.0:
+        raise SystemExit('--initial-orientation-error-max-rad must be non-negative')
+    if args.initial_joint_error_max_rad < 0.0:
+        raise SystemExit('--initial-joint-error-max-rad must be non-negative')
 
     summaries = [summarize(label, path, args) for label, path in args.run]
     write_summary(args.output_csv, summaries)

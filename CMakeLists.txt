@@ -260,6 +260,7 @@ install(PROGRAMS
   scripts/check_visual_ee_pose.py
   scripts/static_xyz_closed_loop_check.py
   scripts/phase4_dynamic_xyz_metrics.py
+  scripts/phase4_failure_sequence_metrics.py
   scripts/phase4_visual_chain_diagnostics.py
   scripts/check_clik_direction.py
   scripts/phase4_joint_pulse_check.py
