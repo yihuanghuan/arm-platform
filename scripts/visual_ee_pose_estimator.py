@@ -317,7 +317,9 @@ class VisualEePoseEstimator(Node):
             'ee_camera_tf_past_extrapolation': 0,
             'ee_camera_tf_latest_fallback_success': 0,
             'ee_orientation_tf_success': 0,
+            'ee_orientation_tf_stamped_unavailable': 0,
             'ee_orientation_tf_latest_fallback_success': 0,
+            'ee_orientation_tf_unavailable': 0,
             'detection_tf_timeout': 0,
             'detection_tf_superseded': 0,
         }
@@ -699,18 +701,19 @@ class VisualEePoseEstimator(Node):
                 tf_msg = self.tf_buffer.lookup_transform(
                     target_frame,
                     source_frame,
-                    stamp_time,
-                    timeout=Duration(seconds=self.tf_timeout_sec))
+                    stamp_time)
                 self.tf_counters['ee_orientation_tf_success'] += 1
             except Exception:
+                self.tf_counters[
+                    'ee_orientation_tf_stamped_unavailable'] += 1
                 try:
                     tf_msg = self.tf_buffer.lookup_transform(
                         target_frame,
                         source_frame,
-                        Time(),
-                        timeout=Duration(seconds=self.tf_timeout_sec))
+                        Time())
                     self.tf_counters['ee_orientation_tf_latest_fallback_success'] += 1
                 except Exception:
+                    self.tf_counters['ee_orientation_tf_unavailable'] += 1
                     continue
             return transform_to_matrix(tf_msg.transform)[:3, :3]
         return None

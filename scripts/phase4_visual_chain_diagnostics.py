@@ -3,6 +3,7 @@
 import argparse
 import csv
 import json
+import math
 import os
 import sys
 import time
@@ -83,6 +84,19 @@ class Phase4VisualChainDiagnostics(Node):
         self.latest_tag_tf_error = ''
         self.latest_tag_tf_available = False
         self.latest_tag_tf_age_sec = None
+        self.latest_tag_range_m = None
+        self.latest_tag_optical_axis_angle_rad = None
+        self.latest_tag_incidence_angle_rad = None
+        self.camera_width_px = 0
+        self.camera_height_px = 0
+        self.latest_target_detected = None
+        self.latest_family_detection_count = 0
+        self.latest_target_decision_margin = None
+        self.latest_target_center_x_px = None
+        self.latest_target_center_y_px = None
+        self.latest_target_corner_margin_px = None
+        self.latest_target_min_edge_px = None
+        self.latest_target_polygon_area_px2 = None
 
         self.tf_buffer = tf2_ros.Buffer(cache_time=Duration(seconds=10.0))
         self.tf_listener = tf2_ros.TransformListener(self.tf_buffer, self)
@@ -143,12 +157,25 @@ class Phase4VisualChainDiagnostics(Node):
             'target_detection_count',
             'visual_pose_count',
             'clock_count',
+            'target_detected',
+            'family_detection_count',
+            'camera_width_px',
+            'camera_height_px',
+            'target_decision_margin',
+            'target_center_x_px',
+            'target_center_y_px',
+            'target_corner_margin_px',
+            'target_min_edge_px',
+            'target_polygon_area_px2',
             'image_age_sec',
             'camera_info_age_sec',
             'apriltag_msg_age_sec',
             'target_detection_age_sec',
             'tag_tf_available',
             'tag_tf_age_sec',
+            'tag_range_m',
+            'tag_optical_axis_angle_rad',
+            'tag_incidence_angle_rad',
             'tag_tf_error',
             'visual_pose_age_sec',
             'visual_valid',
@@ -212,19 +239,57 @@ class Phase4VisualChainDiagnostics(Node):
     def camera_info_callback(self, msg):
         self.camera_info_count += 1
         self.last_camera_info_stamp_ns = stamp_to_ns(msg.header.stamp)
+        self.camera_width_px = int(msg.width)
+        self.camera_height_px = int(msg.height)
         self.append_event(self.camera_info_times)
 
     def detections_callback(self, msg):
         self.apriltag_msg_count += 1
         self.last_apriltag_stamp_ns = stamp_to_ns(msg.header.stamp)
         self.append_event(self.apriltag_msg_times)
-        target_seen = any(
-            detection.family == self.args.tag_family and detection.id == self.args.tag_id
-            for detection in msg.detections)
-        if target_seen:
+        family_detections = [
+            detection for detection in msg.detections
+            if detection.family == self.args.tag_family]
+        target_detections = [
+            detection for detection in family_detections
+            if detection.id == self.args.tag_id]
+        self.latest_family_detection_count = len(family_detections)
+        self.latest_target_detected = bool(target_detections)
+        if target_detections:
+            target = target_detections[0]
             self.target_detection_count += 1
             self.last_target_detection_stamp_ns = self.last_apriltag_stamp_ns
             self.append_event(self.target_detection_times)
+            self.latest_target_decision_margin = float(target.decision_margin)
+            self.latest_target_center_x_px = float(target.centre.x)
+            self.latest_target_center_y_px = float(target.centre.y)
+            corners = [(float(point.x), float(point.y)) for point in target.corners]
+            if len(corners) == 4:
+                if self.camera_width_px > 0 and self.camera_height_px > 0:
+                    self.latest_target_corner_margin_px = min(
+                        min(
+                            x,
+                            y,
+                            self.camera_width_px - 1.0 - x,
+                            self.camera_height_px - 1.0 - y)
+                        for x, y in corners)
+                self.latest_target_min_edge_px = min(
+                    math.hypot(
+                        corners[(index + 1) % 4][0] - corners[index][0],
+                        corners[(index + 1) % 4][1] - corners[index][1])
+                    for index in range(4))
+                twice_area = abs(sum(
+                    corners[index][0] * corners[(index + 1) % 4][1]
+                    - corners[(index + 1) % 4][0] * corners[index][1]
+                    for index in range(4)))
+                self.latest_target_polygon_area_px2 = 0.5 * twice_area
+        else:
+            self.latest_target_decision_margin = None
+            self.latest_target_center_x_px = None
+            self.latest_target_center_y_px = None
+            self.latest_target_corner_margin_px = None
+            self.latest_target_min_edge_px = None
+            self.latest_target_polygon_area_px2 = None
 
     def visual_pose_callback(self, msg):
         self.visual_pose_count += 1
@@ -259,6 +324,9 @@ class Phase4VisualChainDiagnostics(Node):
         except Exception as exc:
             self.latest_tag_tf_available = False
             self.latest_tag_tf_age_sec = None
+            self.latest_tag_range_m = None
+            self.latest_tag_optical_axis_angle_rad = None
+            self.latest_tag_incidence_angle_rad = None
             self.latest_tag_tf_error = str(exc)
             return
 
@@ -268,6 +336,36 @@ class Phase4VisualChainDiagnostics(Node):
             self.append_event(self.tag_tf_update_times)
         self.latest_tag_tf_available = True
         self.latest_tag_tf_age_sec = self.age_sec(stamp_ns, now_ns)
+        translation = transform.transform.translation
+        tag_vector = [translation.x, translation.y, translation.z]
+        tag_range = math.sqrt(sum(value * value for value in tag_vector))
+        if tag_range > 1e-12:
+            self.latest_tag_range_m = tag_range
+            optical_cosine = max(-1.0, min(1.0, translation.z / tag_range))
+            self.latest_tag_optical_axis_angle_rad = math.acos(optical_cosine)
+
+            rotation = transform.transform.rotation
+            quaternion_norm = math.sqrt(
+                rotation.x * rotation.x
+                + rotation.y * rotation.y
+                + rotation.z * rotation.z
+                + rotation.w * rotation.w)
+            if quaternion_norm > 1e-12:
+                qx = rotation.x / quaternion_norm
+                qy = rotation.y / quaternion_norm
+                qz = rotation.z / quaternion_norm
+                qw = rotation.w / quaternion_norm
+                tag_normal_camera = [
+                    2.0 * (qx * qz + qw * qy),
+                    2.0 * (qy * qz - qw * qx),
+                    1.0 - 2.0 * (qx * qx + qy * qy),
+                ]
+                tag_to_camera = [-value / tag_range for value in tag_vector]
+                incidence_cosine = abs(sum(
+                    normal * sight
+                    for normal, sight in zip(tag_normal_camera, tag_to_camera)))
+                incidence_cosine = max(-1.0, min(1.0, incidence_cosine))
+                self.latest_tag_incidence_angle_rad = math.acos(incidence_cosine)
         self.latest_tag_tf_error = ''
 
     def sample_once(self):
@@ -290,6 +388,19 @@ class Phase4VisualChainDiagnostics(Node):
             'target_detection_count': self.target_detection_count,
             'visual_pose_count': self.visual_pose_count,
             'clock_count': self.clock_count,
+            'target_detected': format_bool(self.latest_target_detected),
+            'family_detection_count': self.latest_family_detection_count,
+            'camera_width_px': self.camera_width_px,
+            'camera_height_px': self.camera_height_px,
+            'target_decision_margin': format_float(
+                self.latest_target_decision_margin),
+            'target_center_x_px': format_float(self.latest_target_center_x_px),
+            'target_center_y_px': format_float(self.latest_target_center_y_px),
+            'target_corner_margin_px': format_float(
+                self.latest_target_corner_margin_px),
+            'target_min_edge_px': format_float(self.latest_target_min_edge_px),
+            'target_polygon_area_px2': format_float(
+                self.latest_target_polygon_area_px2),
             'image_age_sec': format_float(self.age_sec(self.last_image_stamp_ns, now_ns)),
             'camera_info_age_sec': format_float(
                 self.age_sec(self.last_camera_info_stamp_ns, now_ns)),
@@ -299,6 +410,11 @@ class Phase4VisualChainDiagnostics(Node):
                 self.age_sec(self.last_target_detection_stamp_ns, now_ns)),
             'tag_tf_available': format_bool(self.latest_tag_tf_available),
             'tag_tf_age_sec': format_float(self.latest_tag_tf_age_sec),
+            'tag_range_m': format_float(self.latest_tag_range_m),
+            'tag_optical_axis_angle_rad': format_float(
+                self.latest_tag_optical_axis_angle_rad),
+            'tag_incidence_angle_rad': format_float(
+                self.latest_tag_incidence_angle_rad),
             'tag_tf_error': self.latest_tag_tf_error,
             'visual_pose_age_sec': format_float(
                 self.age_sec(self.last_visual_pose_stamp_ns, now_ns)),
