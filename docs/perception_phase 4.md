@@ -25,10 +25,13 @@
 | 5 | 修正安全状态机 | safety 可区分等待、可恢复丢帧和故障锁存；命令行为逐项通过 | 已通过 |
 | 6 | 验收视觉开环链路 | 图像、Tag TF、世界系 EE 估计的频率、延迟、方向达到门槛 | 已通过 |
 | 7 | 保证相机视场和姿态可观测性 | 全扰动范围内 Tag 可见率和相机姿态满足门槛 | 已通过 |
-| 8 | visual dry-run 对照 GT | 同时刻视觉/GT 误差及 CLIK 命令方向、尺度一致 | 未开始，锁定 |
-| 9 | 静态 Base 视觉闭环 | 多个小偏差均收敛，无 Base 漂移、无 safety 误触发 | 未开始，锁定 |
-| 10 | 逐级动态扰动 | 按幅值和频率逐级通过，不跨级调参 | 未开始，锁定 |
-| 11 | 完整阶段 4 验收 | `sine_x/y/z/xyz` 和随机平移均优于 baseline，且多次可复现 | 未开始，锁定 |
+| 8 | visual dry-run 对照 GT | 同时刻视觉/GT 误差及 CLIK 命令方向、尺度一致 | 历史门禁未通过，已由 Gate A 取代 |
+| 9 | 静态 Base 视觉闭环 | 多个小偏差均收敛，无 Base 漂移、无 safety 误触发 | 未执行，已并入 Gate B |
+| 10 | 逐级动态扰动 | 按幅值和频率逐级通过，不跨级调参 | 未执行，已并入 Gate B |
+| 11 | 完整阶段 4 验收 | `sine_x/y/z/xyz` 和随机平移均优于 baseline，且多次可复现 | 未执行，已由 Gate C 取代 |
+| A | 视觉闭环准入 | 五 profile dry-run、四段时间戳、P99/stale 联合门禁 | 已通过 |
+| B | 安全闭环与渐进动态调试 | static、step、三级 `sine_x` 逐级通过 | 未开始，锁定 |
+| C | 原阶段 4 最终验收 | 五 profile 的 baseline/GT/visual 三重复全部通过 | 未开始，锁定 |
 
 ---
 
@@ -1740,3 +1743,276 @@ git rev-parse origin/develop
 ```
 
 只有工作区干净且两个提交 ID 一致，才允许开始子阶段 8。
+
+---
+
+## 子阶段 8：visual dry-run 对照 Gazebo GT
+
+### 状态
+
+阻塞、未通过。进入及停止日期：2026-07-19。子阶段 9 继续锁定；本阶段改动未提交、未推送。
+
+### 目的
+
+本阶段允许视觉控制器计算完整非零 XYZ CLIK 抗扰指令，但必须处于真正的 `dry_run`，不能向 Gazebo 速度控制器发布命令。只回答三个问题：视觉目标误差与同时间 Gazebo GT 误差的方向/尺度是否一致；CLIK 计算出的关节速度在任务空间是否实现该视觉速度意图；整个计算过程中是否有限、连续且不触发 safety fault。本阶段不调控制增益、阻尼、deadband、速度/加速度上限或 safety 阈值。
+
+### 修改前冻结矩阵
+
+| 项目 | 固定值 |
+|---|---|
+| profile | 阶段 7 的 `sine_x/y/z/xyz`、`random_translation_3d` 五条冻结 CSV |
+| 轨迹 | `30 s / 100 Hz / 3001` 样本；正弦 0.35 Hz，随机 seed 42 |
+| 感知 | 阶段 7 已验收的 `320x240 @ 15 Hz`、2x2 AprilTag board |
+| visual controller | XYZ、100 Hz、gain `[4,4,4]`、damping `0.05` |
+| 限幅 | task `[0.05,0.05,0.05] m/s`、joint `0.2 rad/s`、acceleration `0.3 rad/s^2` |
+| 其他控制参数 | deadband `0.003 m`、3 帧锁目标、visual error fault `0.20 m` |
+| 执行隔离 | `dry_run=true`，不得创建实际关节命令 publisher |
+| 正式重复 | 三套完整矩阵；每个 profile 每次使用全新 Gazebo 实例 |
+
+### 修改前冻结门禁
+
+阶段 7 的历史 replay 只用于在修改前冻结自然视觉误差范围：15 次同时间视觉/GT 误差差值 RMS 为 `9.4–20.2 mm`、P95 为 `18.4–34.2 mm`，方向 cosine P05 最低 `0.705`、激励轴符号一致率最低 `95.7%`、误差模长回归斜率 `0.920–1.003`。据此固定以下单次运行门禁；后续不得按 stage 8 结果放宽：
+
+| 项目 | 单次运行硬门禁 |
+|---|---:|
+| replay / Base | 3001 样本、0 set failure；同步 Base 最大 `<=2.1 mm`；迟到/gap `<=10/20 ms` |
+| 真 dry-run | controller status 为 `dry_run=true`；实际关节命令峰值 `<=1e-9 rad/s`；关节最大步长 `<=1e-6 rad` |
+| 视觉输入 | valid `>=95%`、age 最大 `<=0.20 s`、同时间唯一视觉样本 `>=400` |
+| 视觉误差对 GT | 三维差值 RMS `<=0.025 m`、P95 `<=0.040 m` |
+| 视觉误差方向 | GT 误差模长 `>=0.01 m` 时 direction cosine P05 `>=0.65` |
+| 视觉误差尺度 | 视觉/GT 误差模长回归斜率 `[0.80,1.20]` |
+| 激励轴符号 | `|GT axis error|>=0.01 m` 时符号一致率 `>=95%` |
+| CLIK 有限性/意图 | error、`dq_raw/dq_target/dq_command` 全部有限；`dq_target` 峰值 `[0.02,0.20] rad/s` |
+| CLIK 任务方向 | `||v_visual||>=0.01 m/s` 时 `J*dq_raw` 对期望视觉任务速度 cosine 最小 `>=0.995` |
+| CLIK 任务尺度 | `||J*dq_raw|| / ||v_visual||` 全部位于 `[0.85,1.05]` |
+| safety/目标 | 无 `FAULT_LATCHED`、无 target reset、全程只锁定一个目标 |
+| 独立重复 | 3 套五 profile 矩阵均逐项通过；任一失败立即停止 |
+
+这里的 GT error 使用 replay 首个物理 `actual_link6` 作为世界系目标，并在 visual pose 原始时间戳上线性插值 GT；CLIK 验收使用同一关节构型的 Pinocchio `LOCAL_WORLD_ALIGNED` Jacobian。误差方向门禁检验“抗扰意图是否朝向 GT 目标”，CLIK 门禁单独检验“该视觉意图是否被正确映射成关节速度”，不把感知误差和运动学误差混成一个阈值。
+
+### 修改前基线
+
+修改前 launch 将视觉控制器的 `dry_run` 硬编码为 `false`，没有可由验收命令启用的真实 dry-run 路径。为避免基线实际驱动关节，用 `max_joint_velocity=0` 与 task velocity 全零启动 `sine_x`，得到：
+
+- controller status：`dry_run=false`；
+- `/arm_velocity_controller/commands` 仍由视觉控制器创建 1 个 publisher；
+- replay `3001` 样本、0 set failure，视觉误差峰值 `0.110260307 m`；
+- 由于速度上限被钳为零，`dq_limited=0`、实际命令峰值 `0`、关节最大步长 `0`。
+
+因此该基线只能证明“零上限阻止了动作”，不能证明“控制器能够计算非零抗扰意图但与执行器隔离”，必须补齐可观测的真实 dry-run。
+
+### 内容修改（当前未提交）
+
+1. `moving_base_stabilization.launch.py`：新增 `visual_stabilization_dry_run` launch 参数，默认 `false`，显式传入视觉控制器；默认路径行为不变。
+2. `visual_ee_stabilization_controller.py`：在原子 status JSON 中增加 `dry_run`、控制模式、gain、阻尼、deadband、task/joint/acceleration 上限，并增加与同一次控制更新对应的 `dq_raw`；用于证明实际发布命令与计算意图相互隔离。
+3. `base_disturbance_replay.py`：同步记录视觉 pose 时间戳、`dq_raw`、`dq_target` 与完整 controller status，避免用不同 ROS topic 的“最新值”错误拼接一个控制周期。
+4. 新增 `phase4_visual_dry_run_metrics.py`：从 replay CSV 计算全部冻结门禁；使用视觉原始时间戳插值 Gazebo GT，并用 Pinocchio Jacobian 验证 `J*dq_raw` 的方向和尺度；`--require-pass` 在任一门禁失败时返回非零。
+5. `CMakeLists.txt`：安装新的 stage 8 指标脚本。
+
+首次预验收使用三个异步 topic 拼接 error、`dq_raw`、status，CLIK direction cosine 最小值仅 `0.8887`，其余 13 类检查通过。没有降低 `0.995` 门槛；检查时间序列后确认失败来自不同控制周期的 topic 最新值错配，随后改为使用同一条原子 status 内的 error、`dq_raw/dq_target/dq_command`。修正后的 `preflight_atomic_sine_x` 为 14/14 通过：CLIK direction 最小 `0.998396`、scale `[0.895250,0.962632]`、视觉/GT 差值 RMS `13.484 mm`、P95 `22.772 mm`、视觉 age 最大 `114 ms`，真实命令与关节步长均为 0。
+
+### 静态验收终端命令与结果
+
+```bash
+cd /home/yihuang/westlake/windylab-arm-for6/windylab_ws
+source /opt/ros/humble/setup.bash
+
+python3 -m py_compile \
+  src/arm-platform/launch/moving_base_stabilization.launch.py \
+  src/arm-platform/scripts/base_disturbance_replay.py \
+  src/arm-platform/scripts/visual_ee_stabilization_controller.py \
+  src/arm-platform/scripts/phase4_visual_dry_run_metrics.py
+
+ament_flake8 \
+  src/arm-platform/launch/moving_base_stabilization.launch.py \
+  src/arm-platform/scripts/base_disturbance_replay.py \
+  src/arm-platform/scripts/visual_ee_stabilization_controller.py \
+  src/arm-platform/scripts/phase4_visual_dry_run_metrics.py
+
+git -C src/arm-platform diff --check
+colcon build --packages-select manipulator --symlink-install
+```
+
+结果：4 个 Python 文件 `ament_flake8` 全部通过，`py_compile` 与 `git diff --check` 无输出，`manipulator` 构建成功。
+
+### Gazebo 正式验收终端命令
+
+每个 profile 使用新的 `ROS_DOMAIN_ID` 和全新的 Gazebo 实例。以下命令在每一轮依次替换 `ROUND=r1/r2/r3`、`PROFILE=sine_x/sine_y/sine_z/sine_xyz/random_translation_3d` 与唯一 `DOMAIN`；指标命令返回非零时 shell 立即停止，不运行该轮后续 profile：
+
+```bash
+cd /home/yihuang/westlake/windylab-arm-for6/windylab_ws
+source /opt/ros/humble/setup.bash
+source install/setup.bash
+
+PREFIX=/tmp/windylab_phase4_stage8/formal_${ROUND}_${PROFILE}
+ROS_DOMAIN_ID=${DOMAIN} timeout --signal=INT --kill-after=5s 44s \
+  ros2 launch manipulator moving_base_stabilization.launch.py \
+  experiment_mode:=visual_xyz gui:=false use_rviz:=false \
+  disturbance_csv:=/tmp/windylab_phase4_stage7/${PROFILE}.csv \
+  replay_output_csv:=${PREFIX}_replay.csv \
+  start_delay_sec:=8 hold_initial_state_during_start_delay:=true \
+  visual_stabilization_dry_run:=true \
+  visual_stabilization_max_joint_velocity:=0.2 \
+  visual_stabilization_max_task_velocity_xyz:='0.05 0.05 0.05' \
+  run_phase4_diagnostics:=false \
+  run_phase4_transform_chain_diagnostics:=false \
+  imu_enabled:=false
+
+ROS_DOMAIN_ID=${DOMAIN} ros2 run manipulator \
+  phase4_visual_dry_run_metrics.py \
+  --replay-csv ${PREFIX}_replay.csv \
+  --label ${ROUND}_${PROFILE} \
+  --output-json ${PREFIX}_gate.json \
+  --output-csv ${PREFIX}_gate.csv \
+  --require-pass
+```
+
+每份 JSON 必须同时满足 `overall_passed=true`、14 个 `checks` 全为 `true`。前两套完整矩阵的最差值如下：
+
+| 正式轮次 | 通过 | Base 最大 | visual age 最大 | unique 最小 | 视觉/GT RMS 最大 | P95 最大 | direction P05 最小 | slope 范围 | 激励轴符号最小 | CLIK direction 最小 | CLIK scale 全范围 |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| r1 | 5/5，70/70 checks | 0.600 mm | 142 ms | 448 | 15.082 mm | 27.793 mm | 0.7583 | 0.9568–1.0132 | 96.45% | 0.998394 | 0.8824–0.9875 |
+| r2 | 5/5，70/70 checks | 0.589 mm | 134 ms | 449 | 15.013 mm | 28.771 mm | 0.7583 | 0.9452–1.0154 | 96.91% | 0.998394 | 0.8825–0.9875 |
+
+两轮全部运行均为 `3001` replay/status 样本、0 set failure、视觉 valid `100%`、finite `100%`、无 fault/reset、目标只锁定一次；`dq_target` 峰值范围 `0.174868–0.2 rad/s`，但实际命令峰值和关节最大步长均严格为 0。由此已证明在通过的运行中：视觉误差具有指向 Gazebo GT 的抗扰意图，CLIK 会把该意图正确映射为非零关节速度目标，且 dry-run 没有驱动机械臂。
+
+### 第三套矩阵失败与复现
+
+第三套矩阵没有达到“5 个 profile 全通过”的硬门禁，按规则每次在首个失败处停止：
+
+| 尝试 | 已运行项 | 结果 | 唯一失败门禁 | 关键证据 |
+|---|---|---|---|---|
+| r3 首次 | `sine_x` | 13/14 checks，失败 | visual age `207 ms > 200 ms` | 轨迹 `11.95 s` 单点超限；视觉时间戳 `19.883 -> 20.016 s`，间隔 133 ms；其余门禁通过 |
+| 同配置恢复探针 | `sine_x` | 14/14 通过 | 无 | visual age 最大 104 ms，449 unique；未改代码、参数或门槛 |
+| r3 从头重启 | `sine_x` | 14/14 通过 | 无 | visual age 最大 133 ms；其余门禁通过 |
+| r3 从头重启 | `sine_y` | 13/14 checks，失败并停止 | visual age `269 ms > 200 ms` | 视觉时间戳 `22.151 -> 22.352 s`，连续间隔 201 ms，unique 降低；其余门禁通过 |
+
+两次失败都发生在 replay 正常 100 Hz、0 set failure、Base 跟踪通过且控制/CLIK 其余 13 类检查通过时，表现为 AprilTag/视觉位姿发布偶发连续漏帧。停止后检查系统：无残留 `gzserver`、AprilTag、视觉控制器或 replay 进程；可用内存约 23 GiB、磁盘可用约 349 GiB，未发现内存、磁盘或遗留仿真进程导致的持续资源耗尽。第二次重复失败说明不能把问题仅作为一次偶发值忽略，也不能用重复运行挑选通过样本。
+
+失败及恢复证据保存在：
+
+```text
+/tmp/windylab_phase4_stage8/failed_attempt_r3_sine_x_{replay.csv,gate.json,gate.csv}
+/tmp/windylab_phase4_stage8/recovery_probe_sine_x_{replay.csv,gate.json,gate.csv}
+/tmp/windylab_phase4_stage8/formal_r3_sine_{x,y}_{replay.csv,gate.json,gate.csv}
+```
+
+### 达到的效果、阻塞结论与版本状态
+
+已达到：真实 dry-run 路径和原子诊断可用；两套完整矩阵证明视觉误差方向/尺度及 CLIK 映射正确；计算出的非零 `dq_target` 与执行器完全隔离。这直接排除了“控制器没有产生任何抗扰意图”这一软件意图层假设：当前控制器在 dry-run 中确实持续生成方向正确的抗扰目标。
+
+未达到：冻结要求是三套完整矩阵 15/15 通过，而当前只有两套完整矩阵 10/10 通过；第三套因视觉输入偶发超过 200 ms 两次失败。因此子阶段 8 **未通过**，不能用现有结果声称视觉链具有要求的连续新鲜度，也绝对不能进入子阶段 9 的实际低权重闭环。
+
+按阶段版本规则，只有通过后才允许提交和推送。本阶段工作区保留上述未提交修改，未执行 stage 8 commit/push；远端 `develop` 仍停留在已通过并推送的子阶段 7 提交 `4d61a7a334f7db1bb634ece0af2848696ce256d1`。后续需要先针对相机帧、AprilTag detection 与 `/visual_ee_pose` 三段分别记录时间戳/丢帧，确定 133–201 ms 空洞产生在哪一段，再由用户决定是否在保持冻结感知配置和 `200 ms` 门槛的前提下继续修复。
+
+---
+
+## 项目级路线复评与剩余路线重构
+
+### 决策
+
+2026-07-19 从 `perception_control.md` 的完整项目目标重新评审后，确认子阶段 0–11 是定位阶段 4 原始大幅摆动问题的隔离诊断路径，不是必须机械完成的产品里程碑。子阶段 0–7 已完成 Base plant、仿真时序、运动学、GT 闭环、安全状态机和视觉开环隔离，继续重复同类 dry-run/静态实验会推迟真正缺失的端到端闭环验收。
+
+旧子阶段 8 保留为未通过历史：其 10 次完整正式运行已证明视觉误差和 CLIK 意图正确，两次失败都只是单点最大 age 超过 `200 ms`。单点最大时龄开始提前承担原总路线阶段 5 的噪声、延迟和丢帧鲁棒性职责。项目级验收因此不追认旧 stage 8 通过，而是用以下三道新门正式取代旧 8–11：
+
+1. Gate A：视觉闭环准入，使用 P99、超时比例和最长连续空洞联合评价自然链路。
+2. Gate B：安全闭环与渐进动态调试，合并旧 9/10。
+3. Gate C：五 profile baseline/GT/visual 三重复，直接完成 `perception_control.md` 原阶段 4。
+
+每道门仍遵守本文件顶部的串行规则：未通过不进入下一门；通过后提交、推送并确认版本同步。
+
+---
+
+## Gate A：视觉闭环准入
+
+### 状态
+
+通过。完成日期：2026-07-19。Gate B 在本节提交、推送并确认 `HEAD == origin/develop` 前继续锁定。
+
+### 目的与冻结门禁
+
+保留旧 stage 8 已证明有价值的 true dry-run、视觉/GT 方向尺度和 CLIK 映射检查，同时把视觉链路改为四段可观测时间戳，并按项目级决策采用自然延迟分布门禁：
+
+| 项目 | Gate A 单次硬门禁 |
+|---|---:|
+| profile | `sine_x/y/z/xyz`、`random_translation_3d` 各 1 次，全新 Gazebo |
+| replay/Base | 3001 样本、0 set failure、同步 Base 最大 `<=2.1 mm`、调度/gap `<=10/20 ms` |
+| true dry-run | 实际命令峰值 `<=1e-9 rad/s`、关节步长 `<=1e-6 rad` |
+| 四段时间戳 | image、目标 detection、visual pose、controller consumption 各 `>=400` 个唯一时间戳，0 回退 |
+| 视觉时效 | age P99 `<=200 ms`；age `>250 ms` 比例 `<=1%`；最长连续 stale `<500 ms` |
+| 视觉与 CLIK | 沿用旧 stage 8 的 GT 差值、方向、尺度、激励轴符号、CLIK direction/scale 门禁 |
+| safety | 无 fault、无 target reset、只锁定一个目标 |
+
+### 内容修改
+
+- moving-base launch 新增默认关闭的 `visual_stabilization_dry_run`，不改变普通闭环默认行为。
+- 视觉控制器在原子 status 中输出完整控制配置及同一控制更新的 `dq_raw/dq_target/dq_command`，避免跨 topic 最新值错配。
+- Base replay 同步记录 image、目标 detection、visual pose、controller consumption 的源时间戳和接收时间戳，以及原子 status 和非零 dry-run 计算意图。
+- `phase4_visual_dry_run_metrics.py` 增加四段唯一时间戳、分段 P99 延迟、总 age P99、超时比例和最长 stale burst；保留最大 age 只作诊断，不再单独判废。
+
+首次时间戳预检只缺 detection 段；根因是 detection 消息的 family 字符串为 `tag36h11`，新增参数最初误写为 `36h11`。修正接口默认值后重新完整启动 Gazebo，预检 15/15 checks 通过，没有降低任何门禁。
+
+### 验收终端命令
+
+每个 profile 使用独立 ROS domain；`PROFILE` 依次取五条阶段 7 冻结 CSV：
+
+```bash
+cd /home/yihuang/westlake/windylab-arm-for6/windylab_ws
+source /opt/ros/humble/setup.bash
+source install/setup.bash
+
+PREFIX=/tmp/windylab_phase4_gate_a/formal_${PROFILE}
+ROS_DOMAIN_ID=${DOMAIN} timeout --signal=INT --kill-after=5s 44s \
+  ros2 launch manipulator moving_base_stabilization.launch.py \
+  experiment_mode:=visual_xyz gui:=false use_rviz:=false \
+  disturbance_csv:=/tmp/windylab_phase4_stage7/${PROFILE}.csv \
+  replay_output_csv:=${PREFIX}_replay.csv \
+  start_delay_sec:=8 hold_initial_state_during_start_delay:=true \
+  visual_stabilization_dry_run:=true \
+  visual_stabilization_max_joint_velocity:=0.2 \
+  visual_stabilization_max_task_velocity_xyz:='0.05 0.05 0.05' \
+  run_phase4_diagnostics:=false \
+  run_phase4_transform_chain_diagnostics:=false imu_enabled:=false
+
+ROS_DOMAIN_ID=${DOMAIN} ros2 run manipulator \
+  phase4_visual_dry_run_metrics.py \
+  --replay-csv ${PREFIX}_replay.csv --label gate_a_${PROFILE} \
+  --output-json ${PREFIX}_gate.json \
+  --output-csv ${PREFIX}_gate.csv --require-pass
+```
+
+整体证据复核要求 5 个 JSON 均为 `overall_passed=true`，每个 15/15 checks 全为 true；正式 15 个文件的 SHA-256 清单为 `/tmp/windylab_phase4_gate_a/formal_sha256.txt`。
+
+### 正式结果
+
+| profile | Base 最大 | age P99 / 最大 | stale 比例 | 四段 unique（image/detection/pose/control） | 视觉/GT RMS | direction P05 | CLIK direction 最小 |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| `sine_x` | 0.221 mm | 98 / 128 ms | 0% | 451/451/451/451 | 13.134 mm | 0.9879 | 0.998396 |
+| `sine_y` | 0.435 mm | 97 / 120 ms | 0% | 451/451/451/451 | 13.131 mm | 0.8080 | 0.998799 |
+| `sine_z` | 0.254 mm | 100 / 137 ms | 0% | 451/451/451/451 | 8.221 mm | 0.8569 | 0.998394 |
+| `sine_xyz` | 0.624 mm | 99 / 118 ms | 0% | 451/451/451/451 | 14.761 mm | 0.7569 | 0.998394 |
+| `random_translation_3d` | 0.263 mm | 98 / 122 ms | 0% | 452/452/451/451 | 14.921 mm | 0.7657 | 0.998394 |
+
+全部运行均为 3001 replay/status 样本、0 set failure、视觉 valid/finite 100%、0 timestamp regression、0 fault/reset，真实命令峰值和关节最大步长均为 0。四段源时间戳到 replay/status 的全局最差 P99 分别为 image `24.9 ms`、detection `27.0 ms`、visual pose `43.0 ms`、controller `55.5 ms`。CLIK scale 全范围 `0.8824–0.9875`，激励轴符号一致率最低 `96.64%`。
+
+正式 manifest 共 15 行，其自身 SHA-256 为：
+
+```text
+9fcea9accb4de84741509b2e30c0ed9f8af1645538d8f8cecee69ffa50aabee7  formal_sha256.txt
+```
+
+### 达到的效果
+
+- 已证明五类完整 Base 平移包络内，视觉误差持续产生方向正确、有限且非零的 CLIK 抗扰意图。
+- image 到 controller 的四段延迟已能逐段定位；旧 stage 8 的 133–201 ms 空洞以后不再只能看到一个最终 age。
+- true dry-run 与 actuator 完全隔离，Gate B 可以在版本同步后开启真实低风险闭环。
+
+### 版本控制验收
+
+本门提交说明固定为：
+
+```text
+phase4: validate visual closed-loop admission
+```
+
+提交、推送后必须确认工作区干净且 `HEAD == origin/develop`，才允许开始 Gate B。

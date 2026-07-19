@@ -663,6 +663,16 @@ class VisualEeStabilizationController(Node):
             'safety_stop_reason': self.safety_stop_reason,
             'dq_target': [float(value) for value in self.dq_target],
             'dq_command': [float(value) for value in self.dq_command],
+            'dq_raw': [float(value) for value in self.last_dq_raw],
+            'dry_run': self.dry_run,
+            'control_mode': self.control_mode,
+            'task_gain_xyz': [float(value) for value in self.task_gain[:3]],
+            'max_task_velocity_xyz': [
+                float(value) for value in self.max_task_velocity_xyz],
+            'max_joint_velocity': self.max_joint_velocity,
+            'max_joint_acceleration_rad_s2': self.max_joint_acceleration,
+            'damping': self.damping,
+            'position_deadband_m': self.position_deadband_m,
         }
         self.status_pub.publish(String(data=json.dumps(payload, sort_keys=True)))
 

@@ -2,12 +2,14 @@
 
 import argparse
 import csv
+import json
 import math
 import os
 import statistics
 import sys
 import time
 
+from apriltag_msgs.msg import AprilTagDetectionArray
 from gazebo_msgs.msg import EntityState
 from gazebo_msgs.msg import LinkStates
 from gazebo_msgs.msg import ModelStates
@@ -19,9 +21,12 @@ from geometry_msgs.msg import Twist
 import rclpy
 from rclpy.node import Node
 from rclpy.parameter import Parameter
+from rclpy.qos import qos_profile_sensor_data
+from sensor_msgs.msg import Image
 from sensor_msgs.msg import JointState
 from std_msgs.msg import Bool
 from std_msgs.msg import Float64MultiArray
+from std_msgs.msg import String
 
 
 TRAJECTORY_FIELDS = [
@@ -190,9 +195,19 @@ class BaseDisturbanceReplay(Node):
         self.max_joint_step = 0.0
         self.latest_velocity_command = None
         self.latest_visual_valid = None
+        self.latest_image_stamp_ns = 0
+        self.latest_image_receive_ns = 0
+        self.latest_target_detection_stamp_ns = 0
+        self.latest_target_detection_receive_ns = 0
         self.latest_visual_pose_stamp_ns = 0
+        self.latest_visual_pose_receive_ns = 0
+        self.latest_controller_visual_stamp_ns = 0
+        self.latest_controller_status_receive_ns = 0
         self.latest_visual_error = None
+        self.latest_visual_dq_raw = None
         self.latest_visual_dq_limited = None
+        self.latest_visual_dq_target = None
+        self.latest_visual_status = ''
         self.latest_model_pose = None
         self.latest_base_pose = None
         self.latest_ee_pose = None
@@ -210,6 +225,16 @@ class BaseDisturbanceReplay(Node):
         self.replay_start_wall = None
         self.replay_start_schedule = None
 
+        self.create_subscription(
+            Image,
+            args.image_topic,
+            self.image_callback,
+            qos_profile_sensor_data)
+        self.create_subscription(
+            AprilTagDetectionArray,
+            args.detections_topic,
+            self.detections_callback,
+            50)
         self.create_subscription(
             JointState,
             args.joint_state_topic,
@@ -241,6 +266,21 @@ class BaseDisturbanceReplay(Node):
             self.visual_dq_callback,
             50)
         self.create_subscription(
+            Float64MultiArray,
+            args.visual_dq_raw_topic,
+            self.visual_dq_raw_callback,
+            50)
+        self.create_subscription(
+            Float64MultiArray,
+            args.visual_dq_target_topic,
+            self.visual_dq_target_callback,
+            50)
+        self.create_subscription(
+            String,
+            args.visual_status_topic,
+            self.visual_status_callback,
+            50)
+        self.create_subscription(
             ModelStates,
             args.model_states_topic,
             self.model_states_callback,
@@ -269,6 +309,22 @@ class BaseDisturbanceReplay(Node):
         self.previous_joint_positions = list(positions)
         self.latest_joint_positions = list(positions)
 
+    def image_callback(self, msg):
+        self.latest_image_stamp_ns = stamp_to_nanoseconds(msg.header.stamp)
+        self.latest_image_receive_ns = self.get_clock().now().nanoseconds
+
+    def detections_callback(self, msg):
+        target_detected = any(
+            detection.family == self.args.visual_target_tag_family
+            and int(detection.id) == self.args.visual_target_tag_id
+            for detection in msg.detections)
+        if not target_detected:
+            return
+        self.latest_target_detection_stamp_ns = stamp_to_nanoseconds(
+            msg.header.stamp)
+        self.latest_target_detection_receive_ns = (
+            self.get_clock().now().nanoseconds)
+
     def velocity_command_callback(self, msg):
         self.latest_velocity_command = list(msg.data)
 
@@ -277,12 +333,33 @@ class BaseDisturbanceReplay(Node):
 
     def visual_pose_callback(self, msg):
         self.latest_visual_pose_stamp_ns = stamp_to_nanoseconds(msg.header.stamp)
+        self.latest_visual_pose_receive_ns = self.get_clock().now().nanoseconds
 
     def visual_error_callback(self, msg):
         self.latest_visual_error = list(msg.data)
 
     def visual_dq_callback(self, msg):
         self.latest_visual_dq_limited = list(msg.data)
+
+    def visual_dq_raw_callback(self, msg):
+        self.latest_visual_dq_raw = list(msg.data)
+
+    def visual_dq_target_callback(self, msg):
+        self.latest_visual_dq_target = list(msg.data)
+
+    def visual_status_callback(self, msg):
+        self.latest_visual_status = str(msg.data)
+        self.latest_controller_status_receive_ns = (
+            self.get_clock().now().nanoseconds)
+        try:
+            payload = json.loads(self.latest_visual_status)
+            stamp_sec = float(payload.get(
+                'latest_processed_visual_stamp_sec', 0.0))
+        except (TypeError, ValueError, json.JSONDecodeError):
+            return
+        if math.isfinite(stamp_sec) and stamp_sec > 0.0:
+            self.latest_controller_visual_stamp_ns = int(
+                round(stamp_sec * 1e9))
 
     def model_states_callback(self, msg):
         self.model_poses = {
@@ -537,9 +614,28 @@ class BaseDisturbanceReplay(Node):
                 'visual_valid': (
                     '' if self.latest_visual_valid is None
                     else str(bool(self.latest_visual_valid)).lower()),
+                'latest_image_stamp_sec': self.format_stamp_sec(
+                    self.latest_image_stamp_ns),
+                'latest_image_receive_sec': self.format_stamp_sec(
+                    self.latest_image_receive_ns),
+                'latest_target_detection_stamp_sec': self.format_stamp_sec(
+                    self.latest_target_detection_stamp_ns),
+                'latest_target_detection_receive_sec': self.format_stamp_sec(
+                    self.latest_target_detection_receive_ns),
                 'latest_visual_pose_age_sec': latest_visual_pose_age_sec,
+                'latest_visual_pose_stamp_sec': self.format_stamp_sec(
+                    self.latest_visual_pose_stamp_ns),
+                'latest_visual_pose_receive_sec': self.format_stamp_sec(
+                    self.latest_visual_pose_receive_ns),
+                'latest_controller_visual_stamp_sec': self.format_stamp_sec(
+                    self.latest_controller_visual_stamp_ns),
+                'latest_controller_status_receive_sec': self.format_stamp_sec(
+                    self.latest_controller_status_receive_ns),
                 'visual_error': serialize_values(self.latest_visual_error),
+                'visual_dq_raw': serialize_values(self.latest_visual_dq_raw),
                 'visual_dq_limited': serialize_values(self.latest_visual_dq_limited),
+                'visual_dq_target': serialize_values(self.latest_visual_dq_target),
+                'visual_status': self.latest_visual_status,
             }
             row_out.update(serialize_pose('command', command_pose))
             row_out.update(serialize_pose('actual_model', model_pose))
@@ -550,6 +646,10 @@ class BaseDisturbanceReplay(Node):
 
         self.write_csv()
         self.print_summary()
+
+    @staticmethod
+    def format_stamp_sec(stamp_ns):
+        return f'{stamp_ns * 1e-9:.9f}' if stamp_ns > 0 else ''
 
     def actual_frequency_hz(self):
         if len(self.schedule_stamps) < 2:
@@ -625,9 +725,20 @@ class BaseDisturbanceReplay(Node):
             'joint_positions',
             'velocity_command',
             'visual_valid',
+            'latest_image_stamp_sec',
+            'latest_image_receive_sec',
+            'latest_target_detection_stamp_sec',
+            'latest_target_detection_receive_sec',
             'latest_visual_pose_age_sec',
+            'latest_visual_pose_stamp_sec',
+            'latest_visual_pose_receive_sec',
+            'latest_controller_visual_stamp_sec',
+            'latest_controller_status_receive_sec',
             'visual_error',
+            'visual_dq_raw',
             'visual_dq_limited',
+            'visual_dq_target',
+            'visual_status',
         ]
         for prefix in ('command', 'actual_model', 'actual_base', 'actual_link6', 'actual_camera'):
             fieldnames.extend([
@@ -677,10 +788,17 @@ def parse_args(argv):
     parser.add_argument('--link-states-topic', default='/link_states')
     parser.add_argument('--joint-state-topic', default='/joint_states')
     parser.add_argument('--velocity-command-topic', default='/arm_velocity_controller/commands')
+    parser.add_argument('--image-topic', default='/d435i/color/image_raw')
+    parser.add_argument('--detections-topic', default='/apriltag/detections')
+    parser.add_argument('--visual-target-tag-family', default='tag36h11')
+    parser.add_argument('--visual-target-tag-id', type=int, default=0)
     parser.add_argument('--visual-valid-topic', default='/visual_ee_pose_valid')
     parser.add_argument('--visual-pose-topic', default='/visual_ee_pose')
     parser.add_argument('--visual-error-topic', default='/visual_stabilization/error')
     parser.add_argument('--visual-dq-topic', default='/visual_stabilization/dq_limited')
+    parser.add_argument('--visual-dq-raw-topic', default='/visual_stabilization/dq_raw')
+    parser.add_argument('--visual-dq-target-topic', default='/visual_stabilization/dq_target')
+    parser.add_argument('--visual-status-topic', default='/visual_stabilization/status')
     parser.add_argument('--joint-names', type=parse_joint_names, default=parse_joint_names(
         'joint1 joint2 joint3 joint4 joint5 joint6'))
     parser.add_argument('--rate-hz', type=float, default=100.0)

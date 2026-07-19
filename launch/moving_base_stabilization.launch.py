@@ -117,6 +117,10 @@ def generate_launch_description():
         'visual_stabilization_control_rate',
         default_value='100.0',
         description='Visual XYZ stabilization control rate')
+    visual_stabilization_dry_run_arg = DeclareLaunchArgument(
+        'visual_stabilization_dry_run',
+        default_value='false',
+        description='Compute visual XYZ commands without publishing actuator commands')
     visual_stabilization_max_joint_velocity_arg = DeclareLaunchArgument(
         'visual_stabilization_max_joint_velocity',
         default_value='0.2',
@@ -402,7 +406,9 @@ def generate_launch_description():
             'use_sim_time': LaunchConfiguration('use_sim_time'),
             'urdf_path': arm_urdf_path,
             'ee_frame': 'link6',
-            'dry_run': False,
+            'dry_run': ParameterValue(
+                LaunchConfiguration('visual_stabilization_dry_run'),
+                value_type=bool),
             'control_mode': 'xyz',
             'command_topic': '/arm_velocity_controller/commands',
             'control_rate': ParameterValue(
@@ -571,6 +577,7 @@ def generate_launch_description():
         replay_entity_stable_samples_arg,
         baseline_rate_hz_arg,
         visual_stabilization_control_rate_arg,
+        visual_stabilization_dry_run_arg,
         visual_stabilization_max_joint_velocity_arg,
         visual_stabilization_max_task_velocity_xyz_arg,
         visual_stabilization_position_deadband_arg,

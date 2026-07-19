@@ -302,6 +302,7 @@ install(PROGRAMS
   scripts/phase4_safety_state_machine_check.py
   scripts/phase4_visual_open_loop_metrics.py
   scripts/phase4_visibility_observability_metrics.py
+  scripts/phase4_visual_dry_run_metrics.py
   scripts/check_visual_pose_transform_chain.py
   scripts/check_visual_pose_transform_math.py
   scripts/analyze_phase4_3_transform_chain.py
