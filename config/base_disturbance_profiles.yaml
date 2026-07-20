@@ -35,3 +35,37 @@ profiles:
     type: random_translation_3d
     component_count: 6
     max_translation_norm: 0.10
+
+  gate_b_static:
+    type: static
+    duration_sec: 10.0
+
+  gate_b_step_x_10mm:
+    type: step
+    axis: x
+    duration_sec: 15.0
+    step_start_sec: 5.0
+    step_transition_sec: 0.5
+    translation_step:
+      x: 0.01
+
+  gate_b_sine_x_low:
+    type: sine
+    axis: x
+    frequency_hz: 0.10
+    translation_amplitude:
+      x: 0.02
+
+  gate_b_sine_x_medium:
+    type: sine
+    axis: x
+    frequency_hz: 0.20
+    translation_amplitude:
+      x: 0.05
+
+  gate_b_sine_x_full:
+    type: sine
+    axis: x
+    frequency_hz: 0.35
+    translation_amplitude:
+      x: 0.10

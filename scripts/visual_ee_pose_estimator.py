@@ -188,6 +188,10 @@ class VisualEePoseEstimator(Node):
             'detection_timeout_sec', 0.5).value)
         self.tf_timeout_sec = float(self.declare_parameter(
             'tf_timeout_sec', 0.1).value)
+        self.ee_orientation_sync_wait_sec = float(self.declare_parameter(
+            'ee_orientation_sync_wait_sec', 0.08).value)
+        if self.ee_orientation_sync_wait_sec < 0.0:
+            raise ValueError('ee_orientation_sync_wait_sec must be non-negative')
         self.tag_tf_mode = self.declare_parameter(
             'tag_tf_mode', 'stamped').value
         if self.tag_tf_mode not in ('stamped', 'latest'):
@@ -293,6 +297,9 @@ class VisualEePoseEstimator(Node):
         self.last_debug_wall_time = 0.0
         self.last_valid = False
         self.last_reason = 'waiting_for_detection'
+        self.last_ee_orientation_source = 'not_evaluated'
+        self.last_ee_orientation_tf_stamp_delta_sec = None
+        self.last_ee_orientation_lookup_errors = []
         self.visual_valid_true_count = 0
         self.visual_valid_false_count = 0
         self.visual_valid_toggle_count = 0
@@ -626,6 +633,18 @@ class VisualEePoseEstimator(Node):
         )
         world_to_ee_kinematic = self.estimate_position_with_kinematic_orientation(
             stamp, camera_to_tag, ee_to_camera, world_to_tag, world_to_ee_full)
+        if world_to_ee_kinematic is None:
+            self.last_reason = 'waiting_for_ee_orientation_sync'
+            self.publish_debug(
+                valid=self.last_valid,
+                reason=self.last_reason,
+                stamp=stamp,
+                extra={
+                    'target_id': tag_config['id'],
+                    'selected_tag_id': tag_config['id'],
+                    'selected_tag_frame': tag_config['frame'],
+                })
+            return
         if self.position_estimation_mode == 'full_pose':
             world_to_ee = world_to_ee_full
         else:
@@ -679,6 +698,11 @@ class VisualEePoseEstimator(Node):
             self, stamp, camera_to_tag, ee_to_camera, world_to_tag,
             fallback_world_to_ee):
         orientation_matrix = self.lookup_ee_orientation_matrix(stamp)
+        if (
+                orientation_matrix is None
+                and self.last_ee_orientation_source
+                == 'waiting_for_stamped_tf'):
+            return None
         if orientation_matrix is None:
             orientation_matrix = fallback_world_to_ee[:3, :3]
 
@@ -693,6 +717,15 @@ class VisualEePoseEstimator(Node):
 
     def lookup_ee_orientation_matrix(self, stamp):
         stamp_time = Time.from_msg(stamp)
+        requested_stamp_ns = stamp_to_ns(stamp)
+        now_ns = self.get_clock().now().nanoseconds
+        measurement_age_sec = (
+            ns_to_sec(now_ns - requested_stamp_ns)
+            if now_ns > requested_stamp_ns > 0 else 0.0)
+        wait_for_exact_tf = (
+            measurement_age_sec < self.ee_orientation_sync_wait_sec)
+        lookup_errors = []
+        stamped_tf_pending = False
         for target_frame, source_frame in (
             (self.base_frame, self.ee_frame),
             (self.world_frame, self.ee_frame),
@@ -703,19 +736,43 @@ class VisualEePoseEstimator(Node):
                     source_frame,
                     stamp_time)
                 self.tf_counters['ee_orientation_tf_success'] += 1
-            except Exception:
+                self.last_ee_orientation_source = (
+                    f'{target_frame}_to_{source_frame}_stamped')
+            except Exception as stamped_exc:
+                lookup_errors.append(
+                    f'{target_frame}->{source_frame} stamped: {stamped_exc}')
                 self.tf_counters[
                     'ee_orientation_tf_stamped_unavailable'] += 1
+                if target_frame == self.base_frame and wait_for_exact_tf:
+                    stamped_tf_pending = True
+                    continue
                 try:
                     tf_msg = self.tf_buffer.lookup_transform(
                         target_frame,
                         source_frame,
                         Time())
                     self.tf_counters['ee_orientation_tf_latest_fallback_success'] += 1
-                except Exception:
+                    self.last_ee_orientation_source = (
+                        f'{target_frame}_to_{source_frame}_latest')
+                except Exception as latest_exc:
+                    lookup_errors.append(
+                        f'{target_frame}->{source_frame} latest: {latest_exc}')
                     self.tf_counters['ee_orientation_tf_unavailable'] += 1
                     continue
+            tf_stamp_ns = stamp_to_ns(tf_msg.header.stamp)
+            self.last_ee_orientation_tf_stamp_delta_sec = (
+                ns_to_sec(tf_stamp_ns - requested_stamp_ns)
+                if tf_stamp_ns > 0 and requested_stamp_ns > 0 else None)
+            self.last_ee_orientation_lookup_errors = lookup_errors
             return transform_to_matrix(tf_msg.transform)[:3, :3]
+        if stamped_tf_pending:
+            self.last_ee_orientation_source = 'waiting_for_stamped_tf'
+            self.last_ee_orientation_tf_stamp_delta_sec = None
+            self.last_ee_orientation_lookup_errors = lookup_errors
+            return None
+        self.last_ee_orientation_source = 'full_pose_fallback'
+        self.last_ee_orientation_tf_stamp_delta_sec = None
+        self.last_ee_orientation_lookup_errors = lookup_errors
         return None
 
     def find_target_detections(self, msg):
@@ -820,6 +877,12 @@ class VisualEePoseEstimator(Node):
             'detected_tag_frame': self.detected_tag_frame,
             'detected_tag_frames': list(self.configured_tag_frames),
             'position_estimation_mode': self.position_estimation_mode,
+            'ee_orientation_sync_wait_sec': self.ee_orientation_sync_wait_sec,
+            'ee_orientation_source': self.last_ee_orientation_source,
+            'ee_orientation_tf_stamp_delta_sec': (
+                self.last_ee_orientation_tf_stamp_delta_sec),
+            'ee_orientation_lookup_errors': list(
+                self.last_ee_orientation_lookup_errors),
             'tag_tf_mode': self.tag_tf_mode,
             'max_tag_tf_age_sec': self.max_tag_tf_age_sec,
             'duplicate_translation_epsilon_m': self.duplicate_translation_epsilon_m,

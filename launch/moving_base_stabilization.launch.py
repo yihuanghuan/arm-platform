@@ -133,9 +133,25 @@ def generate_launch_description():
         'visual_stabilization_position_deadband_m',
         default_value='0.003',
         description='Visual XYZ position deadband in meters')
+    visual_preserve_kinematic_orientation_arg = DeclareLaunchArgument(
+        'visual_preserve_kinematic_orientation',
+        default_value='true',
+        description='Preserve the target EE orientation using joint kinematics')
+    visual_orientation_deadband_arg = DeclareLaunchArgument(
+        'visual_orientation_deadband_rad',
+        default_value='0.005',
+        description='Kinematic EE orientation hold deadband in radians')
+    visual_stabilization_task_gain_arg = DeclareLaunchArgument(
+        'visual_stabilization_task_gain',
+        default_value='4.0 4.0 4.0 2.0 2.0 2.0',
+        description='Visual stabilization six-dimensional task gain')
+    visual_stabilization_damping_arg = DeclareLaunchArgument(
+        'visual_stabilization_damping',
+        default_value='0.05',
+        description='Visual stabilization damped pseudoinverse coefficient')
     visual_stabilization_measurement_timeout_arg = DeclareLaunchArgument(
         'visual_stabilization_measurement_timeout',
-        default_value='0.80',
+        default_value='0.25',
         description='Maximum visual measurement age before zero velocity')
     visual_stabilization_joint_state_timeout_arg = DeclareLaunchArgument(
         'visual_stabilization_joint_state_timeout',
@@ -164,7 +180,11 @@ def generate_launch_description():
     visual_max_joint_acceleration_arg = DeclareLaunchArgument(
         'visual_max_joint_acceleration_rad_s2',
         default_value='0.3',
-        description='Joint command acceleration clamp in rad/s^2')
+        description='Legacy visual joint acceleration clamp in rad/s^2')
+    visual_stabilization_max_joint_acceleration_arg = DeclareLaunchArgument(
+        'visual_stabilization_max_joint_acceleration_rad_s2',
+        default_value=LaunchConfiguration('visual_max_joint_acceleration_rad_s2'),
+        description='Visual stabilization joint acceleration clamp in rad/s^2')
     ground_truth_control_rate_arg = DeclareLaunchArgument(
         'ground_truth_control_rate',
         default_value='100.0',
@@ -197,6 +217,10 @@ def generate_launch_description():
         'visual_tf_timeout_sec',
         default_value='0.1',
         description='TF lookup timeout for visual end-effector pose estimation')
+    visual_ee_orientation_sync_wait_sec_arg = DeclareLaunchArgument(
+        'visual_ee_orientation_sync_wait_sec',
+        default_value='0.08',
+        description='Wait for the image-time EE orientation TF before using fallback')
     visual_tag_tf_mode_arg = DeclareLaunchArgument(
         'visual_tag_tf_mode',
         default_value='latest',
@@ -389,6 +413,9 @@ def generate_launch_description():
             'tf_timeout_sec': ParameterValue(
                 LaunchConfiguration('visual_tf_timeout_sec'),
                 value_type=float),
+            'ee_orientation_sync_wait_sec': ParameterValue(
+                LaunchConfiguration('visual_ee_orientation_sync_wait_sec'),
+                value_type=float),
             'tag_tf_mode': LaunchConfiguration('visual_tag_tf_mode'),
             'max_tag_tf_age_sec': ParameterValue(
                 LaunchConfiguration('visual_max_tag_tf_age_sec'),
@@ -422,6 +449,17 @@ def generate_launch_description():
             'position_deadband_m': ParameterValue(
                 LaunchConfiguration('visual_stabilization_position_deadband_m'),
                 value_type=float),
+            'preserve_kinematic_orientation': ParameterValue(
+                LaunchConfiguration('visual_preserve_kinematic_orientation'),
+                value_type=bool),
+            'orientation_deadband_rad': ParameterValue(
+                LaunchConfiguration('visual_orientation_deadband_rad'),
+                value_type=float),
+            'task_gain': LaunchConfiguration(
+                'visual_stabilization_task_gain'),
+            'damping': ParameterValue(
+                LaunchConfiguration('visual_stabilization_damping'),
+                value_type=float),
             'measurement_timeout_sec': ParameterValue(
                 LaunchConfiguration('visual_stabilization_measurement_timeout'),
                 value_type=float),
@@ -444,7 +482,8 @@ def generate_launch_description():
                 LaunchConfiguration('visual_stop_on_large_error'),
                 value_type=bool),
             'max_joint_acceleration_rad_s2': ParameterValue(
-                LaunchConfiguration('visual_max_joint_acceleration_rad_s2'),
+                LaunchConfiguration(
+                    'visual_stabilization_max_joint_acceleration_rad_s2'),
                 value_type=float),
         }],
     )
@@ -581,6 +620,10 @@ def generate_launch_description():
         visual_stabilization_max_joint_velocity_arg,
         visual_stabilization_max_task_velocity_xyz_arg,
         visual_stabilization_position_deadband_arg,
+        visual_preserve_kinematic_orientation_arg,
+        visual_orientation_deadband_arg,
+        visual_stabilization_task_gain_arg,
+        visual_stabilization_damping_arg,
         visual_stabilization_measurement_timeout_arg,
         visual_stabilization_joint_state_timeout_arg,
         visual_required_consecutive_valid_poses_arg,
@@ -589,6 +632,7 @@ def generate_launch_description():
         visual_target_relock_enabled_arg,
         visual_stop_on_large_error_arg,
         visual_max_joint_acceleration_arg,
+        visual_stabilization_max_joint_acceleration_arg,
         ground_truth_control_rate_arg,
         ground_truth_max_joint_velocity_arg,
         ground_truth_max_task_velocity_xyz_arg,
@@ -597,6 +641,7 @@ def generate_launch_description():
         ground_truth_damping_arg,
         visual_detection_timeout_sec_arg,
         visual_tf_timeout_sec_arg,
+        visual_ee_orientation_sync_wait_sec_arg,
         visual_tag_tf_mode_arg,
         visual_max_tag_tf_age_sec_arg,
         visual_position_estimation_mode_arg,

@@ -9,6 +9,7 @@ import numpy as np
 import pinocchio as pin
 import rclpy
 from geometry_msgs.msg import PoseStamped
+from rcl_interfaces.msg import ParameterDescriptor
 from rclpy.node import Node
 from sensor_msgs.msg import JointState
 from scipy.spatial.transform import Rotation
@@ -109,6 +110,10 @@ class VisualEeStabilizationController(Node):
             'command_start_delay_sec', 0.0).value)
         self.position_deadband_m = float(self.declare_parameter(
             'position_deadband_m', 0.003).value)
+        self.preserve_kinematic_orientation = bool(self.declare_parameter(
+            'preserve_kinematic_orientation', False).value)
+        self.orientation_deadband_rad = float(self.declare_parameter(
+            'orientation_deadband_rad', 0.005).value)
         self.joint_limit_margin_rad = float(self.declare_parameter(
             'joint_limit_margin_rad', 0.05).value)
         self.task_gain = self._vector_parameter(
@@ -150,6 +155,8 @@ class VisualEeStabilizationController(Node):
             raise ValueError('control_mode must be xyz or se3_debug')
         if self.position_deadband_m < 0.0:
             raise ValueError('position_deadband_m must be non-negative')
+        if self.orientation_deadband_rad < 0.0:
+            raise ValueError('orientation_deadband_rad must be non-negative')
         if self.joint_limit_margin_rad < 0.0:
             raise ValueError('joint_limit_margin_rad must be non-negative')
         if self.command_start_delay_sec < 0.0:
@@ -255,7 +262,8 @@ class VisualEeStabilizationController(Node):
             f'dry_run={self.dry_run}')
 
     def _vector_parameter(self, name, default, expected_length):
-        raw_value = self.declare_parameter(name, default).value
+        descriptor = ParameterDescriptor(dynamic_typing=True)
+        raw_value = self.declare_parameter(name, default, descriptor).value
         if isinstance(raw_value, str):
             value = [float(part) for part in raw_value.replace(',', ' ').split()]
         else:
@@ -516,12 +524,26 @@ class VisualEeStabilizationController(Node):
             self.q,
             self.ee_frame_id,
             pin.LOCAL_WORLD_ALIGNED)
-        jacobian = np.zeros((3, 6), dtype=float)
+        output_dimension = 6 if self.preserve_kinematic_orientation else 3
+        jacobian = np.zeros((output_dimension, 6), dtype=float)
         for out_col, v_index in enumerate(self.v_indices):
-            jacobian[:, out_col] = jacobian_full[:3, v_index]
+            jacobian[:, out_col] = jacobian_full[:output_dimension, v_index]
+
+        if self.preserve_kinematic_orientation:
+            current_rotation = self.data.oMf[self.ee_frame_id].rotation
+            orientation_error = Rotation.from_matrix(
+                self.target_pose.rotation @ current_rotation.T).as_rotvec()
+            if np.linalg.norm(orientation_error) <= self.orientation_deadband_rad:
+                orientation_error = np.zeros(3, dtype=float)
+            error[3:] = orientation_error
+            angular_velocity = np.clip(
+                self.task_gain[3:] * orientation_error,
+                -self.max_task_velocity[3:],
+                self.max_task_velocity[3:])
+            task_velocity = np.concatenate((task_velocity, angular_velocity))
 
         lhs = jacobian @ jacobian.T + (
-            self.damping * self.damping * np.eye(3, dtype=float))
+            self.damping * self.damping * np.eye(output_dimension, dtype=float))
         dq_raw = jacobian.T @ np.linalg.solve(lhs, task_velocity)
         dq_limited = self.limit_joint_velocity(dq_raw)
 
@@ -644,6 +666,7 @@ class VisualEeStabilizationController(Node):
                 now_ns - self.latest_visual_stamp_ns) * 1e-9
         payload = {
             'status': reason,
+            'control_stamp_sec': now_ns * 1e-9,
             'safety_state': self.safety_state,
             'safety_state_transition_count': self.safety_state_transition_count,
             'target_locked': self.target_pose is not None,
@@ -666,6 +689,7 @@ class VisualEeStabilizationController(Node):
             'dq_raw': [float(value) for value in self.last_dq_raw],
             'dry_run': self.dry_run,
             'control_mode': self.control_mode,
+            'task_gain': [float(value) for value in self.task_gain],
             'task_gain_xyz': [float(value) for value in self.task_gain[:3]],
             'max_task_velocity_xyz': [
                 float(value) for value in self.max_task_velocity_xyz],
@@ -673,6 +697,11 @@ class VisualEeStabilizationController(Node):
             'max_joint_acceleration_rad_s2': self.max_joint_acceleration,
             'damping': self.damping,
             'position_deadband_m': self.position_deadband_m,
+            'preserve_kinematic_orientation': self.preserve_kinematic_orientation,
+            'orientation_deadband_rad': self.orientation_deadband_rad,
+            'measurement_timeout_sec': self.measurement_timeout_sec,
+            'joint_state_timeout_sec': self.joint_state_timeout_sec,
+            'relock_after_visual_loss_sec': self.relock_after_visual_loss_sec,
         }
         self.status_pub.publish(String(data=json.dumps(payload, sort_keys=True)))
 

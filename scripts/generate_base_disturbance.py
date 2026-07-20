@@ -108,6 +108,34 @@ def generate_sine(times, profile):
     return positions, velocities
 
 
+def generate_step(times, profile):
+    positions, velocities = generate_static(times)
+    axis = str(profile.get('axis', 'x'))
+    if axis not in AXES:
+        raise ValueError(f'step axis must be one of {AXES}, got {axis}')
+    duration_sec = float(profile['duration_sec'])
+    start_sec = float(profile.get('step_start_sec', 5.0))
+    transition_sec = float(profile.get('step_transition_sec', 0.5))
+    if start_sec < 0.0 or start_sec >= duration_sec:
+        raise ValueError('step_start_sec must be within the trajectory duration')
+    if transition_sec <= 0.0 or start_sec + transition_sec > duration_sec:
+        raise ValueError(
+            'step_transition_sec must be positive and finish within the trajectory')
+    offset = float(profile['translation_step'][axis])
+    for index, t in enumerate(times):
+        if t < start_sec:
+            continue
+        if t >= start_sec + transition_sec:
+            positions[axis][index] = offset
+            continue
+        ratio = (t - start_sec) / transition_sec
+        positions[axis][index] = offset * (
+            0.5 - 0.5 * math.cos(math.pi * ratio))
+        velocities[axis][index] = offset * (
+            0.5 * math.pi / transition_sec * math.sin(math.pi * ratio))
+    return positions, velocities
+
+
 def make_random_components(profile, rng):
     band = profile['frequency_band']
     min_hz = float(band['min'])
@@ -197,6 +225,8 @@ def generate_rows(profile):
     profile_type = str(profile.get('type', 'static'))
     if profile_type == 'static':
         positions, velocities = generate_static(times)
+    elif profile_type == 'step':
+        positions, velocities = generate_step(times, profile)
     elif profile_type == 'sine':
         positions, velocities = generate_sine(times, profile)
     elif profile_type == 'random_translation_3d':
